@@ -1,7 +1,7 @@
 package com.eunbinlib.api.exception.type;
 
 /**
- * @NotBlank 등의 필드 검증으로 처리할 수 없는 오류일 때 사용
+ * @NotBlank 등의 어노테이션 필드 검증 방식으로 처리할 수 없는
  * status -> 400
  */
 public class InvalidRequestException extends EunbinlibException {
@@ -21,4 +21,5 @@ public class InvalidRequestException extends EunbinlibException {
     public int getStatusCode() {
         return 400;
     }
+
 }

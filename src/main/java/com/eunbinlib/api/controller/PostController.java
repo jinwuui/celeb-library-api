@@ -1,9 +1,8 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.domain.entity.Post;
+import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.response.PostResponse;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,6 @@ public class PostController {
     public PostResponse read(@PathVariable Long postId) {
         return postService.read(postId);
     }
-
 
     @GetMapping("/posts")
     public List<PostResponse> readMany(@ModelAttribute PostSearch postSearch) {

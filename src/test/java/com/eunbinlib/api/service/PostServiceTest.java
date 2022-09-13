@@ -56,15 +56,15 @@ class PostServiceTest {
     @DisplayName("글 1개 조회")
     void readOne() {
         // given
-        PostWrite postWrite = PostWrite.builder()
+        Post post = Post.builder()
                 .title("제목")
                 .content("내용")
                 .build();
 
-        Long postId = postService.write(postWrite);
+        Post savedPost = postRepository.save(post);
 
         // when
-        PostResponse findPost = postService.read(postId);
+        PostResponse findPost = postService.read(savedPost.getId());
 
         // then
         assertNotNull(findPost);
@@ -74,7 +74,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("글 1개 조회 - 존재하지 않는 글")
-    void readOneFail() {
+    void readOnePostNotFound() {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -91,6 +91,32 @@ class PostServiceTest {
     @Test
     @DisplayName("글 1페이지 조회")
     void readMany() {
+        // given
+        List<Post> requestPosts = IntStream.range(0, 30)
+                .mapToObj(i -> Post.builder()
+                        .title("제목" + i)
+                        .content("내용" + i)
+                        .build())
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts);
+
+        PostSearch postSearch = PostSearch.builder()
+                .page(2)
+                .size(5)
+                .build();
+
+        // when
+        List<PostResponse> posts = postService.readMany(postSearch);
+
+        // then
+        assertEquals(5L, posts.size());
+        assertEquals("제목24", posts.get(0).getTitle());
+        assertEquals("내용24", posts.get(0).getContent());
+    }
+
+    @Test
+    @DisplayName("글 1페이지 조회 - 기본값(page, size) 사용")
+    void readManyDefaultValue() {
         // given
         List<Post> requestPosts = IntStream.range(0, 20)
                 .mapToObj(i -> Post.builder()
@@ -189,7 +215,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("글 수정 - 존재하지 않는 글")
-    void editFail() {
+    void editPostNotFound() {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -227,7 +253,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("글 삭제 - 존재하지 않는 글")
-    void deleteFail() {
+    void deletePostNotFound() {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -240,4 +266,5 @@ class PostServiceTest {
             postService.delete(post.getId() + 1);
         });
     }
+
 }

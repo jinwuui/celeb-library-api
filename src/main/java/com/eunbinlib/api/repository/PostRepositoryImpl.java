@@ -1,7 +1,6 @@
 package com.eunbinlib.api.repository;
 
 import com.eunbinlib.api.domain.entity.Post;
-import com.eunbinlib.api.domain.entity.QPost;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -23,4 +22,5 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                 .orderBy(post.id.desc())
                 .fetch();
     }
+
 }

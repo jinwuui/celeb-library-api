@@ -15,4 +15,5 @@ public class PostNotFoundException extends EunbinlibException {
     public int getStatusCode() {
         return 404;
     }
+
 }

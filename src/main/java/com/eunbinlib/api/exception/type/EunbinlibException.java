@@ -14,13 +14,10 @@ public abstract class EunbinlibException extends RuntimeException {
         super(message);
     }
 
-    public EunbinlibException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
     public abstract int getStatusCode();
 
     public void addValidation(String fieldName, String message) {
         validation.put(fieldName, message);
     }
+
 }

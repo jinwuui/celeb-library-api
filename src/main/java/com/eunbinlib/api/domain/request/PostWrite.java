@@ -1,12 +1,10 @@
 package com.eunbinlib.api.domain.request;
 
-import com.eunbinlib.api.exception.type.InvalidRequestException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import java.util.List;
 
 @Getter
 @Setter
@@ -28,12 +26,13 @@ public class PostWrite {
         this.content = content;
     }
 
+    /**
+     * 단순 필드 검증이 아닌 복합/예외 검증시 사용
+     */
     public void validate() {
-        /**
-         *  단순 필드 검증이 아닌 복합/예외 검증시 사용
-         */
 //        if (images.isEmpty()) {
 //            throw new InvalidRequestException();
 //        }
     }
+
 }

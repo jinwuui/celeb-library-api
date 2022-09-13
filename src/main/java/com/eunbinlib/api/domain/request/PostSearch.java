@@ -28,6 +28,7 @@ public class PostSearch {
     }
 
     public long getLimit() {
-        return (long) min(size, MAX_SIZE);
+        return min(size, MAX_SIZE);
     }
+
 }

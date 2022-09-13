@@ -11,7 +11,6 @@ public class PostResponse {
     private final String title;
     private final String content;
 
-
     @Builder
     public PostResponse(Long id, String title, String content) {
         this.id = id;
@@ -24,4 +23,5 @@ public class PostResponse {
         this.title = post.getTitle();
         this.content = post.getContent();
     }
+
 }

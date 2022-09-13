@@ -2,8 +2,10 @@ package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.domain.entity.Post;
 import com.eunbinlib.api.domain.request.PostEdit;
+import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
 import com.eunbinlib.api.repository.PostRepository;
+import com.eunbinlib.api.util.MultiValueMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.MultiValueMap;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +25,7 @@ import static com.eunbinlib.api.domain.request.PostSearch.MAX_SIZE;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.annotation.DirtiesContext.*;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -49,7 +52,7 @@ class PostControllerTest {
 
     @Test
     @DisplayName("글 등록")
-    void write1() throws Exception {
+    void write() throws Exception {
         PostWrite request = PostWrite.builder()
                 .title("제목")
                 .content("내용")
@@ -74,7 +77,7 @@ class PostControllerTest {
 
     @Test
     @DisplayName("글 등록 실패 - 제목 필수 입력")
-    void write2() throws Exception {
+    void writeTitleNotBlank() throws Exception {
         // given
         PostWrite request = PostWrite.builder()
                 .content("내용")
@@ -96,7 +99,7 @@ class PostControllerTest {
 
     @Test
     @DisplayName("글 등록 실패 - 내용 필수 입력")
-    void write3() throws Exception {
+    void writeContentNotBlank() throws Exception {
         // given
         PostWrite request = PostWrite.builder()
                 .title("제목")
@@ -149,8 +152,16 @@ class PostControllerTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
+        PostSearch postSearch = PostSearch.builder()
+                .page(1)
+                .size(5)
+                .build();
+
+        MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postSearch);
+
         // expected
-        mockMvc.perform(get("/posts?page=1&size=5")
+        mockMvc.perform(get("/posts")
+                        .params(params)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(5)))
@@ -172,8 +183,16 @@ class PostControllerTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
+        PostSearch postSearch = PostSearch.builder()
+                .page(0)
+                .size(10000)
+                .build();
+
+        MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postSearch);
+
         // expected
-        mockMvc.perform(get("/posts?page=0&size=10000")
+        mockMvc.perform(get("/posts")
+                        .params(params)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(MAX_SIZE)))
@@ -272,6 +291,16 @@ class PostControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 삭제")
+    void deletePostNotFound() throws Exception {
+        // expected
+        mockMvc.perform(delete("/posts/{postId}", 1L)
+                        .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andDo(print());
     }
