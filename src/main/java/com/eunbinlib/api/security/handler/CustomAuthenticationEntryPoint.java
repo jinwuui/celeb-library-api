@@ -26,7 +26,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .code(SC_UNAUTHORIZED + "")
-                .message("Unauthorized").build();
+                .message(authException.getMessage())
+                .build();
 
         String body = objectMapper.writeValueAsString(errorResponse);
 

@@ -3,6 +3,7 @@ package com.eunbinlib.api.security.config;
 import com.eunbinlib.api.repository.user.UserRepository;
 import com.eunbinlib.api.security.filter.JwtAuthenticationFilter;
 import com.eunbinlib.api.security.filter.LoginAuthenticationFilter;
+import com.eunbinlib.api.security.filter.LoginGuestAuthenticationFilter;
 import com.eunbinlib.api.security.handler.CustomAccessDeniedHandler;
 import com.eunbinlib.api.security.handler.CustomAuthenticationEntryPoint;
 import com.eunbinlib.api.security.utils.JwtUtils;
@@ -25,7 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private static final String[] whiteList = {"/api/login", "/api/users"};
+    private static final String[] whiteList = {"/api/login", "/api/login/guest", "/api/users"};
 
     private final UserRepository userRepository;
 
@@ -63,6 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
 
                 .addFilterBefore(new LoginAuthenticationFilter(authenticationManager(), jwtUtils), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new LoginGuestAuthenticationFilter(authenticationManager(), userRepository, jwtUtils, passwordEncoder()), LoginAuthenticationFilter.class)
                 .addFilterAfter(new JwtAuthenticationFilter(authenticationManager(), userRepository, jwtUtils), LoginAuthenticationFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint())

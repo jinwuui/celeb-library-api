@@ -1,7 +1,6 @@
 package com.eunbinlib.api.security.filter;
 
 import com.eunbinlib.api.domain.entity.user.User;
-import com.eunbinlib.api.exception.type.UserNotFoundException;
 import com.eunbinlib.api.repository.user.UserRepository;
 import com.eunbinlib.api.security.model.CustomUserDetails;
 import com.eunbinlib.api.security.utils.JwtUtils;
@@ -12,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.util.StringUtils;
 
@@ -57,7 +57,8 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
         if (StringUtils.hasText(username)) {
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(UserNotFoundException::new);
+                    .orElseThrow(() -> new UsernameNotFoundException(username));
+
 
             // 인증은 토큰 검증시 끝. 인증을 하기 위해서가 아닌 스프링 시큐리티가 수행해주는 권한 처리를 위해
             // 아래와 같이 토큰을 만들어서 Authentication 객체를 강제로 만들고 그걸 세션에 저장!
