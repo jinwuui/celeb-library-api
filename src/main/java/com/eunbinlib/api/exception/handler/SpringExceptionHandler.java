@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.persistence.EntityExistsException;
 import java.util.HashMap;
 
 @ControllerAdvice
@@ -29,5 +30,17 @@ public class SpringExceptionHandler {
         }
 
         return response;
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ErrorResponse entityExistsHandler(EntityExistsException e) {
+
+        return ErrorResponse.builder()
+                .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                .message(e.getMessage())
+                .validation(new HashMap<>())
+                .build();
     }
 }

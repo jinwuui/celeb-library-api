@@ -1,10 +1,10 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.domain.entity.Post;
+import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.repository.PostRepository;
+import com.eunbinlib.api.repository.post.PostRepository;
 import com.eunbinlib.api.util.MultiValueMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -153,7 +153,7 @@ class PostControllerTest {
         postRepository.saveAll(requestPosts);
 
         PostSearch postSearch = PostSearch.builder()
-                .page(1)
+                .after(null)
                 .size(5)
                 .build();
 
@@ -184,7 +184,7 @@ class PostControllerTest {
         postRepository.saveAll(requestPosts);
 
         PostSearch postSearch = PostSearch.builder()
-                .page(0)
+                .after(null)
                 .size(10000)
                 .build();
 

@@ -1,4 +1,4 @@
-package com.eunbinlib.api.domain.entity;
+package com.eunbinlib.api.domain.entity.post;
 
 import com.eunbinlib.api.domain.request.PostEdit;
 import lombok.*;

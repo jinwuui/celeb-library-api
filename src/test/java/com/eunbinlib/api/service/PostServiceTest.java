@@ -1,12 +1,16 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.entity.Post;
+import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
+import com.eunbinlib.api.domain.response.OnlyId;
+import com.eunbinlib.api.domain.response.PaginationMeta;
+import com.eunbinlib.api.domain.response.PaginationRes;
 import com.eunbinlib.api.domain.response.PostResponse;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
-import com.eunbinlib.api.repository.PostRepository;
+import com.eunbinlib.api.repository.post.PostRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +23,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 @SpringBootTest
 class PostServiceTest {
 
@@ -43,11 +48,11 @@ class PostServiceTest {
                 .build();
 
         // when
-        Long postId = postService.write(postWrite);
+        OnlyId onlyId = postService.write(postWrite);
 
         // then
         assertEquals(1L, postRepository.count());
-        Post findPost = postRepository.findById(postId).orElseThrow(IllegalArgumentException::new);
+        Post findPost = postRepository.findById(onlyId.getId()).orElseThrow(IllegalArgumentException::new);
         assertEquals("제목", findPost.getTitle());
         assertEquals("내용", findPost.getContent());
     }
@@ -89,7 +94,7 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("글 1페이지 조회")
+    @DisplayName("글 페이지네이션 조회 - after null이면 처음부터 조회")
     void readMany() {
         // given
         List<Post> requestPosts = IntStream.range(0, 30)
@@ -101,24 +106,30 @@ class PostServiceTest {
         postRepository.saveAll(requestPosts);
 
         PostSearch postSearch = PostSearch.builder()
-                .page(2)
+                .after(null)
                 .size(5)
                 .build();
 
         // when
-        List<PostResponse> posts = postService.readMany(postSearch);
+        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+
+        PaginationMeta meta = result.getMeta();
+        List<PostResponse> data = result.getData();
 
         // then
-        assertEquals(5L, posts.size());
-        assertEquals("제목24", posts.get(0).getTitle());
-        assertEquals("내용24", posts.get(0).getContent());
+        assertEquals(5, meta.getSize());
+        assertEquals(true, meta.getHasMore());
+        assertEquals("제목29", data.get(0).getTitle());
+        assertEquals("내용29", data.get(0).getContent());
+        assertEquals("제목25", data.get(data.size() - 1).getTitle());
+        assertEquals("내용25", data.get(data.size() - 1).getContent());
     }
 
     @Test
-    @DisplayName("글 1페이지 조회 - 기본값(page, size) 사용")
+    @DisplayName("글 페이지네이션 조회 - 기본값으로 조회")
     void readManyDefaultValue() {
         // given
-        List<Post> requestPosts = IntStream.range(0, 20)
+        List<Post> requestPosts = IntStream.range(0, 30)
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
@@ -130,18 +141,62 @@ class PostServiceTest {
                 .build();
 
         // when
-        List<PostResponse> posts = postService.readMany(postSearch);
+        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+
+        PaginationMeta meta = result.getMeta();
+        List<PostResponse> data = result.getData();
 
         // then
-        assertEquals(10L, posts.size());
-        assertEquals("제목19", posts.get(0).getTitle());
+        assertEquals(20, meta.getSize());
+        assertEquals(true, meta.getHasMore());
+        assertEquals("제목29", data.get(0).getTitle());
+        assertEquals("내용29", data.get(0).getContent());
+        assertEquals("제목10", data.get(data.size() - 1).getTitle());
+        assertEquals("내용10", data.get(data.size() - 1).getContent());
     }
 
     @Test
-    @DisplayName("글 페이지 조회 - page <= 0 이면 1페이지 반환")
-    void readManyPageLessEqual0() {
+    @DisplayName("글 페이지네이션 조회 - after 이후부터 조회")
+    void readManyAfter() {
         // given
-        List<Post> requestPosts = IntStream.range(0, 20)
+        List<Post> requestPosts = IntStream.range(0, 30)
+                .mapToObj(i -> Post.builder()
+                        .title("제목" + i)
+                        .content("내용" + i)
+                        .build())
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts);
+
+        List<Post> posts = postRepository.findAll();
+        Post title15 = posts.stream()
+                .filter(post -> post.getTitle().equals("제목15"))
+                .findFirst().orElseThrow();
+
+        PostSearch postSearch = PostSearch.builder()
+                .after(title15.getId())
+                .size(10)
+                .build();
+
+        // when
+        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+
+        PaginationMeta meta = result.getMeta();
+        List<PostResponse> data = result.getData();
+
+        // then
+        assertEquals(10, meta.getSize());
+        assertEquals(true, meta.getHasMore());
+        assertEquals("제목14", data.get(0).getTitle());
+        assertEquals("내용14", data.get(0).getContent());
+        assertEquals("제목5", data.get(data.size() - 1).getTitle());
+        assertEquals("내용5", data.get(data.size() - 1).getContent());
+    }
+
+    @Test
+    @DisplayName("글 페이지네이션 조회 - 더 이상 조회 불가능 (남아있는 개수가 요청 개수보다 적을 때)")
+    void readManyNoMore() {
+        // given
+        List<Post> requestPosts = IntStream.range(0, 10)
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
@@ -150,15 +205,53 @@ class PostServiceTest {
         postRepository.saveAll(requestPosts);
 
         PostSearch postSearch = PostSearch.builder()
-                .page(0)
+                .size(20)
                 .build();
 
         // when
-        List<PostResponse> posts = postService.readMany(postSearch);
+        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+
+        PaginationMeta meta = result.getMeta();
+        List<PostResponse> data = result.getData();
 
         // then
-        assertEquals(10L, posts.size());
-        assertEquals("제목19", posts.get(0).getTitle());
+        assertEquals(10, meta.getSize());
+        assertEquals(false, meta.getHasMore());
+        assertEquals("제목9", data.get(0).getTitle());
+        assertEquals("내용9", data.get(0).getContent());
+        assertEquals("제목0", data.get(data.size() - 1).getTitle());
+        assertEquals("내용0", data.get(data.size() - 1).getContent());
+    }
+
+    @Test
+    @DisplayName("글 페이지네이션 조회 - 더 이상 조회 불가능 (남아있는 개수 == 요청 개수)")
+    void readManyNoMoreEdgeCase() {
+        // given
+        List<Post> requestPosts = IntStream.range(0, 10)
+                .mapToObj(i -> Post.builder()
+                        .title("제목" + i)
+                        .content("내용" + i)
+                        .build())
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts);
+
+        PostSearch postSearch = PostSearch.builder()
+                .size(10)
+                .build();
+
+        // when
+        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+
+        PaginationMeta meta = result.getMeta();
+        List<PostResponse> data = result.getData();
+
+        // then
+        assertEquals(10, meta.getSize());
+        assertEquals(false, meta.getHasMore());
+        assertEquals("제목9", data.get(0).getTitle());
+        assertEquals("내용9", data.get(0).getContent());
+        assertEquals("제목0", data.get(data.size() - 1).getTitle());
+        assertEquals("내용0", data.get(data.size() - 1).getContent());
     }
 
     @Test

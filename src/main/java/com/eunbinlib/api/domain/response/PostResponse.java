@@ -1,6 +1,6 @@
 package com.eunbinlib.api.domain.response;
 
-import com.eunbinlib.api.domain.entity.Post;
+import com.eunbinlib.api.domain.entity.post.Post;
 import lombok.Builder;
 import lombok.Getter;
 

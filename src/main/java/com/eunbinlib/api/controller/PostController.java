@@ -3,6 +3,8 @@ package com.eunbinlib.api.controller;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
+import com.eunbinlib.api.domain.response.OnlyId;
+import com.eunbinlib.api.domain.response.PaginationRes;
 import com.eunbinlib.api.domain.response.PostResponse;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -10,38 +12,36 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/posts")
-    public Map<String, Long> write(@RequestBody @Valid PostWrite postWrite) {
-        Long postId = postService.write(postWrite);
-        return Map.of("postId", postId);
+    @PostMapping()
+    public OnlyId write(@RequestBody @Valid PostWrite postWrite) {
+        return postService.write(postWrite);
     }
 
-    @GetMapping("/posts/{postId}")
+    @GetMapping("/{postId}")
     public PostResponse read(@PathVariable Long postId) {
         return postService.read(postId);
     }
 
-    @GetMapping("/posts")
-    public List<PostResponse> readMany(@ModelAttribute PostSearch postSearch) {
+    @GetMapping()
+    public PaginationRes<PostResponse> readMany(@ModelAttribute PostSearch postSearch) {
         return postService.readMany(postSearch);
     }
 
-    @PatchMapping("/posts/{postId}")
+    @PatchMapping("/{postId}")
     public void edit(@PathVariable Long postId, @RequestBody @Valid PostEdit postEdit) {
         postService.edit(postId, postEdit);
     }
 
-    @DeleteMapping("/posts/{postId}")
+    @DeleteMapping("/{postId}")
     public void delete(@PathVariable Long postId) {
         postService.delete(postId);
     }
