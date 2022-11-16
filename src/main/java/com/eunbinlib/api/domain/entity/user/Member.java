@@ -17,9 +17,12 @@ public class Member extends User {
 
     private String nickname;
 
+    private String imageUrl;
+
     @Builder
-    public Member(String username, String password, String nickname) {
+    public Member(String username, String password, String nickname, String imageUrl) {
         super(username, password);
         this.nickname = nickname;
+        this.imageUrl = imageUrl;
     }
 }

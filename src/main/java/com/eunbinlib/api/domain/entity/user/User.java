@@ -30,4 +30,9 @@ public abstract class User {
         this.password = password;
         this.role = RoleType.ROLE_USER;
     }
+
+    @Transient
+    public String getDiscriminatorValue() {
+        return this.getClass().getSimpleName().toLowerCase();
+    }
 }

@@ -5,6 +5,7 @@ import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
 import com.eunbinlib.api.domain.response.OnlyId;
 import com.eunbinlib.api.domain.response.PaginationRes;
+import com.eunbinlib.api.domain.response.PostDetailResponse;
 import com.eunbinlib.api.domain.response.PostResponse;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public PostResponse read(@PathVariable Long postId) {
+    public PostDetailResponse read(@PathVariable Long postId) {
         return postService.read(postId);
     }
 

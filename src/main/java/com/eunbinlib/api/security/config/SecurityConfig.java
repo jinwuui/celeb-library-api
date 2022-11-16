@@ -21,12 +21,15 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.eunbinlib.api.security.filter.LoginAuthenticationFilter.*;
+import static com.eunbinlib.api.security.filter.LoginGuestAuthenticationFilter.*;
+
 @Slf4j
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private static final String[] whiteList = {"/api/login", "/api/login/guest", "/api/users"};
+    private static final String[] whiteList = {LOGIN_FILTER_URL, LOGIN_GUEST_FILTER_URL, "/api/users"};
 
     private final UserRepository userRepository;
 
