@@ -1,4 +1,4 @@
-package com.eunbinlib.api.security.utils;
+package com.eunbinlib.api.auth.utils;
 
 
 import com.eunbinlib.api.security.model.CustomUserDetails;
@@ -15,8 +15,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.eunbinlib.api.security.config.JwtProperties.HEADER_STRING;
-import static com.eunbinlib.api.security.config.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_STRING;
+import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 
 
 @Slf4j

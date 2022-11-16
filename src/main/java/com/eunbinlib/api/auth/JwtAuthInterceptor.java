@@ -1,7 +1,7 @@
-package com.eunbinlib.api.config.auth;
+package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.exception.type.Unauthorized;
-import com.eunbinlib.api.security.utils.JwtUtils;
+import com.eunbinlib.api.auth.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

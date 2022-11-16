@@ -1,5 +1,6 @@
-package com.eunbinlib.api.config.auth;
+package com.eunbinlib.api.auth;
 
+import com.eunbinlib.api.auth.data.UserSession;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;

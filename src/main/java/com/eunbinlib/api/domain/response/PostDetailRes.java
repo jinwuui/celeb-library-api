@@ -5,20 +5,20 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class PostResponse {
+public class PostDetailRes {
 
     private final Long id;
     private final String title;
     private final String content;
 
     @Builder
-    public PostResponse(Long id, String title, String content) {
+    public PostDetailRes(Long id, String title, String content) {
         this.id = id;
         this.title = title;
         this.content = content;
     }
 
-    public PostResponse(Post post) {
+    public PostDetailRes(Post post) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();

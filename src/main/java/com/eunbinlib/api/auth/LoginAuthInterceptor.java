@@ -1,4 +1,4 @@
-package com.eunbinlib.api.config.auth;
+package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.LoginReq;
@@ -6,7 +6,7 @@ import com.eunbinlib.api.domain.response.LoginRes;
 import com.eunbinlib.api.exception.type.InvalidLoginInfoException;
 import com.eunbinlib.api.exception.type.UnsupportedMethodException;
 import com.eunbinlib.api.repository.user.UserRepository;
-import com.eunbinlib.api.security.utils.JwtUtils;
+import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +22,8 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class LoginAuthInterceptor implements HandlerInterceptor {
+
+    public static final String LOGIN_URL = "/api/auth/login";
 
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;

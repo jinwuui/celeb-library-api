@@ -1,4 +1,4 @@
-package com.eunbinlib.api.config.auth;
+package com.eunbinlib.api.auth.data;
 
 import lombok.Builder;
 import lombok.Getter;
