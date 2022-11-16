@@ -4,10 +4,7 @@ import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.domain.response.OnlyId;
-import com.eunbinlib.api.domain.response.PaginationMeta;
-import com.eunbinlib.api.domain.response.PaginationRes;
-import com.eunbinlib.api.domain.response.PostResponse;
+import com.eunbinlib.api.domain.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
 import com.eunbinlib.api.repository.post.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,12 +33,12 @@ public class PostService {
                 .build();
     }
 
-    public PostResponse read(Long postId) {
+    public PostDetailResponse read(Long postId) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);
 
-        return PostResponse.builder()
+        return PostDetailResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())

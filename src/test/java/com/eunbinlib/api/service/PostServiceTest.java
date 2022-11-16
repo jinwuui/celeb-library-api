@@ -4,10 +4,7 @@ import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.domain.response.OnlyId;
-import com.eunbinlib.api.domain.response.PaginationMeta;
-import com.eunbinlib.api.domain.response.PaginationRes;
-import com.eunbinlib.api.domain.response.PostResponse;
+import com.eunbinlib.api.domain.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
 import com.eunbinlib.api.repository.post.PostRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +66,7 @@ class PostServiceTest {
         Post savedPost = postRepository.save(post);
 
         // when
-        PostResponse findPost = postService.read(savedPost.getId());
+        PostDetailResponse findPost = postService.read(savedPost.getId());
 
         // then
         assertNotNull(findPost);

@@ -48,4 +48,8 @@ public class UserService implements UserDetailsService {
 
         userRepository.save(member);
     }
+
+//    public UserMeRes readMe() {
+//
+//    }
 }

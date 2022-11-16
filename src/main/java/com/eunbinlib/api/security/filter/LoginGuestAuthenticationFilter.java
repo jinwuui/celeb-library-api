@@ -31,7 +31,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class LoginGuestAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
 
-    private static final String LOGIN_GUEST_FILTER_URL = "/api/login/guest";
+    public static final String LOGIN_GUEST_FILTER_URL = "/api/auth/login/guest";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

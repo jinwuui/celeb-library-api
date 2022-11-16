@@ -26,7 +26,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class LoginAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private static final String LOGIN_FILTER_URL = "/api/login";
+    public static final String LOGIN_FILTER_URL = "/api/auth/login";
 
     private final ObjectMapper objectMapper;
     private final AuthenticationManager authenticationManager;
