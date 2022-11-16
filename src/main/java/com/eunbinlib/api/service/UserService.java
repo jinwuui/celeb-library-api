@@ -1,5 +1,6 @@
 package com.eunbinlib.api.service;
 
+import com.eunbinlib.api.domain.entity.user.Guest;
 import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.UserJoin;
@@ -33,7 +34,7 @@ public class UserService implements UserDetailsService {
         return new CustomUserDetails(user);
     }
 
-    public void join(UserJoin userJoin) {
+    public void joinMember(UserJoin userJoin) {
 
         boolean isExist = userRepository.existsByUsername(userJoin.getUsername());
 
@@ -47,6 +48,22 @@ public class UserService implements UserDetailsService {
                 .build();
 
         userRepository.save(member);
+    }
+
+    public void joinGuest(UserJoin userJoin) {
+
+        boolean isExist = userRepository.existsByUsername(userJoin.getUsername());
+
+        if (isExist) {
+            throw new EntityExistsException("이미 존재하는 게스트입니다.");
+        }
+
+        Guest guest = Guest.builder()
+                .username(userJoin.getUsername())
+                .password(passwordEncoder.encode(userJoin.getPassword()))
+                .build();
+
+        userRepository.save(guest);
     }
 
 //    public UserMeRes readMe() {

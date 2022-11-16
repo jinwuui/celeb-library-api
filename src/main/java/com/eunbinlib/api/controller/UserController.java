@@ -36,12 +36,15 @@ public class UserController {
                 .build();
     }
 
-
-    @PostMapping()
-    public void join(@RequestBody @Valid UserJoin userJoin) {
-        userService.join(userJoin);
+    @PostMapping("/member")
+    public void joinMember(@RequestBody @Valid UserJoin userJoin) {
+        userService.joinMember(userJoin);
     }
 
+    @PostMapping("/guest")
+    public void joinGuest(@RequestBody @Valid UserJoin userJoin) {
+        userService.joinGuest(userJoin);
+    }
 
     private String getImageUrl(User user) {
         if (Objects.equals(user.getClass(), Member.class)) {
@@ -52,6 +55,5 @@ public class UserController {
             return "default_profile";
         }
     }
-
 
 }
