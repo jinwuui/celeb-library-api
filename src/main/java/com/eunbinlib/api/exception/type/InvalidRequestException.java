@@ -6,7 +6,7 @@ package com.eunbinlib.api.exception.type;
  */
 public class InvalidRequestException extends EunbinlibException {
 
-    private static final String MESSAGE = "잘못된 요청입니다.";
+    private static final String MESSAGE = "";
 
     public InvalidRequestException() {
         super(MESSAGE);

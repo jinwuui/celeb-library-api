@@ -3,7 +3,6 @@ package com.eunbinlib.api.security.utils;
 
 import com.eunbinlib.api.security.model.CustomUserDetails;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.eunbinlib.api.security.config.JwtProperties.HEADER_STRING;
@@ -61,18 +61,48 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String extractToken(HttpServletRequest request) {
-        String header = request.getHeader(HEADER_STRING);
-        if (header == null || !header.startsWith(TOKEN_PREFIX)) {
-            return null;
-        }
+    public String createAccessToken(String username) {
 
-        return header.replace(TOKEN_PREFIX, "");
+        final Date now = new Date();
+        final Date expiration = new Date(now.getTime() + accessTokenExpirationTime);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setExpiration(expiration)
+                .setIssuedAt(now)
+                .setId(UUID.randomUUID().toString())
+                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
+                .compact();
     }
 
-    public Jws<Claims> decodeToken(String token) {
+    public String createRefreshToken(String username) {
+
+        final Date now = new Date();
+        final Date expiration = new Date(now.getTime() + refreshTokenExpirationTime);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setExpiration(expiration)
+                .setIssuedAt(now)
+                .setId(UUID.randomUUID().toString())
+                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
+                .compact();
+    }
+
+    public Optional<String> extractToken(HttpServletRequest request) {
+        String header = request.getHeader(HEADER_STRING);
+
+        if (header == null || !header.startsWith(TOKEN_PREFIX)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(header.replace(TOKEN_PREFIX, ""));
+    }
+
+    public Claims verifyToken(String token) {
         return Jwts.parser()
                 .setSigningKey(secretKey.getBytes())
-                .parseClaimsJws(token);
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

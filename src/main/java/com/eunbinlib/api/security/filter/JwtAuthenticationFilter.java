@@ -5,7 +5,6 @@ import com.eunbinlib.api.repository.user.UserRepository;
 import com.eunbinlib.api.security.model.CustomUserDetails;
 import com.eunbinlib.api.security.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,7 +36,7 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 
         // 토큰 추출
-        String token = jwtUtils.extractToken(request);
+        String token = jwtUtils.extractToken(request).get();
 
         if (!StringUtils.hasText(token)) {
             chain.doFilter(request, response);
@@ -45,7 +44,7 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
         }
 
         // 토큰 검증
-        Jws<Claims> jwt = jwtUtils.decodeToken(token);
+        Claims jwt = jwtUtils.verifyToken(token);
 
         if (jwt == null) {
             chain.doFilter(request, response);
@@ -53,7 +52,7 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
         }
 
 
-        String username = jwt.getBody().getSubject();
+        String username = jwt.getSubject();
 
         if (StringUtils.hasText(username)) {
             User user = userRepository.findByUsername(username)
