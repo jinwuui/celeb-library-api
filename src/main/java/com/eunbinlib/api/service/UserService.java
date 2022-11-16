@@ -4,11 +4,10 @@ import com.eunbinlib.api.domain.entity.user.Guest;
 import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.UserJoin;
+import com.eunbinlib.api.exception.type.UserNotFoundException;
 import com.eunbinlib.api.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
@@ -20,11 +19,9 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final PasswordEncoder passwordEncoder;
-
     public User readMeByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     public void joinMember(UserJoin userJoin) {
@@ -37,7 +34,7 @@ public class UserService {
 
         Member member = Member.builder()
                 .username(userJoin.getUsername())
-                .password(passwordEncoder.encode(userJoin.getPassword())) // TODO: BScrypt 인코딩 필요
+                .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
                 .build();
 
         userRepository.save(member);
@@ -53,7 +50,7 @@ public class UserService {
 
         Guest guest = Guest.builder()
                 .username(userJoin.getUsername())
-                .password(passwordEncoder.encode(userJoin.getPassword()))
+                .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
                 .build();
 
         userRepository.save(guest);

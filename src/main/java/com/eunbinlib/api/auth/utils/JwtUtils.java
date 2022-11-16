@@ -1,7 +1,6 @@
 package com.eunbinlib.api.auth.utils;
 
 
-import com.eunbinlib.api.security.model.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -32,34 +31,6 @@ public class JwtUtils {
 
     @Value("${jwt.refresh-token-expiration-time}")
     private Long refreshTokenExpirationTime;
-
-    public String createAccessToken(CustomUserDetails customUserDetails) {
-
-        final Date now = new Date();
-        final Date expiration = new Date(now.getTime() + accessTokenExpirationTime);
-
-        return Jwts.builder()
-                .setSubject(customUserDetails.getUsername())
-                .setExpiration(expiration)
-                .setIssuedAt(now)
-                .setId(UUID.randomUUID().toString())
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
-                .compact();
-    }
-
-    public String createRefreshToken(CustomUserDetails customUserDetails) {
-
-        final Date now = new Date();
-        final Date expiration = new Date(now.getTime() + refreshTokenExpirationTime);
-
-        return Jwts.builder()
-                .setSubject(customUserDetails.getUsername())
-                .setExpiration(expiration)
-                .setIssuedAt(now)
-                .setId(UUID.randomUUID().toString())
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
-                .compact();
-    }
 
     public String createAccessToken(String username) {
 

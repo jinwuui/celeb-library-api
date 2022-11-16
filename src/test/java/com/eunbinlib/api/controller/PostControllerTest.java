@@ -1,5 +1,7 @@
 package com.eunbinlib.api.controller;
 
+import com.eunbinlib.api.auth.data.JwtProperties;
+import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
@@ -37,7 +39,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PostControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
+
+    @Autowired
+    JwtUtils jwtUtils;
+
+    String token;
 
     @Autowired
     private PostRepository postRepository;
@@ -47,6 +54,7 @@ class PostControllerTest {
 
     @BeforeEach
     void clean() {
+        token = JwtProperties.TOKEN_PREFIX + jwtUtils.createAccessToken("testuser");
         postRepository.deleteAll();
     }
 
@@ -61,12 +69,13 @@ class PostControllerTest {
         String json = objectMapper.writeValueAsString(request);
 
         // when
-        mockMvc.perform(post("/posts")
+        mockMvc.perform(post("/api/posts")
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON)
                         .content(json)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.postId").value(1L))
+                .andExpect(jsonPath("$.id").value(1L))
                 .andDo(print());
 
         // then
@@ -86,7 +95,8 @@ class PostControllerTest {
         String json = objectMapper.writeValueAsString(request);
 
         // expected
-        mockMvc.perform(post("/posts")
+        mockMvc.perform(post("/api/posts")
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON)
                         .content(json)
                 )
@@ -108,7 +118,8 @@ class PostControllerTest {
         String json = objectMapper.writeValueAsString(request);
 
         // expected
-        mockMvc.perform(post("/posts")
+        mockMvc.perform(post("/api/posts")
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON)
                         .content(json)
                 )
@@ -131,7 +142,8 @@ class PostControllerTest {
         postRepository.save(post);
 
         // expected
-        mockMvc.perform(get("/posts/{postId}", post.getId())
+        mockMvc.perform(get("/api/posts/{postId}", post.getId())
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(post.getId()))
@@ -160,14 +172,15 @@ class PostControllerTest {
         MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postSearch);
 
         // expected
-        mockMvc.perform(get("/posts")
+        mockMvc.perform(get("/api/posts")
                         .params(params)
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()", is(5)))
-                .andExpect(jsonPath("$[0].id").value(20))
-                .andExpect(jsonPath("$[0].title").value("제목19"))
-                .andExpect(jsonPath("$[0].content").value("내용19"))
+                .andExpect(jsonPath("$..['data'].length()", is(5)))
+                .andExpect(jsonPath("$..['data'][0].id").value(20))
+                .andExpect(jsonPath("$..['data'][0].title").value("제목19"))
+                .andExpect(jsonPath("$..['data'][0].content").value("내용19"))
                 .andDo(print());
     }
 
@@ -191,14 +204,15 @@ class PostControllerTest {
         MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postSearch);
 
         // expected
-        mockMvc.perform(get("/posts")
+        mockMvc.perform(get("/api/posts")
                         .params(params)
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()", is(MAX_SIZE)))
-                .andExpect(jsonPath("$[0].id").value(2000))
-                .andExpect(jsonPath("$[0].title").value("제목1999"))
-                .andExpect(jsonPath("$[0].content").value("내용1999"));
+                .andExpect(jsonPath("$..['data'].length()", is(MAX_SIZE)))
+                .andExpect(jsonPath("$..['data'][0].id").value(2000))
+                .andExpect(jsonPath("$..['data'][0].title").value("제목1999"))
+                .andExpect(jsonPath("$..['data'][0].content").value("내용1999"));
     }
 
     @Test
@@ -217,7 +231,8 @@ class PostControllerTest {
                 .build();
 
         // expected
-        mockMvc.perform(patch("/posts/{postId}", post.getId())
+        mockMvc.perform(patch("/api/posts/{postId}", post.getId())
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -241,7 +256,8 @@ class PostControllerTest {
                 .build();
 
         // expected
-        mockMvc.perform(patch("/posts/{postId}", post.getId())
+        mockMvc.perform(patch("/api/posts/{postId}", post.getId())
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -261,7 +277,8 @@ class PostControllerTest {
         postRepository.save(post);
 
         // expected
-        mockMvc.perform(delete("/posts/{postId}", post.getId())
+        mockMvc.perform(delete("/api/posts/{postId}", post.getId())
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -271,7 +288,8 @@ class PostControllerTest {
     @DisplayName("존재하지 않는 게시글 조회")
     void readPostNotFound() throws Exception {
         // expected
-        mockMvc.perform(get("/posts/{postId}", 1L)
+        mockMvc.perform(get("/api/posts/{postId}", 1L)
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andDo(print());
@@ -287,7 +305,8 @@ class PostControllerTest {
                 .build();
 
         // expected
-        mockMvc.perform(patch("/posts/{postId}", 1L)
+        mockMvc.perform(patch("/api/posts/{postId}", 1L)
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -299,7 +318,8 @@ class PostControllerTest {
     @DisplayName("존재하지 않는 게시글 삭제")
     void deletePostNotFound() throws Exception {
         // expected
-        mockMvc.perform(delete("/posts/{postId}", 1L)
+        mockMvc.perform(delete("/api/posts/{postId}", 1L)
+                        .header(JwtProperties.HEADER_STRING, token)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andDo(print());

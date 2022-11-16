@@ -49,13 +49,16 @@ public class UserController {
     }
 
     private String getImageUrl(User user) {
+        String imageUrl = "default_profile";
+
         if (Objects.equals(user.getClass(), Member.class)) {
             Member member = (Member) user;
 
-            return member.getImageUrl();
-        } else {
-            return "default_profile";
+            if (member.getImageUrl() != null) {
+                imageUrl = member.getImageUrl();
+            }
         }
-    }
 
+        return imageUrl;
+    }
 }
