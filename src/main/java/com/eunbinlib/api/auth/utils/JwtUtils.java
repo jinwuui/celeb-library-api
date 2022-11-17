@@ -23,6 +23,10 @@ import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 @Component
 public class JwtUtils {
 
+    private static final String TOKEN_TYPE = "tokenType";
+    private static final String ACCESS_TOKEN = "accessToken";
+    private static final String REFRESH_TOKEN = "refreshToken";
+
     @Value("${jwt.secret-key}")
     private String secretKey;
 
@@ -43,6 +47,7 @@ public class JwtUtils {
                 .setIssuedAt(now)
                 .setId(UUID.randomUUID().toString())
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
+                .claim(TOKEN_TYPE, ACCESS_TOKEN)
                 .compact();
     }
 
@@ -57,6 +62,7 @@ public class JwtUtils {
                 .setIssuedAt(now)
                 .setId(UUID.randomUUID().toString())
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
+                .claim(TOKEN_TYPE, REFRESH_TOKEN)
                 .compact();
     }
 
@@ -70,8 +76,17 @@ public class JwtUtils {
         return Optional.of(header.replace(TOKEN_PREFIX, ""));
     }
 
-    public Claims verifyToken(String token) {
+    public Claims verifyAccessToken(String token) {
         return Jwts.parser()
+                .require(TOKEN_TYPE, ACCESS_TOKEN)
+                .setSigningKey(secretKey.getBytes())
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public Claims verifyRefreshToken(String token) {
+        return Jwts.parser()
+                .require(TOKEN_TYPE, REFRESH_TOKEN)
                 .setSigningKey(secretKey.getBytes())
                 .parseClaimsJws(token)
                 .getBody();

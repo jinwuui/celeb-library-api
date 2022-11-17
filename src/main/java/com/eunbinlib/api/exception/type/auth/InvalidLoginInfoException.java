@@ -1,5 +1,6 @@
-package com.eunbinlib.api.exception.type;
+package com.eunbinlib.api.exception.type.auth;
 
+import com.eunbinlib.api.exception.type.EunbinlibException;
 import org.springframework.http.HttpStatus;
 
 public class InvalidLoginInfoException extends EunbinlibException {
@@ -12,6 +13,6 @@ public class InvalidLoginInfoException extends EunbinlibException {
 
     @Override
     public int getStatusCode() {
-        return HttpStatus.BAD_REQUEST.value();
+        return HttpStatus.UNAUTHORIZED.value();
     }
 }

@@ -1,5 +1,6 @@
-package com.eunbinlib.api.exception.type;
+package com.eunbinlib.api.exception.type.auth;
 
+import com.eunbinlib.api.exception.type.EunbinlibException;
 import org.springframework.http.HttpStatus;
 
 public class Unauthorized extends EunbinlibException {

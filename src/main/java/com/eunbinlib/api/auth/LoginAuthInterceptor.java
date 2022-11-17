@@ -1,14 +1,15 @@
 package com.eunbinlib.api.auth;
 
+import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.LoginReq;
 import com.eunbinlib.api.domain.response.LoginRes;
-import com.eunbinlib.api.exception.type.InvalidLoginInfoException;
 import com.eunbinlib.api.exception.type.UnsupportedMethodException;
+import com.eunbinlib.api.exception.type.auth.InvalidLoginInfoException;
 import com.eunbinlib.api.repository.user.UserRepository;
-import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -17,10 +18,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.eunbinlib.api.auth.utils.AuthUtils.injectExceptionToRequest;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@Slf4j
 public class LoginAuthInterceptor implements HandlerInterceptor {
 
     public static final String LOGIN_URL = "/api/auth/login";
@@ -33,17 +36,17 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        if (!HttpMethod.POST.matches(request.getMethod())) {
-            throw new UnsupportedMethodException();
-        }
-
         try {
+            if (!HttpMethod.POST.matches(request.getMethod())) {
+                throw new UnsupportedMethodException();
+            }
+
             LoginReq loginReq = objectMapper.readValue(request.getInputStream(), LoginReq.class);
 
 
@@ -62,10 +65,10 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
             response.getWriter().write(body);
 
             return false;
-        } catch (UnsupportedMethodException e) {
-            throw e;
         } catch (Exception e) {
-            throw new InvalidLoginInfoException();
+            log.error("LoginAuthInterceptor: ", e);
+            injectExceptionToRequest(request, e);
+            return true;
         }
     }
 
