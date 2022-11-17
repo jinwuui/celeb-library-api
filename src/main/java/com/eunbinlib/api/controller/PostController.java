@@ -5,8 +5,8 @@ import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
 import com.eunbinlib.api.domain.response.OnlyId;
 import com.eunbinlib.api.domain.response.PaginationRes;
-import com.eunbinlib.api.domain.response.PostDetailResponse;
-import com.eunbinlib.api.domain.response.PostResponse;
+import com.eunbinlib.api.domain.response.PostDetailRes;
+import com.eunbinlib.api.domain.response.PostRes;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +28,12 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public PostDetailResponse read(@PathVariable Long postId) {
+    public PostDetailRes read(@PathVariable Long postId) {
         return postService.read(postId);
     }
 
     @GetMapping()
-    public PaginationRes<PostResponse> readMany(@ModelAttribute PostSearch postSearch) {
+    public PaginationRes<PostRes> readMany(@ModelAttribute PostSearch postSearch) {
         return postService.readMany(postSearch);
     }
 

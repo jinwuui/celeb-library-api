@@ -1,14 +1,13 @@
 package com.eunbinlib.api.controller;
 
+import com.eunbinlib.api.auth.data.UserSession;
 import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.UserJoin;
 import com.eunbinlib.api.domain.response.UserMeRes;
-import com.eunbinlib.api.security.model.CustomUserDetails;
 import com.eunbinlib.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -20,11 +19,14 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserController {
 
+    public static final String JOIN_MEMBER_URL = "/api/users/member";
+    public static final String JOIN_GUEST_URL ="/api/users/guest";
+
     private final UserService userService;
 
     @GetMapping("/me")
-    public UserMeRes readMe(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        User user = customUserDetails.getUser();
+    public UserMeRes readMe(UserSession userSession) {
+        User user = userService.readMeByUsername(userSession.getUsername());
 
         String imageUrl = getImageUrl(user);
 
@@ -36,22 +38,27 @@ public class UserController {
                 .build();
     }
 
-
-    @PostMapping()
-    public void join(@RequestBody @Valid UserJoin userJoin) {
-        userService.join(userJoin);
+    @PostMapping("/member")
+    public void joinMember(@RequestBody @Valid UserJoin userJoin) {
+        userService.joinMember(userJoin);
     }
 
+    @PostMapping("/guest")
+    public void joinGuest(@RequestBody @Valid UserJoin userJoin) {
+        userService.joinGuest(userJoin);
+    }
 
     private String getImageUrl(User user) {
+        String imageUrl = "default_profile";
+
         if (Objects.equals(user.getClass(), Member.class)) {
             Member member = (Member) user;
 
-            return member.getImageUrl();
-        } else {
-            return "default_profile";
+            if (member.getImageUrl() != null) {
+                imageUrl = member.getImageUrl();
+            }
         }
+
+        return imageUrl;
     }
-
-
 }

@@ -1,5 +1,7 @@
 package com.eunbinlib.api.exception.type;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * status -> 404
  */
@@ -13,7 +15,7 @@ public class PostNotFoundException extends EunbinlibException {
 
     @Override
     public int getStatusCode() {
-        return 404;
+        return HttpStatus.NOT_FOUND.value();
     }
 
 }

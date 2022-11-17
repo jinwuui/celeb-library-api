@@ -1,9 +1,7 @@
-package com.eunbinlib.api.security.utils;
+package com.eunbinlib.api.auth.utils;
 
 
-import com.eunbinlib.api.security.model.CustomUserDetails;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -13,16 +11,21 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
-import static com.eunbinlib.api.security.config.JwtProperties.HEADER_STRING;
-import static com.eunbinlib.api.security.config.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_STRING;
+import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtUtils {
+
+    private static final String TOKEN_TYPE = "tokenType";
+    private static final String ACCESS_TOKEN = "accessToken";
+    private static final String REFRESH_TOKEN = "refreshToken";
 
     @Value("${jwt.secret-key}")
     private String secretKey;
@@ -33,46 +36,59 @@ public class JwtUtils {
     @Value("${jwt.refresh-token-expiration-time}")
     private Long refreshTokenExpirationTime;
 
-    public String createAccessToken(CustomUserDetails customUserDetails) {
+    public String createAccessToken(String username) {
 
         final Date now = new Date();
         final Date expiration = new Date(now.getTime() + accessTokenExpirationTime);
 
         return Jwts.builder()
-                .setSubject(customUserDetails.getUsername())
+                .setSubject(username)
                 .setExpiration(expiration)
                 .setIssuedAt(now)
                 .setId(UUID.randomUUID().toString())
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
+                .claim(TOKEN_TYPE, ACCESS_TOKEN)
                 .compact();
     }
 
-    public String createRefreshToken(CustomUserDetails customUserDetails) {
+    public String createRefreshToken(String username) {
 
         final Date now = new Date();
         final Date expiration = new Date(now.getTime() + refreshTokenExpirationTime);
 
         return Jwts.builder()
-                .setSubject(customUserDetails.getUsername())
+                .setSubject(username)
                 .setExpiration(expiration)
                 .setIssuedAt(now)
                 .setId(UUID.randomUUID().toString())
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
+                .claim(TOKEN_TYPE, REFRESH_TOKEN)
                 .compact();
     }
 
-    public String extractToken(HttpServletRequest request) {
+    public Optional<String> extractToken(HttpServletRequest request) {
         String header = request.getHeader(HEADER_STRING);
+
         if (header == null || !header.startsWith(TOKEN_PREFIX)) {
-            return null;
+            return Optional.empty();
         }
 
-        return header.replace(TOKEN_PREFIX, "");
+        return Optional.of(header.replace(TOKEN_PREFIX, ""));
     }
 
-    public Jws<Claims> decodeToken(String token) {
+    public Claims verifyAccessToken(String token) {
         return Jwts.parser()
+                .require(TOKEN_TYPE, ACCESS_TOKEN)
                 .setSigningKey(secretKey.getBytes())
-                .parseClaimsJws(token);
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public Claims verifyRefreshToken(String token) {
+        return Jwts.parser()
+                .require(TOKEN_TYPE, REFRESH_TOKEN)
+                .setSigningKey(secretKey.getBytes())
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

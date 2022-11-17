@@ -66,7 +66,7 @@ class PostServiceTest {
         Post savedPost = postRepository.save(post);
 
         // when
-        PostDetailResponse findPost = postService.read(savedPost.getId());
+        PostDetailRes findPost = postService.read(savedPost.getId());
 
         // then
         assertNotNull(findPost);
@@ -108,10 +108,10 @@ class PostServiceTest {
                 .build();
 
         // when
-        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+        PaginationRes<PostRes> result = postService.readMany(postSearch);
 
         PaginationMeta meta = result.getMeta();
-        List<PostResponse> data = result.getData();
+        List<PostRes> data = result.getData();
 
         // then
         assertEquals(5, meta.getSize());
@@ -138,10 +138,10 @@ class PostServiceTest {
                 .build();
 
         // when
-        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+        PaginationRes<PostRes> result = postService.readMany(postSearch);
 
         PaginationMeta meta = result.getMeta();
-        List<PostResponse> data = result.getData();
+        List<PostRes> data = result.getData();
 
         // then
         assertEquals(20, meta.getSize());
@@ -175,10 +175,10 @@ class PostServiceTest {
                 .build();
 
         // when
-        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+        PaginationRes<PostRes> result = postService.readMany(postSearch);
 
         PaginationMeta meta = result.getMeta();
-        List<PostResponse> data = result.getData();
+        List<PostRes> data = result.getData();
 
         // then
         assertEquals(10, meta.getSize());
@@ -206,10 +206,10 @@ class PostServiceTest {
                 .build();
 
         // when
-        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+        PaginationRes<PostRes> result = postService.readMany(postSearch);
 
         PaginationMeta meta = result.getMeta();
-        List<PostResponse> data = result.getData();
+        List<PostRes> data = result.getData();
 
         // then
         assertEquals(10, meta.getSize());
@@ -237,10 +237,10 @@ class PostServiceTest {
                 .build();
 
         // when
-        PaginationRes<PostResponse> result = postService.readMany(postSearch);
+        PaginationRes<PostRes> result = postService.readMany(postSearch);
 
         PaginationMeta meta = result.getMeta();
-        List<PostResponse> data = result.getData();
+        List<PostRes> data = result.getData();
 
         // then
         assertEquals(10, meta.getSize());

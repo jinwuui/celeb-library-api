@@ -1,4 +1,4 @@
-package com.eunbinlib.api.security.config;
+package com.eunbinlib.api.auth.data;
 
 public interface JwtProperties {
 

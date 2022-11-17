@@ -22,13 +22,9 @@ public abstract class User {
 
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    private RoleType role;
-
     protected User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.role = RoleType.ROLE_USER;
     }
 
     @Transient

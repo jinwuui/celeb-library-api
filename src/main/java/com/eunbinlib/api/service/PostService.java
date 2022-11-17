@@ -33,21 +33,21 @@ public class PostService {
                 .build();
     }
 
-    public PostDetailResponse read(Long postId) {
+    public PostDetailRes read(Long postId) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);
 
-        return PostDetailResponse.builder()
+        return PostDetailRes.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .build();
     }
 
-    public PaginationRes<PostResponse> readMany(PostSearch postSearch) {
-        List<PostResponse> data = postRepository.getList(postSearch).stream()
-                .map(PostResponse::new)
+    public PaginationRes<PostRes> readMany(PostSearch postSearch) {
+        List<PostRes> data = postRepository.getList(postSearch).stream()
+                .map(PostRes::new)
                 .collect(Collectors.toList());
 
         PaginationMeta meta = PaginationMeta.builder()
@@ -55,7 +55,7 @@ public class PostService {
                 .hasMore(isHasMore(data))
                 .build();
 
-        return PaginationRes.<PostResponse>builder()
+        return PaginationRes.<PostRes>builder()
                 .meta(meta)
                 .data(data)
                 .build();
@@ -76,7 +76,7 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    private boolean isHasMore(List<PostResponse> data) {
+    private boolean isHasMore(List<PostRes> data) {
         return !data.isEmpty() && postRepository.existsNext(data.get(data.size() - 1).getId());
     }
 }

@@ -1,12 +1,14 @@
 package com.eunbinlib.api.exception.type;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * @NotBlank 등의 어노테이션 필드 검증 방식으로 처리할 수 없는
  * status -> 400
  */
 public class InvalidRequestException extends EunbinlibException {
 
-    private static final String MESSAGE = "잘못된 요청입니다.";
+    private static final String MESSAGE = "";
 
     public InvalidRequestException() {
         super(MESSAGE);
@@ -19,7 +21,7 @@ public class InvalidRequestException extends EunbinlibException {
 
     @Override
     public int getStatusCode() {
-        return 400;
+        return HttpStatus.BAD_REQUEST.value();
     }
 
 }
