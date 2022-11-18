@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.eunbinlib.api.auth.JwtRefreshInterceptor.TOKEN_REFRESH_URL;
 import static com.eunbinlib.api.auth.LoginAuthInterceptor.LOGIN_URL;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -36,15 +37,19 @@ public class AuthTest {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     String accessToken;
     String refreshToken;
+
     String username = "testUsername";
     String password = "testPassword";
     String nickname = "testNickname";
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @BeforeAll()
     void beforeAll() {
@@ -91,8 +96,6 @@ public class AuthTest {
         String json = objectMapper.writeValueAsString(loginReq);
 
         // expected
-//        Assertions.assertThrows(InvalidLoginInfoException.class,
-//                () -> );
         mockMvc.perform(post(LOGIN_URL)
                         .contentType(APPLICATION_JSON)
                         .accept(APPLICATION_JSON)
@@ -105,7 +108,6 @@ public class AuthTest {
     @Test
     @DisplayName("로그인이 실패하는 경우 - 잘못된 HTTP METHOD")
     void loginFailTestWrongHttpMethod() throws Exception {
-        log.info(">>> 로그인 실패");
 
         // given
         LoginReq loginReq = LoginReq.builder()
@@ -126,20 +128,25 @@ public class AuthTest {
     @Test
     @DisplayName("엑세스 토큰을 리프레시 하는 경우")
     void refreshAccessTokenTest() throws Exception {
-        // given
-        LoginReq loginReq = LoginReq.builder()
-                .username(username)
-                .password("invalid" + password)
-                .build();
-        String json = objectMapper.writeValueAsString(loginReq);
-
         // expected
-        mockMvc.perform(post(LOGIN_URL)
+        mockMvc.perform(post(TOKEN_REFRESH_URL)
+                        .header(JwtProperties.HEADER_STRING, refreshToken)
                         .contentType(APPLICATION_JSON)
-                        .accept(APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(HttpStatus.UNAUTHORIZED.value()))
+                        .accept(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").exists())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("잘못된 리프레시 토큰으로 엑세스 토큰을 리프레시 하는 경우")
+    void refreshAccessTokenByInvalidRefreshTokenTest() throws Exception {
+        // expected
+        mockMvc.perform(post(TOKEN_REFRESH_URL)
+                        .header(JwtProperties.HEADER_STRING, refreshToken + "invalid")
+                        .contentType(APPLICATION_JSON)
+                        .accept(APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
                 .andDo(print());
     }
 }
