@@ -16,6 +16,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.eunbinlib.api.controller.UserController.JOIN_GUEST_URL;
+import static com.eunbinlib.api.controller.UserController.JOIN_MEMBER_URL;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -88,7 +90,7 @@ class UserControllerTest {
         String json = objectMapper.writeValueAsString(userJoin);
 
         // when
-        mockMvc.perform(post("/api/users/member")
+        mockMvc.perform(post(JOIN_MEMBER_URL)
                         .contentType(APPLICATION_JSON)
                         .content(json)
                 )
@@ -119,7 +121,7 @@ class UserControllerTest {
         String json = objectMapper.writeValueAsString(userJoin);
 
         // when
-        mockMvc.perform(post("/api/users/guest")
+        mockMvc.perform(post(JOIN_GUEST_URL)
                         .contentType(APPLICATION_JSON)
                         .content(json)
                 )

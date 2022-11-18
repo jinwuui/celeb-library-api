@@ -3,7 +3,9 @@ package com.eunbinlib.api.auth;
 import com.eunbinlib.api.domain.response.ErrorResponse;
 import com.eunbinlib.api.exception.type.EunbinlibException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +33,12 @@ public class InterceptorExceptionInterceptor implements HandlerInterceptor {
             EunbinlibException e = (EunbinlibException) attribute;
             setExceptionResponse(response, e);
             return false;
-        } else if (attribute instanceof Exception) {
+        } else if (attribute instanceof JwtException) {
+            JwtException e = (JwtException) attribute;
+            setExceptionResponse(response, e);
+            return false;
+        }
+        else if (attribute instanceof Exception) {
             Exception e = (Exception) attribute;
             setExceptionResponse(response, e);
             return false;
@@ -52,6 +59,22 @@ public class InterceptorExceptionInterceptor implements HandlerInterceptor {
                 .code(String.valueOf(statusCode))
                 .message(e.getMessage())
                 .validation(e.getValidation())
+                .build();
+
+        String body = objectMapper.writeValueAsString(errorResponse);
+
+        response.getWriter().write(body);
+    }
+
+    private void setExceptionResponse(HttpServletResponse response, JwtException e) throws IOException {
+
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(UTF_8.name());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .code(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                .message(e.getMessage())
                 .build();
 
         String body = objectMapper.writeValueAsString(errorResponse);

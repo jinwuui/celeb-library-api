@@ -19,8 +19,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserController {
 
-    public static final String JOIN_MEMBER_URL = "/api/users/member";
-    public static final String JOIN_GUEST_URL ="/api/users/guest";
+    public static final String JOIN_MEMBER_URL = "/api/users/members";
+    public static final String JOIN_GUEST_URL ="/api/users/guests";
 
     private final UserService userService;
 
@@ -38,12 +38,12 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/member")
+    @PostMapping("/members")
     public void joinMember(@RequestBody @Valid UserJoin userJoin) {
         userService.joinMember(userJoin);
     }
 
-    @PostMapping("/guest")
+    @PostMapping("/guests")
     public void joinGuest(@RequestBody @Valid UserJoin userJoin) {
         userService.joinGuest(userJoin);
     }
