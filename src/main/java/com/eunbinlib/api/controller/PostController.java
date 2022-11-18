@@ -10,6 +10,7 @@ import com.eunbinlib.api.domain.response.PostRes;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -23,7 +24,12 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping()
-    public OnlyId write(@RequestBody @Valid PostWrite postWrite) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public OnlyId write(@ModelAttribute @Valid PostWrite postWrite) {
+        log.info("title: {}", postWrite.getTitle());
+        log.info("content: {}", postWrite.getContent());
+        log.info("images: {}", postWrite.getImages().size());
+
         return postService.write(postWrite);
     }
 

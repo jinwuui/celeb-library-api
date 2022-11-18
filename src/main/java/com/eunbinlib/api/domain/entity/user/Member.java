@@ -1,13 +1,13 @@
 package com.eunbinlib.api.domain.entity.user;
 
 
+import com.eunbinlib.api.domain.entity.imagefile.ProfileImageFile;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import javax.persistence.*;
 
 @Entity
 @Getter
@@ -17,12 +17,13 @@ public class Member extends User {
 
     private String nickname;
 
-    private String imageUrl;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "PROFILE_IMAGE_ID")
+    private ProfileImageFile profileImage;
 
     @Builder
-    public Member(String username, String password, String nickname, String imageUrl) {
+    public Member(String username, String password, String nickname) {
         super(username, password);
         this.nickname = nickname;
-        this.imageUrl = imageUrl;
     }
 }

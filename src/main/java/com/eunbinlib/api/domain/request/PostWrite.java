@@ -3,8 +3,10 @@ package com.eunbinlib.api.domain.request;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,14 +18,13 @@ public class PostWrite {
     @NotBlank(message = "내용을 입력해주세요.")
     private final String content;
 
-    // TODO: 사진 데이터 필요 (게시글 등록 시, 박은빈 사진 필수)
-    // NOTE: 사진 데이터 통신은 multipart?
-//     private final List<String> images;
+    private final List<MultipartFile> images;
 
     @Builder
-    public PostWrite(String title, String content) {
+    public PostWrite(String title, String content, List<MultipartFile> images) {
         this.title = title;
         this.content = content;
+        this.images = images;
     }
 
     /**
