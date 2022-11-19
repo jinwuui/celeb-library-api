@@ -1,5 +1,6 @@
 package com.eunbinlib.api.auth;
 
+import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.LoginReq;
@@ -29,11 +30,13 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
 
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
+    private final UserContextRepository userContextRepository;
     private final ObjectMapper objectMapper;
 
-    public LoginAuthInterceptor(JwtUtils jwtUtils, UserRepository userRepository) {
+    public LoginAuthInterceptor(JwtUtils jwtUtils, UserRepository userRepository, UserContextRepository userContextRepository) {
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
+        this.userContextRepository = userContextRepository;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
     }
@@ -63,6 +66,9 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
             response.setCharacterEncoding(UTF_8.name());
 
             objectMapper.writeValue(response.getWriter(), loginRes);
+
+            // save logged-in user // TODO: change to Redis
+            userContextRepository.saveUserInfo(loginRes.getAccessToken(), loginRes.getRefreshToken(), user);
 
             return false;
         } catch (Exception e) {

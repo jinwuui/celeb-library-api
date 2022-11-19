@@ -7,6 +7,8 @@ public interface JwtProperties {
 
     String USERNAME = "username";
 
+    String USER_INFO = "userInfo";
+
     String ACCESS_TOKEN = "accessToken";
     String REFRESH_TOKEN = "refreshToken";
 
