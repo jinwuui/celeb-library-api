@@ -2,6 +2,7 @@ package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.JwtProperties;
 import com.eunbinlib.api.auth.utils.JwtUtils;
+import com.eunbinlib.api.domain.entity.user.Guest;
 import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.UserJoin;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.controller.UserController.JOIN_GUEST_URL;
 import static com.eunbinlib.api.controller.UserController.JOIN_MEMBER_URL;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -38,7 +40,13 @@ class UserControllerTest {
     @Autowired
     JwtUtils jwtUtils;
 
-    String token;
+    Member mockMember;
+
+    String mockMemberToken;
+
+    Guest mockGuest;
+
+    String mockGuestToken;
 
     @Autowired
     private UserRepository userRepository;
@@ -48,31 +56,62 @@ class UserControllerTest {
 
     @BeforeEach
     void clean() {
-        token = JwtProperties.TOKEN_PREFIX + jwtUtils.createAccessToken("member");
+
+        mockMember = Member.builder()
+                .username("mockMember")
+                .nickname("mockMember")
+                .password("mockPassword")
+                .build();
+
+        mockMemberToken = createAccessToken(mockMember.getUserType(), mockMember.getUsername());
+
+
+        mockGuest = Guest.builder()
+                .username("mockGuest")
+                .password("mockPassword")
+                .build();
+
+        mockGuestToken = createAccessToken(mockGuest.getUserType(), mockGuest.getUsername());
+
         userRepository.deleteAll();
+    }
+
+    private String createAccessToken(String userType, String username) {
+        return TOKEN_PREFIX + jwtUtils.createAccessToken(userType, username);
     }
 
 
     @Test
-    @DisplayName("자신의 정보 조회")
-    void readMe() throws Exception {
+    @DisplayName("회원 유저가 자신의 정보 조회하는 경우")
+    void readMeByMember() throws Exception {
         // given
-        Member member = Member.builder()
-                .username("member")
-                .password("password")
-                .nickname("test")
-                .build();
-
-        Member savedMember = userRepository.save(member);
+        Member savedMember = userRepository.save(mockMember);
 
         // expected
         mockMvc.perform(get("/api/users/me")
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(JwtProperties.HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userType").value(savedMember.getDiscriminatorValue()))
+                .andExpect(jsonPath("$.userType").value(savedMember.getUserType()))
                 .andExpect(jsonPath("$.id").value(savedMember.getId()))
                 .andExpect(jsonPath("$.username").value(savedMember.getUsername()))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게스트 유저가 자신의 정보 조회하는 경우")
+    void readMeByGuest() throws Exception {
+        // given
+        Guest savedGuest = userRepository.save(mockGuest);
+
+        // expected
+        mockMvc.perform(get("/api/users/me")
+                        .header(JwtProperties.HEADER_STRING, mockGuestToken)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userType").value(savedGuest.getUserType()))
+                .andExpect(jsonPath("$.id").value(savedGuest.getId()))
+                .andExpect(jsonPath("$.username").value(savedGuest.getUsername()))
                 .andDo(print());
     }
 
@@ -104,7 +143,7 @@ class UserControllerTest {
         );
 
         assertEquals(findUser.getUsername(), username);
-        assertEquals(findUser.getDiscriminatorValue(), "member");
+        assertEquals(findUser.getUserType(), "member");
     }
 
     @Test
@@ -135,6 +174,6 @@ class UserControllerTest {
         );
 
         assertEquals(findUser.getUsername(), username);
-        assertEquals(findUser.getDiscriminatorValue(), "guest");
+        assertEquals(findUser.getUserType(), "guest");
     }
 }
