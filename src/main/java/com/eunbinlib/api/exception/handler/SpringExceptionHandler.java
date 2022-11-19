@@ -22,7 +22,7 @@ public class SpringExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public ErrorResponse invalidRequestHandler(MethodArgumentNotValidException e) {
-        log.info("method argument exceptions");
+
         ErrorResponse response = ErrorResponse.builder()
                 .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                 .message("잘못된 요청입니다.")
@@ -40,7 +40,6 @@ public class SpringExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public ErrorResponse invalidRequestHandler(BindException e) {
-        log.info("bind exception");
 
         ErrorResponse response = ErrorResponse.builder()
                 .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))

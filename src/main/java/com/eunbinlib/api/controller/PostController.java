@@ -1,5 +1,6 @@
 package com.eunbinlib.api.controller;
 
+import com.eunbinlib.api.auth.data.UserSession;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
@@ -7,9 +8,11 @@ import com.eunbinlib.api.domain.response.OnlyId;
 import com.eunbinlib.api.domain.response.PaginationRes;
 import com.eunbinlib.api.domain.response.PostDetailRes;
 import com.eunbinlib.api.domain.response.PostRes;
+import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +28,12 @@ public class PostController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public OnlyId write(@ModelAttribute @Valid PostWrite postWrite) {
+    public OnlyId write(UserSession userSession, @ModelAttribute @Valid PostWrite postWrite) {
+
+        if (StringUtils.equals(userSession.getUserType(), "guest")) {
+            throw new UnauthorizedException();
+        }
+
         return postService.write(postWrite);
     }
 

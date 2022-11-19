@@ -3,7 +3,7 @@ package com.eunbinlib.api.auth;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.response.TokenRefreshRes;
 import com.eunbinlib.api.exception.type.UnsupportedMethodException;
-import com.eunbinlib.api.exception.type.auth.Unauthorized;
+import com.eunbinlib.api.exception.type.auth.UnauthenticatedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+import static com.eunbinlib.api.auth.data.JwtProperties.USER_TYPE;
 import static com.eunbinlib.api.auth.utils.AuthUtils.injectExceptionToRequest;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -44,13 +45,14 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
 
             Optional<String> token = jwtUtils.extractToken(request);
 
-            if (token.isEmpty()) throw new Unauthorized();
+            if (token.isEmpty()) throw new UnauthenticatedException();
 
             Claims jwt = jwtUtils.verifyRefreshToken(token.get());
 
+            String userType = jwt.get(USER_TYPE, String.class);
             String username = jwt.getSubject();
 
-            String body = createAccessJwtString(username);
+            String body = createAccessJwtString(userType, username);
 
             // setting response
             response.setStatus(SC_OK);
@@ -66,8 +68,8 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
         }
     }
 
-    private String createAccessJwtString(String username) throws IOException {
-        String accessToken = jwtUtils.createAccessToken(username);
+    private String createAccessJwtString(String userType, String username) throws IOException {
+        String accessToken = jwtUtils.createAccessToken(userType, username);
 
         TokenRefreshRes tokenRefreshRes = TokenRefreshRes.builder()
                 .accessToken(accessToken)

@@ -1,10 +1,11 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.auth.data.JwtProperties;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.entity.post.PostState;
+import com.eunbinlib.api.domain.entity.user.Guest;
+import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
@@ -30,6 +32,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_STRING;
+import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.domain.request.PostSearch.MAX_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -51,7 +55,13 @@ class PostControllerTest {
     @Autowired
     JwtUtils jwtUtils;
 
-    String token;
+    Member mockMember;
+
+    String mockMemberToken;
+
+    Guest mockGuest;
+
+    String mockGuestToken;
 
     @Autowired
     PostRepository postRepository;
@@ -64,8 +74,28 @@ class PostControllerTest {
 
     @BeforeEach
     void clean() {
-        token = JwtProperties.TOKEN_PREFIX + jwtUtils.createAccessToken("testuser");
+
+        mockMember = Member.builder()
+                .username("mockMember")
+                .nickname("mockMember")
+                .password("mockPassword")
+                .build();
+
+        mockMemberToken = createAccessToken(mockMember.getUserType(), mockMember.getUsername());
+
+
+        mockGuest = Guest.builder()
+                .username("mockGuest")
+                .password("mockPassword")
+                .build();
+
+        mockGuestToken = createAccessToken(mockGuest.getUserType(), mockGuest.getUsername());
+
         postRepository.deleteAll();
+    }
+
+    private String createAccessToken(String userType, String username) {
+        return TOKEN_PREFIX + jwtUtils.createAccessToken(userType, username);
     }
 
     @Test
@@ -81,7 +111,7 @@ class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isCreated())
@@ -124,7 +154,7 @@ class PostControllerTest {
                         .file((MockMultipartFile) images.get(1))
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isCreated())
@@ -157,11 +187,11 @@ class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("400"))
+                .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                 .andExpect(jsonPath("$.validation.title").value("제목을 입력해주세요."))
                 .andDo(print());
@@ -179,13 +209,34 @@ class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("400"))
+                .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                 .andExpect(jsonPath("$.validation.content").value("내용을 입력해주세요."))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("글 등록 실패 - 게스트 유저인 경우")
+    void writeByGuest() throws Exception {
+        // given
+        PostWrite request = PostWrite.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+
+        // expected
+        mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
+                        .param("title", request.getTitle())
+                        .param("content", request.getContent())
+                        .header(HEADER_STRING, mockGuestToken)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(HttpStatus.FORBIDDEN.value()))
                 .andDo(print());
     }
 
@@ -203,7 +254,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(get("/api/posts/{postId}", post.getId())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(post.getId()))
@@ -235,7 +286,7 @@ class PostControllerTest {
         // expected
         mockMvc.perform(get("/api/posts")
                         .params(params)
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..['data'].length()", is(5)))
@@ -268,7 +319,7 @@ class PostControllerTest {
         // expected
         mockMvc.perform(get("/api/posts")
                         .params(params)
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..['data'].length()", is(MAX_SIZE)))
@@ -295,7 +346,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(patch("/api/posts/{postId}", post.getId())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -321,7 +372,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(patch("/api/posts/{postId}", post.getId())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -343,7 +394,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(delete("/api/posts/{postId}", post.getId())
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -354,7 +405,7 @@ class PostControllerTest {
     void readPostNotFound() throws Exception {
         // expected
         mockMvc.perform(get("/api/posts/{postId}", 1L)
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andDo(print());
@@ -371,7 +422,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(patch("/api/posts/{postId}", 1L)
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -384,7 +435,7 @@ class PostControllerTest {
     void deletePostNotFound() throws Exception {
         // expected
         mockMvc.perform(delete("/api/posts/{postId}", 1L)
-                        .header(JwtProperties.HEADER_STRING, token)
+                        .header(HEADER_STRING, mockMemberToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andDo(print());

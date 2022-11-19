@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name="USERS")
+@Table(name = "USERS")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "dtype")
 public abstract class User extends BaseTimeEntity {
@@ -29,7 +29,8 @@ public abstract class User extends BaseTimeEntity {
     }
 
     @Transient
-    public String getDiscriminatorValue() {
+    public String getUserType() {
         return this.getClass().getSimpleName().toLowerCase();
     }
+
 }

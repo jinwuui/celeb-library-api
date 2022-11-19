@@ -31,7 +31,7 @@ public class UserController {
         String imageUrl = getImageUrl(user);
 
         return UserMeRes.builder()
-                .userType(user.getDiscriminatorValue())
+                .userType(user.getUserType())
                 .id(user.getId())
                 .username(user.getUsername())
                 .imageUrl(imageUrl)

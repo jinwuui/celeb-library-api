@@ -32,6 +32,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Slf4j
 public class AuthTest {
 
+    String accessToken;
+    String refreshToken;
+
+    String username = "testUsername";
+    String password = "testPassword";
+    String nickname = "testNickname";
+
     @Autowired
     MockMvc mockMvc;
 
@@ -44,13 +51,6 @@ public class AuthTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    String accessToken;
-    String refreshToken;
-
-    String username = "testUsername";
-    String password = "testPassword";
-    String nickname = "testNickname";
-
     @BeforeAll()
     void beforeAll() {
         Member member = Member.builder()
@@ -60,8 +60,8 @@ public class AuthTest {
                 .build();
 
         userRepository.save(member);
-        accessToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createAccessToken(username);
-        refreshToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createRefreshToken(username);
+        accessToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createAccessToken(member.getUserType(), username);
+        refreshToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createRefreshToken(member.getUserType(), username);
     }
 
     @Test

@@ -14,18 +14,13 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_STRING;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.JwtProperties.*;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtUtils {
-
-    private static final String TOKEN_TYPE = "tokenType";
-    private static final String ACCESS_TOKEN = "accessToken";
-    private static final String REFRESH_TOKEN = "refreshToken";
 
     @Value("${jwt.secret-key}")
     private String secretKey;
@@ -36,34 +31,12 @@ public class JwtUtils {
     @Value("${jwt.refresh-token-expiration-time}")
     private Long refreshTokenExpirationTime;
 
-    public String createAccessToken(String username) {
-
-        final Date now = new Date();
-        final Date expiration = new Date(now.getTime() + accessTokenExpirationTime);
-
-        return Jwts.builder()
-                .setSubject(username)
-                .setExpiration(expiration)
-                .setIssuedAt(now)
-                .setId(UUID.randomUUID().toString())
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
-                .claim(TOKEN_TYPE, ACCESS_TOKEN)
-                .compact();
+    public String createAccessToken(String userType, String username) {
+        return createToken(userType, username, accessTokenExpirationTime, ACCESS_TOKEN);
     }
 
-    public String createRefreshToken(String username) {
-
-        final Date now = new Date();
-        final Date expiration = new Date(now.getTime() + refreshTokenExpirationTime);
-
-        return Jwts.builder()
-                .setSubject(username)
-                .setExpiration(expiration)
-                .setIssuedAt(now)
-                .setId(UUID.randomUUID().toString())
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
-                .claim(TOKEN_TYPE, REFRESH_TOKEN)
-                .compact();
+    public String createRefreshToken(String userType, String username) {
+        return createToken(userType, username, refreshTokenExpirationTime, REFRESH_TOKEN);
     }
 
     public Optional<String> extractToken(HttpServletRequest request) {
@@ -90,5 +63,22 @@ public class JwtUtils {
                 .setSigningKey(secretKey.getBytes())
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    private String createToken(String userType, String username, Long tokenExpirationTime, String tokenType) {
+
+        final Date now = new Date();
+        final Date expiration = new Date(now.getTime() + tokenExpirationTime);
+
+        return Jwts.builder()
+                .setExpiration(expiration)
+                .setIssuedAt(now)
+                .setId(UUID.randomUUID().toString())
+                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
+
+                .setSubject(username)
+                .claim(USER_TYPE, userType)
+                .claim(TOKEN_TYPE, tokenType)
+                .compact();
     }
 }

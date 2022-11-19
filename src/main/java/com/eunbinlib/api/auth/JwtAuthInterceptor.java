@@ -1,7 +1,7 @@
 package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.exception.type.auth.Unauthorized;
+import com.eunbinlib.api.exception.type.auth.UnauthenticatedException;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
+import static com.eunbinlib.api.auth.data.JwtProperties.USERNAME;
+import static com.eunbinlib.api.auth.data.JwtProperties.USER_TYPE;
 import static com.eunbinlib.api.auth.utils.AuthUtils.injectExceptionToRequest;
 
 @Slf4j
@@ -26,13 +28,16 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             Optional<String> token = jwtUtils.extractToken(request);
 
             if (token.isEmpty()) {
-                throw new Unauthorized();
+                throw new UnauthenticatedException();
             }
 
             Claims jwt = jwtUtils.verifyAccessToken(token.get());
 
+            String userType = jwt.get(USER_TYPE, String.class);
             String username = jwt.getSubject();
-            request.setAttribute("username", username);
+
+            request.setAttribute(USER_TYPE, userType);
+            request.setAttribute(USERNAME, username);
         } catch (Exception e) {
             log.error("JwtAuthInterceptor: ", e);
             injectExceptionToRequest(request, e);

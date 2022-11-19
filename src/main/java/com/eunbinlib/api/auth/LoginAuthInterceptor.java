@@ -50,13 +50,13 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
             LoginReq loginReq = objectMapper.readValue(request.getInputStream(), LoginReq.class);
 
 
-            authenticate(
+            User user = authenticate(
                     loginReq.getUsername(),
                     loginReq.getPassword()
             );
 
 
-            String body = createJwtString(loginReq.getUsername());
+            String body = createJwtString(user);
 
             // setting response
             response.setStatus(SC_OK);
@@ -72,7 +72,7 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
         }
     }
 
-    private void authenticate(String username, String password) {
+    private User authenticate(String username, String password) {
         User findUser = userRepository.findByUsername(username)
                 .orElseThrow(InvalidLoginInfoException::new);
 
@@ -80,11 +80,13 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
         if (isInvalidPassword) {
             throw new InvalidLoginInfoException();
         }
+
+        return findUser;
     }
 
-    private String createJwtString(String username) throws IOException {
-        String accessToken = jwtUtils.createAccessToken(username);
-        String refreshToken = jwtUtils.createRefreshToken(username);
+    private String createJwtString(User user) throws IOException {
+        String accessToken = jwtUtils.createAccessToken(user.getUserType(), user.getUsername());
+        String refreshToken = jwtUtils.createRefreshToken(user.getUserType(), user.getUsername());
 
         LoginRes loginRes = LoginRes.builder()
                 .accessToken(accessToken)
