@@ -1,34 +1,44 @@
 package com.eunbinlib.api.service;
 
+import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.entity.post.Post;
+import com.eunbinlib.api.domain.entity.post.PostState;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
 import com.eunbinlib.api.domain.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
 import com.eunbinlib.api.repository.post.PostRepository;
+import com.eunbinlib.api.repository.postimagefile.PostImageFileRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
 @SpringBootTest
 class PostServiceTest {
 
     @Autowired
-    private PostService postService;
+    PostService postService;
 
     @Autowired
-    private PostRepository postRepository;
+    PostRepository postRepository;
+
+    @Autowired
+    PostImageFileRepository postImageFileRepository;
 
     @BeforeEach
     void clean() {
@@ -36,8 +46,8 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("글 작성")
-    void write() {
+    @DisplayName("글 작성 - 이미지 없음")
+    void writeNoImages() {
         // given
         PostWrite postWrite = PostWrite.builder()
                 .title("제목")
@@ -48,11 +58,44 @@ class PostServiceTest {
         OnlyId onlyId = postService.write(postWrite);
 
         // then
-        assertEquals(1L, postRepository.count());
+        assertThat(postRepository.count()).isEqualTo(1L);
+
         Post findPost = postRepository.findById(onlyId.getId()).orElseThrow(IllegalArgumentException::new);
-        assertEquals("제목", findPost.getTitle());
-        assertEquals("내용", findPost.getContent());
+        assertThat(findPost.getTitle()).isEqualTo("제목");
+        assertThat(findPost.getContent()).isEqualTo("내용");
     }
+
+    @Test
+    @DisplayName("글 작성 - 이미지 있음")
+    void writeWithImages() {
+        // given
+        List<MultipartFile> images = List.of(
+                new MockMultipartFile("images", "test1.png", MediaType.IMAGE_PNG_VALUE, "<<png data>>".getBytes()),
+                new MockMultipartFile("images", "test2.jpg", MediaType.IMAGE_PNG_VALUE, "<<jpg data>>".getBytes())
+        );
+
+        PostWrite postWrite = PostWrite.builder()
+                .title("제목")
+                .content("내용")
+                .images(images)
+                .build();
+
+        // when
+        OnlyId onlyId = postService.write(postWrite);
+
+        // then
+        assertThat(postRepository.count()).isEqualTo(1L);
+
+        Post findPost = postRepository.findById(onlyId.getId())
+                .orElseThrow(IllegalArgumentException::new);
+        assertThat(findPost.getTitle()).isEqualTo("제목");
+        assertThat(findPost.getContent()).isEqualTo("내용");
+
+        List<PostImageFile> findImages = postImageFileRepository.findAllByPostId(findPost.getId())
+                .orElseThrow(IllegalArgumentException::new);
+        assertThat(findImages.size()).isEqualTo(2L);
+    }
+
 
     @Test
     @DisplayName("글 1개 조회")
@@ -61,6 +104,7 @@ class PostServiceTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
 
         Post savedPost = postRepository.save(post);
@@ -69,9 +113,9 @@ class PostServiceTest {
         PostDetailRes findPost = postService.read(savedPost.getId());
 
         // then
-        assertNotNull(findPost);
-        assertEquals("제목", findPost.getTitle());
-        assertEquals("내용", findPost.getContent());
+        assertThat(findPost).isNotNull();
+        assertThat(findPost.getTitle()).isEqualTo("제목");
+        assertThat(findPost.getContent()).isEqualTo("내용");
     }
 
     @Test
@@ -81,13 +125,13 @@ class PostServiceTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
         // expected
-        assertThrows(PostNotFoundException.class, () -> {
-            postService.read(post.getId() + 1L);
-        });
+        assertThatThrownBy(() -> postService.read(post.getId() + 1L))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
@@ -98,6 +142,7 @@ class PostServiceTest {
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
+                        .state(PostState.NORMAL)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
@@ -114,12 +159,12 @@ class PostServiceTest {
         List<PostRes> data = result.getData();
 
         // then
-        assertEquals(5, meta.getSize());
-        assertEquals(true, meta.getHasMore());
-        assertEquals("제목29", data.get(0).getTitle());
-        assertEquals("내용29", data.get(0).getContent());
-        assertEquals("제목25", data.get(data.size() - 1).getTitle());
-        assertEquals("내용25", data.get(data.size() - 1).getContent());
+        assertThat(meta.getSize()).isEqualTo(5);
+        assertThat(meta.getHasMore()).isEqualTo(true);
+        assertThat(data.get(0).getTitle()).isEqualTo("제목29");
+        assertThat(data.get(0).getContent()).isEqualTo("내용29");
+        assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목25");
+        assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용25");
     }
 
     @Test
@@ -130,6 +175,7 @@ class PostServiceTest {
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
+                        .state(PostState.NORMAL)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
@@ -144,12 +190,12 @@ class PostServiceTest {
         List<PostRes> data = result.getData();
 
         // then
-        assertEquals(20, meta.getSize());
-        assertEquals(true, meta.getHasMore());
-        assertEquals("제목29", data.get(0).getTitle());
-        assertEquals("내용29", data.get(0).getContent());
-        assertEquals("제목10", data.get(data.size() - 1).getTitle());
-        assertEquals("내용10", data.get(data.size() - 1).getContent());
+        assertThat(meta.getSize()).isEqualTo(20);
+        assertThat(meta.getHasMore()).isEqualTo(true);
+        assertThat(data.get(0).getTitle()).isEqualTo("제목29");
+        assertThat(data.get(0).getContent()).isEqualTo("내용29");
+        assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목10");
+        assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용10");
     }
 
     @Test
@@ -160,6 +206,7 @@ class PostServiceTest {
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
+                        .state(PostState.NORMAL)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
@@ -181,12 +228,12 @@ class PostServiceTest {
         List<PostRes> data = result.getData();
 
         // then
-        assertEquals(10, meta.getSize());
-        assertEquals(true, meta.getHasMore());
-        assertEquals("제목14", data.get(0).getTitle());
-        assertEquals("내용14", data.get(0).getContent());
-        assertEquals("제목5", data.get(data.size() - 1).getTitle());
-        assertEquals("내용5", data.get(data.size() - 1).getContent());
+        assertThat(meta.getSize()).isEqualTo(10);
+        assertThat(meta.getHasMore()).isEqualTo(true);
+        assertThat(data.get(0).getTitle()).isEqualTo("제목14");
+        assertThat(data.get(0).getContent()).isEqualTo("내용14");
+        assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목5");
+        assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용5");
     }
 
     @Test
@@ -197,6 +244,7 @@ class PostServiceTest {
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
+                        .state(PostState.NORMAL)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
@@ -212,12 +260,12 @@ class PostServiceTest {
         List<PostRes> data = result.getData();
 
         // then
-        assertEquals(10, meta.getSize());
-        assertEquals(false, meta.getHasMore());
-        assertEquals("제목9", data.get(0).getTitle());
-        assertEquals("내용9", data.get(0).getContent());
-        assertEquals("제목0", data.get(data.size() - 1).getTitle());
-        assertEquals("내용0", data.get(data.size() - 1).getContent());
+        assertThat(meta.getSize()).isEqualTo(10);
+        assertThat(meta.getHasMore()).isEqualTo(false);
+        assertThat(data.get(0).getTitle()).isEqualTo("제목9");
+        assertThat(data.get(0).getContent()).isEqualTo("내용9");
+        assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목0");
+        assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용0");
     }
 
     @Test
@@ -228,6 +276,7 @@ class PostServiceTest {
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
+                        .state(PostState.NORMAL)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
@@ -243,12 +292,12 @@ class PostServiceTest {
         List<PostRes> data = result.getData();
 
         // then
-        assertEquals(10, meta.getSize());
-        assertEquals(false, meta.getHasMore());
-        assertEquals("제목9", data.get(0).getTitle());
-        assertEquals("내용9", data.get(0).getContent());
-        assertEquals("제목0", data.get(data.size() - 1).getTitle());
-        assertEquals("내용0", data.get(data.size() - 1).getContent());
+        assertThat(meta.getSize()).isEqualTo(10);
+        assertThat(meta.getHasMore()).isEqualTo(false);
+        assertThat(data.get(0).getTitle()).isEqualTo("제목9");
+        assertThat(data.get(0).getContent()).isEqualTo("내용9");
+        assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목0");
+        assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용0");
     }
 
     @Test
@@ -258,6 +307,7 @@ class PostServiceTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
@@ -273,8 +323,8 @@ class PostServiceTest {
         Post editedPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
 
-        assertEquals("수정된제목", editedPost.getTitle());
-        assertEquals("내용", editedPost.getContent());
+        assertThat(editedPost.getTitle()).isEqualTo("수정된제목");
+        assertThat(editedPost.getContent()).isEqualTo("내용");
     }
 
     @Test
@@ -284,6 +334,7 @@ class PostServiceTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
@@ -299,8 +350,8 @@ class PostServiceTest {
         Post editedPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
 
-        assertEquals("제목", editedPost.getTitle());
-        assertEquals("수정된내용", editedPost.getContent());
+        assertThat(editedPost.getTitle()).isEqualTo("제목");
+        assertThat(editedPost.getContent()).isEqualTo("수정된내용");
     }
 
     @Test
@@ -310,6 +361,7 @@ class PostServiceTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
@@ -319,9 +371,8 @@ class PostServiceTest {
                 .build();
 
         // when
-        assertThrows(PostNotFoundException.class, () -> {
-            postService.edit(post.getId() + 1L, postEdit);
-        });
+        assertThatThrownBy(() -> postService.edit(post.getId() + 1L, postEdit))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
@@ -331,6 +382,7 @@ class PostServiceTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
@@ -338,7 +390,7 @@ class PostServiceTest {
         postService.delete(post.getId());
 
         // then
-        assertEquals(0, postRepository.count());
+        assertThat(postRepository.count()).isEqualTo(0);
     }
 
     @Test
@@ -348,13 +400,13 @@ class PostServiceTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
         // expected
-        assertThrows(PostNotFoundException.class, () -> {
-            postService.delete(post.getId() + 1);
-        });
+        assertThatThrownBy(() -> postService.delete(post.getId() + 1))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
 }

@@ -2,11 +2,14 @@ package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.JwtProperties;
 import com.eunbinlib.api.auth.utils.JwtUtils;
+import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.entity.post.Post;
+import com.eunbinlib.api.domain.entity.post.PostState;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
 import com.eunbinlib.api.repository.post.PostRepository;
+import com.eunbinlib.api.repository.postimagefile.PostImageFileRepository;
 import com.eunbinlib.api.util.MultiValueMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,17 +18,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.eunbinlib.api.domain.request.PostSearch.MAX_SIZE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -47,10 +54,13 @@ class PostControllerTest {
     String token;
 
     @Autowired
-    private PostRepository postRepository;
+    PostRepository postRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    PostImageFileRepository postImageFileRepository;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @BeforeEach
     void clean() {
@@ -59,29 +69,80 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 등록")
-    void write() throws Exception {
+    @DisplayName("글 등록 - 이미지 없음")
+    void writeNoImages() throws Exception {
+        // given
         PostWrite request = PostWrite.builder()
                 .title("제목")
                 .content("내용")
                 .build();
 
-        String json = objectMapper.writeValueAsString(request);
-
-        // when
-        mockMvc.perform(post("/api/posts")
+        // when & expected
+        mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
+                        .param("title", request.getTitle())
+                        .param("content", request.getContent())
                         .header(JwtProperties.HEADER_STRING, token)
-                        .contentType(APPLICATION_JSON)
-                        .content(json)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andDo(print());
 
         // then
         Post post = postRepository.findAll().get(0);
-        assertEquals("제목", post.getTitle());
-        assertEquals("내용", post.getContent());
+        assertThat(post.getTitle())
+                .isEqualTo("제목");
+        assertThat(post.getContent())
+                .isEqualTo("내용");
+
+        List<PostImageFile> postImageFile = postImageFileRepository.findAllByPostId(post.getId())
+                .orElseThrow(IllegalArgumentException::new);
+
+        assertThat(postImageFile.size())
+                .isEqualTo(0L);
+    }
+
+
+    @Test
+    @DisplayName("글 등록 - 이미지 첨부")
+    void writeWithImages() throws Exception {
+        // given
+        List<MultipartFile> images = List.of(
+                new MockMultipartFile("images", "test1.png", MediaType.IMAGE_PNG_VALUE, "<<png data>>".getBytes()),
+                new MockMultipartFile("images", "test2.jpg", MediaType.IMAGE_PNG_VALUE, "<<jpg data>>".getBytes())
+        );
+
+        PostWrite request = PostWrite.builder()
+                .title("제목")
+                .content("내용")
+                .images(images)
+                .build();
+
+        // when & expected
+        mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
+                        .file((MockMultipartFile) images.get(0))
+                        .file((MockMultipartFile) images.get(1))
+                        .param("title", request.getTitle())
+                        .param("content", request.getContent())
+                        .header(JwtProperties.HEADER_STRING, token)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andDo(print());
+
+        // then
+        Post post = postRepository.findAll().get(0);
+        assertThat(post.getTitle())
+                .isEqualTo("제목");
+        assertThat(post.getContent())
+                .isEqualTo("내용");
+
+        List<PostImageFile> postImageFile = postImageFileRepository.findAllByPostId(post.getId())
+                .orElseThrow(IllegalArgumentException::new);
+
+        assertThat(postImageFile.size())
+                .isEqualTo(2L);
     }
 
     @Test
@@ -92,13 +153,12 @@ class PostControllerTest {
                 .content("내용")
                 .build();
 
-        String json = objectMapper.writeValueAsString(request);
-
         // expected
-        mockMvc.perform(post("/api/posts")
+        mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
+                        .param("title", request.getTitle())
+                        .param("content", request.getContent())
                         .header(JwtProperties.HEADER_STRING, token)
-                        .contentType(APPLICATION_JSON)
-                        .content(json)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("400"))
@@ -115,13 +175,12 @@ class PostControllerTest {
                 .title("제목")
                 .build();
 
-        String json = objectMapper.writeValueAsString(request);
-
         // expected
-        mockMvc.perform(post("/api/posts")
+        mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
+                        .param("title", request.getTitle())
+                        .param("content", request.getContent())
                         .header(JwtProperties.HEADER_STRING, token)
-                        .contentType(APPLICATION_JSON)
-                        .content(json)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("400"))
@@ -137,6 +196,7 @@ class PostControllerTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
 
         postRepository.save(post);
@@ -160,6 +220,7 @@ class PostControllerTest {
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
+                        .state(PostState.NORMAL)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
@@ -192,6 +253,7 @@ class PostControllerTest {
                 .mapToObj(i -> Post.builder()
                         .title("제목" + i)
                         .content("내용" + i)
+                        .state(PostState.NORMAL)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
@@ -222,6 +284,7 @@ class PostControllerTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
@@ -247,6 +310,7 @@ class PostControllerTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 
@@ -273,6 +337,7 @@ class PostControllerTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
+                .state(PostState.NORMAL)
                 .build();
         postRepository.save(post);
 

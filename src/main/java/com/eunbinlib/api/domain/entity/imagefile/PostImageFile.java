@@ -9,7 +9,6 @@ import lombok.experimental.SuperBuilder;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -18,8 +17,14 @@ import javax.validation.constraints.NotNull;
 public class PostImageFile extends BaseImageFile {
 
     @ManyToOne
-    @NotNull
     @JoinColumn(name = "POST_ID")
     private Post post;
+
+    public void setPost(Post post) {
+        this.post = post;
+        if (!post.getImages().contains(post)) {
+            post.getImages().add(this);
+        }
+    }
 
 }

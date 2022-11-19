@@ -146,7 +146,7 @@ public class AuthTest {
                         .header(JwtProperties.HEADER_STRING, refreshToken + "invalid")
                         .contentType(APPLICATION_JSON)
                         .accept(APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andDo(print());
     }
 }

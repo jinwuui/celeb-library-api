@@ -54,9 +54,10 @@ public class UserController {
         if (Objects.equals(user.getClass(), Member.class)) {
             Member member = (Member) user;
 
-            if (member.getImageUrl() != null) {
-                imageUrl = member.getImageUrl();
-            }
+            // TODO: ProfileImageFile에서 url extract 하기
+//            if (member.getImageUrl() != null) {
+//                imageUrl = member.getImageUrl();
+//            }
         }
 
         return imageUrl;

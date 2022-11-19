@@ -17,23 +17,17 @@ import javax.validation.constraints.NotNull;
 public abstract class BaseImageFile extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @NotNull
-    private String savedFileName;
+    private String savedFilename;
 
     @NotNull
-    private String originalFileName;
+    private String originalFilename;
 
     @NotNull
-    private String extension;
-
-    @NotNull
-    private Integer widthPixel;
-
-    @NotNull
-    private Integer heightPixel;
+    private String contentType;
 
     @NotNull
     private Long byteSize;

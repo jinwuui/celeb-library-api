@@ -26,10 +26,6 @@ public class PostController {
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public OnlyId write(@ModelAttribute @Valid PostWrite postWrite) {
-        log.info("title: {}", postWrite.getTitle());
-        log.info("content: {}", postWrite.getContent());
-        log.info("images: {}", postWrite.getImages().size());
-
         return postService.write(postWrite);
     }
 

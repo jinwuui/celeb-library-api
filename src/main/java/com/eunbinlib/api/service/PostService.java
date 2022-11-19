@@ -2,6 +2,7 @@ package com.eunbinlib.api.service;
 
 import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.entity.post.Post;
+import com.eunbinlib.api.domain.entity.post.PostState;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
@@ -9,6 +10,7 @@ import com.eunbinlib.api.domain.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
 import com.eunbinlib.api.repository.post.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,26 +23,30 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
-    @Value("${file.dir}")
-    private String fileDir;
-
     private final PostRepository postRepository;
 
+    @Value("${images.post.dir}")
+    private String imagesPostDir;
+
     public OnlyId write(PostWrite postWrite) {
-
         try {
-            List<MultipartFile> images = postWrite.getImages();
-            List<PostImageFile> storeFileResult = storeFiles(images);
-
             Post post = Post.builder()
                     .title(postWrite.getTitle())
                     .content(postWrite.getContent())
-                    .images(storeFileResult)
+                    .state(PostState.NORMAL)
                     .build();
+
+            List<MultipartFile> images = postWrite.getImages();
+            List<PostImageFile> storeFileResult = storeFiles(images);
+
+            for (PostImageFile image : storeFileResult) {
+                post.addImage(image);
+            }
 
             Long postId = postRepository.save(post).getId();
 
@@ -100,26 +106,29 @@ public class PostService {
     }
 
     private PostImageFile storeFile(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             return null;
         }
 
-        String fullPath = fileDir + file.getOriginalFilename();
+        if (!(file.getContentType().contains("image") || file.getContentType().contains("video"))) {
+            return null;
+        }
 
-        file.transferTo(new File(fullPath));
+        String originalFilename = file.getOriginalFilename();
+        String storeFilename = createStoreFilename(originalFilename);
 
-        String savedFileName = UUID.randomUUID().toString();
+        file.transferTo(new File(getPullPath(storeFilename)));
 
         return PostImageFile.builder()
-                .savedFileName(savedFileName)
-                .originalFileName(file.getOriginalFilename())
-                .extension(file.getContentType())
+                .savedFilename(storeFilename)
+                .originalFilename(originalFilename)
+                .contentType(file.getContentType())
                 .byteSize(file.getSize())
                 .build();
     }
 
     private List<PostImageFile> storeFiles(List<MultipartFile> files) throws IOException {
-        if (files.isEmpty()) {
+        if (files == null || files.isEmpty()) {
             return List.of();
         }
 
@@ -134,5 +143,20 @@ public class PostService {
         }
 
         return result;
+    }
+
+    private String getPullPath(String filename) {
+        return imagesPostDir + filename;
+    }
+
+    private String createStoreFilename(String originalFilename) {
+        String extension = extractExtension(originalFilename);
+        String uuid = UUID.randomUUID().toString();
+        return uuid + "." + extension;
+    }
+
+    private String extractExtension(String originalFilename) {
+        int index = originalFilename.lastIndexOf(".");
+        return originalFilename.substring(index + 1);
     }
 }
