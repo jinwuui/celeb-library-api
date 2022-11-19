@@ -61,9 +61,7 @@ public class InterceptorExceptionInterceptor implements HandlerInterceptor {
                 .validation(e.getValidation())
                 .build();
 
-        String body = objectMapper.writeValueAsString(errorResponse);
-
-        response.getWriter().write(body);
+        objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 
     private void setExceptionResponse(HttpServletResponse response, JwtException e) throws IOException {
@@ -77,9 +75,7 @@ public class InterceptorExceptionInterceptor implements HandlerInterceptor {
                 .message(e.getMessage())
                 .build();
 
-        String body = objectMapper.writeValueAsString(errorResponse);
-
-        response.getWriter().write(body);
+        objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 
     private void setExceptionResponse(HttpServletResponse response, Exception e) throws IOException {
@@ -93,8 +89,6 @@ public class InterceptorExceptionInterceptor implements HandlerInterceptor {
                 .message("잘못된 요청입니다.")
                 .build();
 
-        String body = objectMapper.writeValueAsString(errorResponse);
-
-        response.getWriter().write(body);
+        objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 }

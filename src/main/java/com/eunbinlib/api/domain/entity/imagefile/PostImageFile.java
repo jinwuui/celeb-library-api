@@ -22,7 +22,7 @@ public class PostImageFile extends BaseImageFile {
 
     public void setPost(Post post) {
         this.post = post;
-        if (!post.getImages().contains(post)) {
+        if (!post.getImages().contains(this)) {
             post.getImages().add(this);
         }
     }

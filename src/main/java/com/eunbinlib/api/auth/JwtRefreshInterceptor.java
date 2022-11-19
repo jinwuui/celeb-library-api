@@ -12,7 +12,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Optional;
 
 import static com.eunbinlib.api.auth.data.JwtProperties.USER_TYPE;
@@ -52,13 +51,13 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
             String userType = jwt.get(USER_TYPE, String.class);
             String username = jwt.getSubject();
 
-            String body = createAccessJwtString(userType, username);
+            TokenRefreshRes tokenRefreshRes = createTokenRefreshRes(userType, username);
 
             // setting response
             response.setStatus(SC_OK);
             response.setContentType(APPLICATION_JSON_VALUE);
             response.setCharacterEncoding(UTF_8.name());
-            response.getWriter().write(body);
+            objectMapper.writeValue(response.getWriter(), tokenRefreshRes);
 
             return false;
         } catch (Exception e) {
@@ -68,13 +67,11 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
         }
     }
 
-    private String createAccessJwtString(String userType, String username) throws IOException {
+    private TokenRefreshRes createTokenRefreshRes(String userType, String username) {
         String accessToken = jwtUtils.createAccessToken(userType, username);
 
-        TokenRefreshRes tokenRefreshRes = TokenRefreshRes.builder()
+        return  TokenRefreshRes.builder()
                 .accessToken(accessToken)
                 .build();
-
-        return objectMapper.writeValueAsString(tokenRefreshRes);
     }
 }

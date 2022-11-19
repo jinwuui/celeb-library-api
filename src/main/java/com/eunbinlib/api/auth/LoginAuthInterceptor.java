@@ -16,7 +16,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 import static com.eunbinlib.api.auth.utils.AuthUtils.injectExceptionToRequest;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -56,13 +55,14 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
             );
 
 
-            String body = createJwtString(user);
+            LoginRes loginRes = createLoginRes(user);
 
             // setting response
             response.setStatus(SC_OK);
             response.setContentType(APPLICATION_JSON_VALUE);
             response.setCharacterEncoding(UTF_8.name());
-            response.getWriter().write(body);
+
+            objectMapper.writeValue(response.getWriter(), loginRes);
 
             return false;
         } catch (Exception e) {
@@ -70,6 +70,16 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
             injectExceptionToRequest(request, e);
             return true;
         }
+    }
+
+    private LoginRes createLoginRes(User user) {
+        String accessToken = jwtUtils.createAccessToken(user.getUserType(), user.getUsername());
+        String refreshToken = jwtUtils.createRefreshToken(user.getUserType(), user.getUsername());
+
+        return LoginRes.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     private User authenticate(String username, String password) {
@@ -82,17 +92,5 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
         }
 
         return findUser;
-    }
-
-    private String createJwtString(User user) throws IOException {
-        String accessToken = jwtUtils.createAccessToken(user.getUserType(), user.getUsername());
-        String refreshToken = jwtUtils.createRefreshToken(user.getUserType(), user.getUsername());
-
-        LoginRes loginRes = LoginRes.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-
-        return objectMapper.writeValueAsString(loginRes);
     }
 }
