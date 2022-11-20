@@ -1,17 +1,17 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
-import com.eunbinlib.api.domain.entity.post.Post;
-import com.eunbinlib.api.domain.entity.post.PostState;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.request.PostEdit;
-import com.eunbinlib.api.domain.request.PostSearch;
-import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.domain.response.*;
+import com.eunbinlib.api.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.domain.post.Post;
+import com.eunbinlib.api.domain.post.PostState;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.dto.request.PostCreateRequest;
+import com.eunbinlib.api.dto.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
-import com.eunbinlib.api.repository.post.PostRepository;
-import com.eunbinlib.api.repository.postimagefile.PostImageFileRepository;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.repository.post.PostRepository;
+import com.eunbinlib.api.domain.repository.postimagefile.PostImageFileRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -65,18 +65,18 @@ class PostServiceTest {
     @DisplayName("글 작성 - 이미지 없음")
     void writeNoImages() {
         // given
-        PostWrite postWrite = PostWrite.builder()
+        PostCreateRequest postCreateRequest = PostCreateRequest.builder()
                 .title("제목")
                 .content("내용")
                 .build();
 
         // when
-        OnlyId onlyId = postService.write(mockMember.getId(), postWrite);
+        OnlyIdResponse onlyIdResponse = postService.write(mockMember.getId(), postCreateRequest);
 
         // then
         assertThat(postRepository.count()).isEqualTo(1L);
 
-        Post findPost = postRepository.findById(onlyId.getId()).orElseThrow(IllegalArgumentException::new);
+        Post findPost = postRepository.findById(onlyIdResponse.getId()).orElseThrow(IllegalArgumentException::new);
         assertThat(findPost.getTitle()).isEqualTo("제목");
         assertThat(findPost.getContent()).isEqualTo("내용");
     }
@@ -90,19 +90,19 @@ class PostServiceTest {
                 new MockMultipartFile("images", "test2.jpg", MediaType.IMAGE_PNG_VALUE, "<<jpg data>>".getBytes())
         );
 
-        PostWrite postWrite = PostWrite.builder()
+        PostCreateRequest postCreateRequest = PostCreateRequest.builder()
                 .title("제목")
                 .content("내용")
                 .images(images)
                 .build();
 
         // when
-        OnlyId onlyId = postService.write(mockMember.getId(), postWrite);
+        OnlyIdResponse onlyIdResponse = postService.write(mockMember.getId(), postCreateRequest);
 
         // then
         assertThat(postRepository.count()).isEqualTo(1L);
 
-        Post findPost = postRepository.findById(onlyId.getId())
+        Post findPost = postRepository.findById(onlyIdResponse.getId())
                 .orElseThrow(IllegalArgumentException::new);
         assertThat(findPost.getTitle()).isEqualTo("제목");
         assertThat(findPost.getContent()).isEqualTo("내용");
@@ -127,7 +127,7 @@ class PostServiceTest {
         Post savedPost = postRepository.save(post);
 
         // when
-        PostDetailRes findPost = postService.read(savedPost.getId());
+        PostDetailResposne findPost = postService.read(savedPost.getId());
 
         // then
         assertThat(findPost).isNotNull();
@@ -169,16 +169,16 @@ class PostServiceTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        PostSearch postSearch = PostSearch.builder()
+        PostReadRequest postReadRequest = PostReadRequest.builder()
                 .after(null)
                 .size(5)
                 .build();
 
         // when
-        PaginationRes<PostRes> result = postService.readMany(postSearch);
+        PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
 
         PaginationMeta meta = result.getMeta();
-        List<PostRes> data = result.getData();
+        List<PostResponse> data = result.getData();
 
         // then
         assertThat(meta.getSize()).isEqualTo(5);
@@ -206,14 +206,14 @@ class PostServiceTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        PostSearch postSearch = PostSearch.builder()
+        PostReadRequest postReadRequest = PostReadRequest.builder()
                 .build();
 
         // when
-        PaginationRes<PostRes> result = postService.readMany(postSearch);
+        PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
 
         PaginationMeta meta = result.getMeta();
-        List<PostRes> data = result.getData();
+        List<PostResponse> data = result.getData();
 
         // then
         assertThat(meta.getSize()).isEqualTo(20);
@@ -246,16 +246,16 @@ class PostServiceTest {
                 .filter(post -> post.getTitle().equals("제목15"))
                 .findFirst().orElseThrow();
 
-        PostSearch postSearch = PostSearch.builder()
+        PostReadRequest postReadRequest = PostReadRequest.builder()
                 .after(title15.getId())
                 .size(10)
                 .build();
 
         // when
-        PaginationRes<PostRes> result = postService.readMany(postSearch);
+        PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
 
         PaginationMeta meta = result.getMeta();
-        List<PostRes> data = result.getData();
+        List<PostResponse> data = result.getData();
 
         // then
         assertThat(meta.getSize()).isEqualTo(10);
@@ -283,15 +283,15 @@ class PostServiceTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        PostSearch postSearch = PostSearch.builder()
+        PostReadRequest postReadRequest = PostReadRequest.builder()
                 .size(20)
                 .build();
 
         // when
-        PaginationRes<PostRes> result = postService.readMany(postSearch);
+        PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
 
         PaginationMeta meta = result.getMeta();
-        List<PostRes> data = result.getData();
+        List<PostResponse> data = result.getData();
 
         // then
         assertThat(meta.getSize()).isEqualTo(10);
@@ -319,15 +319,15 @@ class PostServiceTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        PostSearch postSearch = PostSearch.builder()
+        PostReadRequest postReadRequest = PostReadRequest.builder()
                 .size(10)
                 .build();
 
         // when
-        PaginationRes<PostRes> result = postService.readMany(postSearch);
+        PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
 
         PaginationMeta meta = result.getMeta();
-        List<PostRes> data = result.getData();
+        List<PostResponse> data = result.getData();
 
         // then
         assertThat(meta.getSize()).isEqualTo(10);
@@ -350,13 +350,13 @@ class PostServiceTest {
         post.setMember(mockMember);
         postRepository.save(post);
 
-        PostEdit postEdit = PostEdit.builder()
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
                 .title("수정된제목")
                 .content("내용")
                 .build();
 
         // when
-        postService.edit(post.getId(), postEdit);
+        postService.edit(post.getId(), postUpdateRequest);
 
         // then
         Post editedPost = postRepository.findById(post.getId())
@@ -378,13 +378,13 @@ class PostServiceTest {
         post.setMember(mockMember);
         postRepository.save(post);
 
-        PostEdit postEdit = PostEdit.builder()
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
                 .title("제목")
                 .content("수정된내용")
                 .build();
 
         // when
-        postService.edit(post.getId(), postEdit);
+        postService.edit(post.getId(), postUpdateRequest);
 
         // then
         Post editedPost = postRepository.findById(post.getId())
@@ -406,13 +406,13 @@ class PostServiceTest {
         post.setMember(mockMember);
         postRepository.save(post);
 
-        PostEdit postEdit = PostEdit.builder()
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
                 .title("수정된제목")
                 .content("수정된내용")
                 .build();
 
         // when
-        assertThatThrownBy(() -> postService.edit(post.getId() + 1L, postEdit))
+        assertThatThrownBy(() -> postService.edit(post.getId() + 1L, postUpdateRequest))
                 .isInstanceOf(PostNotFoundException.class);
     }
 

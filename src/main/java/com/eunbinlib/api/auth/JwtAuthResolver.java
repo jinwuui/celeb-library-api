@@ -1,7 +1,7 @@
 package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.data.UserSession;
-import com.eunbinlib.api.domain.entity.user.User;
+import com.eunbinlib.api.domain.user.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;

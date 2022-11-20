@@ -2,9 +2,9 @@ package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.data.JwtProperties;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.request.LoginReq;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.dto.request.LoginRequest;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -68,11 +68,11 @@ public class AuthTest {
     @DisplayName("로그인이 정상으로 되는 경우")
     void loginSuccessTest() throws Exception {
         // given
-        LoginReq loginReq = LoginReq.builder()
+        LoginRequest loginRequest = LoginRequest.builder()
                 .username(username)
                 .password(password)
                 .build();
-        String json = objectMapper.writeValueAsString(loginReq);
+        String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
         mockMvc.perform(post(LOGIN_URL)
@@ -89,11 +89,11 @@ public class AuthTest {
     @DisplayName("로그인이 실패하는 경우 - 틀린 비밀번호")
     void loginFailTestInvalidPassword() throws Exception {
         // given
-        LoginReq loginReq = LoginReq.builder()
+        LoginRequest loginRequest = LoginRequest.builder()
                 .username(username)
                 .password("invalid" + password)
                 .build();
-        String json = objectMapper.writeValueAsString(loginReq);
+        String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
         mockMvc.perform(post(LOGIN_URL)
@@ -110,11 +110,11 @@ public class AuthTest {
     void loginFailTestWrongHttpMethod() throws Exception {
 
         // given
-        LoginReq loginReq = LoginReq.builder()
+        LoginRequest loginRequest = LoginRequest.builder()
                 .username(username)
                 .password(password)
                 .build();
-        String json = objectMapper.writeValueAsString(loginReq);
+        String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
         mockMvc.perform(get(LOGIN_URL)

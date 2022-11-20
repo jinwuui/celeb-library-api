@@ -1,13 +1,13 @@
 package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.UserSession;
-import com.eunbinlib.api.domain.request.PostEdit;
-import com.eunbinlib.api.domain.request.PostSearch;
-import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.domain.response.OnlyId;
-import com.eunbinlib.api.domain.response.PaginationRes;
-import com.eunbinlib.api.domain.response.PostDetailRes;
-import com.eunbinlib.api.domain.response.PostRes;
+import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.dto.request.PostCreateRequest;
+import com.eunbinlib.api.dto.response.OnlyIdResponse;
+import com.eunbinlib.api.dto.response.PaginationResponse;
+import com.eunbinlib.api.dto.response.PostDetailResposne;
+import com.eunbinlib.api.dto.response.PostResponse;
 import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -28,29 +28,29 @@ public class PostController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public OnlyId write(UserSession userSession, @ModelAttribute @Valid PostWrite postWrite) {
+    public OnlyIdResponse write(UserSession userSession, @ModelAttribute @Valid PostCreateRequest postCreateRequest) {
 
         String userType = userSession.getUserType();
         if (StringUtils.equals(userType, "guest")) {
             throw new UnauthorizedException();
         }
 
-        return postService.write(userSession.getId(), postWrite);
+        return postService.write(userSession.getId(), postCreateRequest);
     }
 
     @GetMapping("/{postId}")
-    public PostDetailRes read(@PathVariable Long postId) {
+    public PostDetailResposne read(@PathVariable Long postId) {
         return postService.read(postId);
     }
 
     @GetMapping()
-    public PaginationRes<PostRes> readMany(@ModelAttribute PostSearch postSearch) {
-        return postService.readMany(postSearch);
+    public PaginationResponse<PostResponse> readMany(@ModelAttribute PostReadRequest postReadRequest) {
+        return postService.readMany(postReadRequest);
     }
 
     @PatchMapping("/{postId}")
-    public void edit(@PathVariable Long postId, @RequestBody @Valid PostEdit postEdit) {
-        postService.edit(postId, postEdit);
+    public void edit(@PathVariable Long postId, @RequestBody @Valid PostUpdateRequest postUpdateRequest) {
+        postService.edit(postId, postUpdateRequest);
     }
 
     @DeleteMapping("/{postId}")

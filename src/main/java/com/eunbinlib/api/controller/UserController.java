@@ -1,10 +1,10 @@
 package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.UserSession;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.entity.user.User;
-import com.eunbinlib.api.domain.request.UserJoin;
-import com.eunbinlib.api.domain.response.UserMeRes;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.UserCreateRequest;
+import com.eunbinlib.api.dto.response.UserMeResponse;
 import com.eunbinlib.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +25,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public UserMeRes readMe(UserSession userSession) {
+    public UserMeResponse readMe(UserSession userSession) {
         User user = userService.readMeByUsername(userSession.getUsername());
 
         String imageUrl = getImageUrl(user);
 
-        return UserMeRes.builder()
+        return UserMeResponse.builder()
                 .userType(user.getUserType())
                 .id(user.getId())
                 .username(user.getUsername())
@@ -39,13 +39,13 @@ public class UserController {
     }
 
     @PostMapping("/members")
-    public void joinMember(@RequestBody @Valid UserJoin userJoin) {
-        userService.joinMember(userJoin);
+    public void joinMember(@RequestBody @Valid UserCreateRequest userCreateRequest) {
+        userService.joinMember(userCreateRequest);
     }
 
     @PostMapping("/guests")
-    public void joinGuest(@RequestBody @Valid UserJoin userJoin) {
-        userService.joinGuest(userJoin);
+    public void joinGuest(@RequestBody @Valid UserCreateRequest userCreateRequest) {
+        userService.joinGuest(userCreateRequest);
     }
 
     private String getImageUrl(User user) {

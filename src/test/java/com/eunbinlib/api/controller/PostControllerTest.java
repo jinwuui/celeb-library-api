@@ -2,17 +2,17 @@ package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
-import com.eunbinlib.api.domain.entity.post.Post;
-import com.eunbinlib.api.domain.entity.post.PostState;
-import com.eunbinlib.api.domain.entity.user.Guest;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.request.PostEdit;
-import com.eunbinlib.api.domain.request.PostSearch;
-import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.repository.post.PostRepository;
-import com.eunbinlib.api.repository.postimagefile.PostImageFileRepository;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.domain.post.Post;
+import com.eunbinlib.api.domain.post.PostState;
+import com.eunbinlib.api.domain.user.Guest;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.dto.request.PostCreateRequest;
+import com.eunbinlib.api.domain.repository.post.PostRepository;
+import com.eunbinlib.api.domain.repository.postimagefile.PostImageFileRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.util.MultiValueMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +36,7 @@ import java.util.stream.IntStream;
 
 import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_STRING;
 import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
-import static com.eunbinlib.api.domain.request.PostSearch.MAX_SIZE;
+import static com.eunbinlib.api.dto.request.PostReadRequest.MAX_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -115,7 +115,7 @@ class PostControllerTest {
     @DisplayName("글 등록 - 이미지 없음")
     void writeNoImages() throws Exception {
         // given
-        PostWrite request = PostWrite.builder()
+        PostCreateRequest request = PostCreateRequest.builder()
                 .title("제목")
                 .content("내용")
                 .build();
@@ -155,7 +155,7 @@ class PostControllerTest {
                 new MockMultipartFile("images", "test2.jpg", MediaType.IMAGE_PNG_VALUE, "<<jpg data>>".getBytes())
         );
 
-        PostWrite request = PostWrite.builder()
+        PostCreateRequest request = PostCreateRequest.builder()
                 .title("제목")
                 .content("내용")
                 .images(images)
@@ -192,7 +192,7 @@ class PostControllerTest {
     @DisplayName("글 등록 실패 - 제목 필수 입력")
     void writeTitleNotBlank() throws Exception {
         // given
-        PostWrite request = PostWrite.builder()
+        PostCreateRequest request = PostCreateRequest.builder()
                 .content("내용")
                 .build();
 
@@ -214,7 +214,7 @@ class PostControllerTest {
     @DisplayName("글 등록 실패 - 내용 필수 입력")
     void writeContentNotBlank() throws Exception {
         // given
-        PostWrite request = PostWrite.builder()
+        PostCreateRequest request = PostCreateRequest.builder()
                 .title("제목")
                 .build();
 
@@ -236,7 +236,7 @@ class PostControllerTest {
     @DisplayName("글 등록 실패 - 게스트 유저인 경우")
     void writeByGuest() throws Exception {
         // given
-        PostWrite request = PostWrite.builder()
+        PostCreateRequest request = PostCreateRequest.builder()
                 .title("제목")
                 .content("내용")
                 .build();
@@ -294,12 +294,12 @@ class PostControllerTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        PostSearch postSearch = PostSearch.builder()
+        PostReadRequest postReadRequest = PostReadRequest.builder()
                 .after(null)
                 .size(5)
                 .build();
 
-        MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postSearch);
+        MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postReadRequest);
 
         // expected
         mockMvc.perform(get("/api/posts")
@@ -331,12 +331,12 @@ class PostControllerTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        PostSearch postSearch = PostSearch.builder()
+        PostReadRequest postReadRequest = PostReadRequest.builder()
                 .after(null)
                 .size(10000)
                 .build();
 
-        MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postSearch);
+        MultiValueMap<String, String> params = MultiValueMapper.convert(objectMapper, postReadRequest);
 
         // expected
         mockMvc.perform(get("/api/posts")
@@ -362,7 +362,7 @@ class PostControllerTest {
         post.setMember(mockMember);
         postRepository.save(post);
 
-        PostEdit postEdit = PostEdit.builder()
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
                 .title("수정된제목")
                 .content("내용")
                 .build();
@@ -371,7 +371,7 @@ class PostControllerTest {
         mockMvc.perform(patch("/api/posts/{postId}", post.getId())
                         .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postEdit))
+                        .content(objectMapper.writeValueAsString(postUpdateRequest))
                 )
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -389,7 +389,7 @@ class PostControllerTest {
         post.setMember(mockMember);
         postRepository.save(post);
 
-        PostEdit postEdit = PostEdit.builder()
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
                 .title("제목")
                 .content("수정된내용")
                 .build();
@@ -398,7 +398,7 @@ class PostControllerTest {
         mockMvc.perform(patch("/api/posts/{postId}", post.getId())
                         .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postEdit))
+                        .content(objectMapper.writeValueAsString(postUpdateRequest))
                 )
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -440,7 +440,7 @@ class PostControllerTest {
     @DisplayName("존재하지 않는 게시글 수정")
     void editPostNotFound() throws Exception {
         // given
-        PostEdit postEdit = PostEdit.builder()
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
                 .title("제목")
                 .content("수정된내용")
                 .build();
@@ -449,7 +449,7 @@ class PostControllerTest {
         mockMvc.perform(patch("/api/posts/{postId}", 1L)
                         .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postEdit))
+                        .content(objectMapper.writeValueAsString(postUpdateRequest))
                 )
                 .andExpect(status().isNotFound())
                 .andDo(print());

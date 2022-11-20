@@ -2,12 +2,12 @@ package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.entity.user.User;
-import com.eunbinlib.api.domain.request.LoginReq;
-import com.eunbinlib.api.domain.response.LoginRes;
+import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.LoginRequest;
+import com.eunbinlib.api.dto.response.LoginResponse;
 import com.eunbinlib.api.exception.type.UnsupportedMethodException;
 import com.eunbinlib.api.exception.type.auth.InvalidLoginInfoException;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -49,26 +49,26 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
                 throw new UnsupportedMethodException();
             }
 
-            LoginReq loginReq = objectMapper.readValue(request.getInputStream(), LoginReq.class);
+            LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
 
 
             User user = authenticate(
-                    loginReq.getUsername(),
-                    loginReq.getPassword()
+                    loginRequest.getUsername(),
+                    loginRequest.getPassword()
             );
 
 
-            LoginRes loginRes = createLoginRes(user);
+            LoginResponse loginResponse = createLoginRes(user);
 
             // setting response
             response.setStatus(SC_OK);
             response.setContentType(APPLICATION_JSON_VALUE);
             response.setCharacterEncoding(UTF_8.name());
 
-            objectMapper.writeValue(response.getWriter(), loginRes);
+            objectMapper.writeValue(response.getWriter(), loginResponse);
 
             // save logged-in user // TODO: change to Redis
-            userContextRepository.saveUserInfo(loginRes.getAccessToken(), loginRes.getRefreshToken(), user);
+            userContextRepository.saveUserInfo(loginResponse.getAccessToken(), loginResponse.getRefreshToken(), user);
 
             return false;
         } catch (Exception e) {
@@ -78,11 +78,11 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
         }
     }
 
-    private LoginRes createLoginRes(User user) {
+    private LoginResponse createLoginRes(User user) {
         String accessToken = jwtUtils.createAccessToken(user.getUserType(), user.getUsername());
         String refreshToken = jwtUtils.createRefreshToken(user.getUserType(), user.getUsername());
 
-        return LoginRes.builder()
+        return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();

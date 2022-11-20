@@ -3,12 +3,12 @@ package com.eunbinlib.api.controller;
 import com.eunbinlib.api.auth.data.JwtProperties;
 import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.entity.user.Guest;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.entity.user.User;
-import com.eunbinlib.api.domain.request.UserJoin;
+import com.eunbinlib.api.domain.user.Guest;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.UserCreateRequest;
 import com.eunbinlib.api.exception.type.UserNotFoundException;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -129,12 +129,12 @@ class UserControllerTest {
         // given
         String username = "testId";
         String password = "testPw";
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
                 .build();
 
-        String json = objectMapper.writeValueAsString(userJoin);
+        String json = objectMapper.writeValueAsString(userCreateRequest);
 
         // when
         mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -170,12 +170,12 @@ class UserControllerTest {
 
         userRepository.save(member);
 
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
                 .build();
 
-        String json = objectMapper.writeValueAsString(userJoin);
+        String json = objectMapper.writeValueAsString(userCreateRequest);
 
         // expected
         mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -192,12 +192,12 @@ class UserControllerTest {
         // given
         String username = "testId";
         String password = "testPw";
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
                 .build();
 
-        String json = objectMapper.writeValueAsString(userJoin);
+        String json = objectMapper.writeValueAsString(userCreateRequest);
 
         // when
         mockMvc.perform(post(JOIN_GUEST_URL)
@@ -231,12 +231,12 @@ class UserControllerTest {
 
         userRepository.save(guest);
 
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
                 .build();
 
-        String json = objectMapper.writeValueAsString(userJoin);
+        String json = objectMapper.writeValueAsString(userCreateRequest);
 
         // expected
         mockMvc.perform(post(JOIN_GUEST_URL)

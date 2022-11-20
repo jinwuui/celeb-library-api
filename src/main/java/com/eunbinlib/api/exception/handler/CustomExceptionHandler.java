@@ -1,6 +1,6 @@
 package com.eunbinlib.api.exception.handler;
 
-import com.eunbinlib.api.domain.response.ErrorResponse;
+import com.eunbinlib.api.dto.response.ErrorResponse;
 import com.eunbinlib.api.exception.type.EunbinlibException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

@@ -2,7 +2,7 @@ package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.response.TokenRefreshRes;
+import com.eunbinlib.api.dto.response.TokenRefreshResponse;
 import com.eunbinlib.api.exception.type.UnsupportedMethodException;
 import com.eunbinlib.api.exception.type.auth.UnauthenticatedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,16 +51,16 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
             String userType = jwt.get(USER_TYPE, String.class);
             String username = jwt.getSubject();
 
-            TokenRefreshRes tokenRefreshRes = createTokenRefreshRes(userType, username);
+            TokenRefreshResponse tokenRefreshResponse = createTokenRefreshRes(userType, username);
 
             // setting response
             response.setStatus(SC_OK);
             response.setContentType(APPLICATION_JSON_VALUE);
             response.setCharacterEncoding(UTF_8.name());
-            objectMapper.writeValue(response.getWriter(), tokenRefreshRes);
+            objectMapper.writeValue(response.getWriter(), tokenRefreshResponse);
 
             userContextRepository.updateAccessToken(
-                    tokenRefreshRes.getAccessToken(),
+                    tokenRefreshResponse.getAccessToken(),
                     refreshToken
             );
             return false;
@@ -75,10 +75,10 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
         }
     }
 
-    private TokenRefreshRes createTokenRefreshRes(String userType, String username) {
+    private TokenRefreshResponse createTokenRefreshRes(String userType, String username) {
         String accessToken = jwtUtils.createAccessToken(userType, username);
 
-        return  TokenRefreshRes.builder()
+        return  TokenRefreshResponse.builder()
                 .accessToken(accessToken)
                 .build();
     }
