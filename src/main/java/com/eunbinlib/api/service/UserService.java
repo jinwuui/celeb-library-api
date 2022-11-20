@@ -8,6 +8,7 @@ import com.eunbinlib.api.exception.type.UserNotFoundException;
 import com.eunbinlib.api.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
@@ -26,34 +27,30 @@ public class UserService {
 
     public void joinMember(UserJoin userJoin) {
 
-        boolean isExist = userRepository.existsByUsername(userJoin.getUsername());
+        try {
+            Member member = Member.builder()
+                    .username(userJoin.getUsername())
+                    .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                    .build();
 
-        if (isExist) {
-            throw new EntityExistsException("이미 존재하는 아이디입니다.");
+            userRepository.save(member);
+        } catch (DataIntegrityViolationException e) {
+            throw new EntityExistsException("중복되는 아이디 입니다.", e);
         }
-
-        Member member = Member.builder()
-                .username(userJoin.getUsername())
-                .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
-                .build();
-
-        userRepository.save(member);
     }
 
     public void joinGuest(UserJoin userJoin) {
 
-        boolean isExist = userRepository.existsByUsername(userJoin.getUsername());
+        try {
+            Guest guest = Guest.builder()
+                    .username(userJoin.getUsername())
+                    .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                    .build();
 
-        if (isExist) {
-            throw new EntityExistsException("이미 존재하는 게스트입니다.");
+            userRepository.save(guest);
+        } catch (DataIntegrityViolationException e) {
+            throw new EntityExistsException("중복되는 아이디 입니다.", e);
         }
-
-        Guest guest = Guest.builder()
-                .username(userJoin.getUsername())
-                .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
-                .build();
-
-        userRepository.save(guest);
     }
 
 //    public UserMeRes readMe() {

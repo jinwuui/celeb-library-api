@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 @Getter
@@ -19,8 +20,11 @@ public abstract class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    @NotBlank(message = "아이디는 필수 입니다.")
     private String username;
 
+    @NotBlank(message = "비밀번호는 필수 입니다.")
     private String password;
 
     protected User(String username, String password) {

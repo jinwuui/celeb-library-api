@@ -1,6 +1,7 @@
 package com.eunbinlib.api.config;
 
 import com.eunbinlib.api.auth.*;
+import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.repository.user.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,18 +30,20 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final ObjectMapper objectMapper;
 
+    private final MapUserContextRepository userContextRepository;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new JwtAuthInterceptor(jwtUtils))
+        registry.addInterceptor(new JwtAuthInterceptor(jwtUtils, userContextRepository))
                 .addPathPatterns("/**")
                 .excludePathPatterns(AUTH_WHITE_LIST)
                 .order(1);
 
-        registry.addInterceptor(new JwtRefreshInterceptor(jwtUtils, objectMapper))
+        registry.addInterceptor(new JwtRefreshInterceptor(jwtUtils, objectMapper, userContextRepository))
                 .addPathPatterns(TOKEN_REFRESH_URL)
                 .order(2);
 
-        registry.addInterceptor(new LoginAuthInterceptor(jwtUtils, userRepository))
+        registry.addInterceptor(new LoginAuthInterceptor(jwtUtils, userRepository, userContextRepository))
                 .addPathPatterns(LOGIN_URL)
                 .order(3);
 
