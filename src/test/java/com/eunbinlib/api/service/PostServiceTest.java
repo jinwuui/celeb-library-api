@@ -155,6 +155,23 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("삭제된 글을 조회하는 경우")
+    void readOneDeletedPost() {
+        // given
+        Post post = Post.builder()
+                .title("제목")
+                .content("내용")
+                .state(PostState.DELETED)
+                .build();
+        post.setMember(mockMember);
+        postRepository.save(post);
+
+        // expected
+        assertThatThrownBy(() -> postService.read(post.getId()))
+                .isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
     @DisplayName("글 페이지네이션 조회 - after null이면 처음부터 조회")
     void readMany() {
         // given
@@ -336,6 +353,43 @@ class PostServiceTest {
         assertThat(meta.getHasMore()).isEqualTo(false);
         assertThat(data.get(0).getTitle()).isEqualTo("제목9");
         assertThat(data.get(0).getContent()).isEqualTo("내용9");
+        assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목0");
+        assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용0");
+    }
+
+    @Test
+    @DisplayName("글 페이지네이션 조회 - 삭제된 게시글을 제외하고 조회하는 경우")
+    void readManyMixedDeletedPosts() {
+        // given
+        List<Post> requestPosts = IntStream.range(0, 10)
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(i % 2 == 0 ? PostState.NORMAL : PostState.DELETED)
+                            .build();
+                    post.setMember(mockMember);
+                    log.info("state {}: {}", i, post.getState());
+                    return post;
+                })
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts);
+
+        PostReadRequest postReadRequest = PostReadRequest.builder()
+                .size(20)
+                .build();
+
+        // when
+        PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
+
+        PaginationMeta meta = result.getMeta();
+        List<PostResponse> data = result.getData();
+
+        // then
+        assertThat(meta.getSize()).isEqualTo(5);
+        assertThat(meta.getHasMore()).isEqualTo(false);
+        assertThat(data.get(0).getTitle()).isEqualTo("제목8");
+        assertThat(data.get(0).getContent()).isEqualTo("내용8");
         assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목0");
         assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용0");
     }

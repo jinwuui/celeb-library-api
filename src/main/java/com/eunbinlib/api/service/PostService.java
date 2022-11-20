@@ -5,7 +5,6 @@ import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
 import com.eunbinlib.api.domain.repository.user.MemberRepository;
-import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
     private final MemberRepository memberRepository;
 
     @Value("${images.post.dir}")
@@ -75,7 +73,7 @@ public class PostService {
 
     public PostDetailResposne read(Long postId) {
 
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdAndStateNot(postId, PostState.DELETED)
                 .orElseThrow(PostNotFoundException::new);
 
         return PostDetailResposne.builder()
@@ -86,7 +84,11 @@ public class PostService {
     }
 
     public PaginationResponse<PostResponse> readMany(PostReadRequest postReadRequest) {
-        List<PostResponse> data = postRepository.getList(postReadRequest).stream()
+        List<PostResponse> data = postRepository.getList(
+                        postReadRequest.getLimit(),
+                        postReadRequest.getAfter()
+                )
+                .stream()
                 .map(PostResponse::new)
                 .collect(Collectors.toList());
 

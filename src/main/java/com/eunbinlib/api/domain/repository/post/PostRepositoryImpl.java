@@ -1,7 +1,8 @@
 package com.eunbinlib.api.domain.repository.post;
 
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.domain.post.PostState;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -15,22 +16,24 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Post> getList(PostReadRequest postReadRequest) {
-        if (postReadRequest.getAfter() == null) {
-            // 처음부터 조회
-            return jpaQueryFactory.selectFrom(post)
-                    .limit(postReadRequest.getLimit())
-                    .orderBy(post.id.desc())
-                    .fetch();
-        } else {
-            // 특정 게시글 이후부터 조회
-            return jpaQueryFactory.selectFrom(post)
-                    .limit(postReadRequest.getLimit())
-                    .where(post.id.lt(postReadRequest.getAfter()))
-                    .orderBy(post.id.desc())
-                    .fetch();
-        }
+    public List<Post> getList(Long limit, Long afterCond) {
 
+        return jpaQueryFactory.selectFrom(post)
+                .limit(limit)
+                .where(
+                        stateNe(PostState.DELETED),
+                        afterLt(afterCond)
+                )
+                .orderBy(post.id.desc())
+                .fetch();
+    }
+
+    private BooleanExpression stateNe(PostState stateCond) {
+        return post.state.ne(stateCond);
+    }
+
+    private BooleanExpression afterLt(Long afterCond) {
+        return afterCond != null ? post.id.lt(afterCond) : null;
     }
 
     @Override
