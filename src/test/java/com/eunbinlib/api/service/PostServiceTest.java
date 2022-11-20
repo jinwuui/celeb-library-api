@@ -342,7 +342,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("글 제목 수정")
-    void editTitle() {
+    void updateTitle() {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -358,19 +358,19 @@ class PostServiceTest {
                 .build();
 
         // when
-        postService.update(post.getId(), postUpdateRequest);
+        postService.update(mockMember.getId(), post.getId(), postUpdateRequest);
 
         // then
-        Post editedPost = postRepository.findById(post.getId())
+        Post updatedPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
 
-        assertThat(editedPost.getTitle()).isEqualTo("수정된제목");
-        assertThat(editedPost.getContent()).isEqualTo("내용");
+        assertThat(updatedPost.getTitle()).isEqualTo("수정된제목");
+        assertThat(updatedPost.getContent()).isEqualTo("내용");
     }
 
     @Test
     @DisplayName("글 내용 수정")
-    void editContent() {
+    void updateContent() {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -386,19 +386,19 @@ class PostServiceTest {
                 .build();
 
         // when
-        postService.update(post.getId(), postUpdateRequest);
+        postService.update(mockMember.getId(), post.getId(), postUpdateRequest);
 
         // then
-        Post editedPost = postRepository.findById(post.getId())
+        Post updatedPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
 
-        assertThat(editedPost.getTitle()).isEqualTo("제목");
-        assertThat(editedPost.getContent()).isEqualTo("수정된내용");
+        assertThat(updatedPost.getTitle()).isEqualTo("제목");
+        assertThat(updatedPost.getContent()).isEqualTo("수정된내용");
     }
 
     @Test
     @DisplayName("글 수정 - 존재하지 않는 글")
-    void editPostNotFound() {
+    void updatePostNotFound() {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -414,8 +414,30 @@ class PostServiceTest {
                 .build();
 
         // when
-        assertThatThrownBy(() -> postService.update(post.getId() + 1L, postUpdateRequest))
+        assertThatThrownBy(() -> postService.update(mockMember.getId(), post.getId() + 1L, postUpdateRequest))
                 .isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("다른 사람의 글을 수정하는 경우")
+    void updatePostOfAnotherUser() {
+        // given
+        Post post = Post.builder()
+                .title("제목")
+                .content("내용")
+                .state(PostState.NORMAL)
+                .build();
+        post.setMember(mockMember);
+        postRepository.save(post);
+
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
+                .title("수정된제목")
+                .content("수정된내용")
+                .build();
+
+        // when
+        assertThatThrownBy(() -> postService.update(mockMember.getId() + 1L, post.getId(), postUpdateRequest))
+                .isInstanceOf(UnauthorizedException.class);
     }
 
     @Test
@@ -434,8 +456,13 @@ class PostServiceTest {
         postService.delete(mockMember.getId(), post.getId());
 
         // then
+        Post findPost = postRepository.findById(post.getId())
+                .orElseThrow(IllegalArgumentException::new);
+
         assertThat(postRepository.count())
-                .isEqualTo(0);
+                .isEqualTo(1L);
+        assertThat(findPost.getState())
+                .isEqualTo(PostState.DELETED);
     }
 
     @Test

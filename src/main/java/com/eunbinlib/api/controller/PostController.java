@@ -50,7 +50,7 @@ public class PostController {
 
     @PatchMapping("/{postId}")
     public void update(UserSession userSession, @PathVariable Long postId, @RequestBody @Valid PostUpdateRequest postUpdateRequest) {
-        postService.update(postId, postUpdateRequest);
+        postService.update(userSession.getId(), postId, postUpdateRequest);
     }
 
     @DeleteMapping("/{postId}")

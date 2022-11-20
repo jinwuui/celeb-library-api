@@ -352,7 +352,7 @@ class PostControllerTest {
 
     @Test
     @DisplayName("글 제목 수정")
-    void editTitle() throws Exception {
+    void updateTitle() throws Exception {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -379,7 +379,7 @@ class PostControllerTest {
 
     @Test
     @DisplayName("글 내용 수정")
-    void editContent() throws Exception {
+    void updateContent() throws Exception {
         // given
         Post post = Post.builder()
                 .title("제목")
@@ -437,7 +437,7 @@ class PostControllerTest {
 
     @Test
     @DisplayName("존재하지 않는 게시글 수정")
-    void editPostNotFound() throws Exception {
+    void updatePostNotFound() throws Exception {
         // given
         PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
                 .title("제목")
@@ -500,4 +500,44 @@ class PostControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("다른 사람의 글을 수정하는 경우")
+    void updatePostOfAnotherUser() throws Exception {
+        // given
+        Member mockMember2 = Member.builder()
+                .username("mockMember2")
+                .nickname("mockMember2")
+                .password("mockPassword2")
+                .build();
+
+        String mockMemberAccessToken2 = jwtUtils.createAccessToken(mockMember2.getUserType(), mockMember2.getUsername());
+        String mockMemberRefreshToken2 = jwtUtils.createRefreshToken(mockMember2.getUserType(), mockMember2.getUsername());
+
+        userRepository.save(mockMember2);
+
+        userContextRepository.saveUserInfo(mockMemberAccessToken2, mockMemberRefreshToken2, mockMember2);
+
+
+        Post post = Post.builder()
+                .title("제목")
+                .content("내용")
+                .state(PostState.NORMAL)
+                .build();
+        post.setMember(mockMember);
+        postRepository.save(post);
+
+        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
+                .title("제목")
+                .content("수정된내용")
+                .build();
+
+        // expected
+        mockMvc.perform(patch("/api/posts/{postId}", post.getId())
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken2)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postUpdateRequest))
+                )
+                .andExpect(status().isForbidden())
+                .andDo(print());
+    }
 }

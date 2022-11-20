@@ -3,7 +3,6 @@ package com.eunbinlib.api.domain.post;
 import com.eunbinlib.api.domain.common.BaseTimeEntity;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -59,14 +58,13 @@ public class Post extends BaseTimeEntity {
         this.viewCount = viewCount;
     }
 
-    public void edit(PostUpdateRequest postUpdateRequest) {
-        PostUpdateRequest fixedPostUpdateRequest = PostUpdateRequest.builder()
-                .title(postUpdateRequest.getTitle() != null ? postUpdateRequest.getTitle() : title)
-                .content(postUpdateRequest.getContent() != null ? postUpdateRequest.getContent() : content)
-                .build();
+    public void update(final String title, final String content) {
+        this.title = title == null ? this.title : title;
+        this.content = content == null ? this.content : content;
+    }
 
-        title = fixedPostUpdateRequest.getTitle();
-        content = fixedPostUpdateRequest.getContent();
+    public void delete() {
+        this.state = PostState.DELETED;
     }
 
     public void addImage(PostImageFile image) {

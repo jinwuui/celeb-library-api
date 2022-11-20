@@ -102,11 +102,15 @@ public class PostService {
     }
 
     @Transactional
-    public void update(Long postId, PostUpdateRequest postUpdateRequest) {
+    public void update(Long userId, Long postId, PostUpdateRequest postUpdateRequest) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);
 
-        post.edit(postUpdateRequest);
+        if (!post.getMember().getId().equals(userId)) {
+            throw new UnauthorizedException();
+        }
+
+        post.update(postUpdateRequest.getTitle(), postUpdateRequest.getContent());
     }
 
     @Transactional
@@ -118,7 +122,7 @@ public class PostService {
             throw new UnauthorizedException();
         }
 
-        postRepository.delete(post);
+        post.delete();
     }
 
     private boolean isHasMore(List<PostResponse> data) {
