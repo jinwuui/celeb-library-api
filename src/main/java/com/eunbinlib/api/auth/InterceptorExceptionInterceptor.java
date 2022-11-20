@@ -2,6 +2,7 @@ package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.domain.response.ErrorResponse;
 import com.eunbinlib.api.exception.type.EunbinlibException;
+import com.eunbinlib.api.exception.type.auth.CustomJwtException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class InterceptorExceptionInterceptor implements HandlerInterceptor {
             return false;
         } else if (attribute instanceof JwtException) {
             JwtException e = (JwtException) attribute;
-            setExceptionResponse(response, e);
+            setExceptionResponse(response, new CustomJwtException());
             return false;
         }
         else if (attribute instanceof Exception) {

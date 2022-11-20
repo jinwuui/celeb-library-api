@@ -3,6 +3,7 @@ package com.eunbinlib.api.service;
 import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.entity.post.PostState;
+import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
@@ -10,6 +11,7 @@ import com.eunbinlib.api.domain.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
 import com.eunbinlib.api.repository.post.PostRepository;
 import com.eunbinlib.api.repository.postimagefile.PostImageFileRepository;
+import com.eunbinlib.api.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,9 +42,23 @@ class PostServiceTest {
     @Autowired
     PostImageFileRepository postImageFileRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
+    Member mockMember;
+
     @BeforeEach
     void clean() {
+
         postRepository.deleteAll();
+        userRepository.deleteAll();
+
+        mockMember = userRepository.save(Member.builder()
+                .username("mockMember")
+                .nickname("mockMember")
+                .password("mockPassword")
+                .build()
+        );
     }
 
     @Test
@@ -55,7 +71,7 @@ class PostServiceTest {
                 .build();
 
         // when
-        OnlyId onlyId = postService.write(postWrite);
+        OnlyId onlyId = postService.write(mockMember.getId(), postWrite);
 
         // then
         assertThat(postRepository.count()).isEqualTo(1L);
@@ -81,7 +97,7 @@ class PostServiceTest {
                 .build();
 
         // when
-        OnlyId onlyId = postService.write(postWrite);
+        OnlyId onlyId = postService.write(mockMember.getId(), postWrite);
 
         // then
         assertThat(postRepository.count()).isEqualTo(1L);
@@ -106,6 +122,7 @@ class PostServiceTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
 
         Post savedPost = postRepository.save(post);
 
@@ -127,6 +144,7 @@ class PostServiceTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         // expected
@@ -139,11 +157,15 @@ class PostServiceTest {
     void readMany() {
         // given
         List<Post> requestPosts = IntStream.range(0, 30)
-                .mapToObj(i -> Post.builder()
-                        .title("제목" + i)
-                        .content("내용" + i)
-                        .state(PostState.NORMAL)
-                        .build())
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(PostState.NORMAL)
+                            .build();
+                    post.setMember(mockMember);
+                    return post;
+                })
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
@@ -172,11 +194,15 @@ class PostServiceTest {
     void readManyDefaultValue() {
         // given
         List<Post> requestPosts = IntStream.range(0, 30)
-                .mapToObj(i -> Post.builder()
-                        .title("제목" + i)
-                        .content("내용" + i)
-                        .state(PostState.NORMAL)
-                        .build())
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(PostState.NORMAL)
+                            .build();
+                    post.setMember(mockMember);
+                    return post;
+                })
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
@@ -203,11 +229,15 @@ class PostServiceTest {
     void readManyAfter() {
         // given
         List<Post> requestPosts = IntStream.range(0, 30)
-                .mapToObj(i -> Post.builder()
-                        .title("제목" + i)
-                        .content("내용" + i)
-                        .state(PostState.NORMAL)
-                        .build())
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(PostState.NORMAL)
+                            .build();
+                    post.setMember(mockMember);
+                    return post;
+                })
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
@@ -241,11 +271,15 @@ class PostServiceTest {
     void readManyNoMore() {
         // given
         List<Post> requestPosts = IntStream.range(0, 10)
-                .mapToObj(i -> Post.builder()
-                        .title("제목" + i)
-                        .content("내용" + i)
-                        .state(PostState.NORMAL)
-                        .build())
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(PostState.NORMAL)
+                            .build();
+                    post.setMember(mockMember);
+                    return post;
+                })
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
@@ -273,11 +307,15 @@ class PostServiceTest {
     void readManyNoMoreEdgeCase() {
         // given
         List<Post> requestPosts = IntStream.range(0, 10)
-                .mapToObj(i -> Post.builder()
-                        .title("제목" + i)
-                        .content("내용" + i)
-                        .state(PostState.NORMAL)
-                        .build())
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(PostState.NORMAL)
+                            .build();
+                    post.setMember(mockMember);
+                    return post;
+                })
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
@@ -309,6 +347,7 @@ class PostServiceTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         PostEdit postEdit = PostEdit.builder()
@@ -336,6 +375,7 @@ class PostServiceTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         PostEdit postEdit = PostEdit.builder()
@@ -363,6 +403,7 @@ class PostServiceTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         PostEdit postEdit = PostEdit.builder()
@@ -384,6 +425,7 @@ class PostServiceTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         // when
@@ -402,6 +444,7 @@ class PostServiceTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         // expected

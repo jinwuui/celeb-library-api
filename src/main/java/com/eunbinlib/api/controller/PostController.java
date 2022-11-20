@@ -30,11 +30,12 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     public OnlyId write(UserSession userSession, @ModelAttribute @Valid PostWrite postWrite) {
 
-        if (StringUtils.equals(userSession.getUserType(), "guest")) {
+        String userType = userSession.getUserType();
+        if (StringUtils.equals(userType, "guest")) {
             throw new UnauthorizedException();
         }
 
-        return postService.write(postWrite);
+        return postService.write(userSession.getId(), postWrite);
     }
 
     @GetMapping("/{postId}")

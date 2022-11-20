@@ -5,6 +5,7 @@ import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.entity.user.User;
 import com.eunbinlib.api.domain.request.UserJoin;
 import com.eunbinlib.api.exception.type.UserNotFoundException;
+import com.eunbinlib.api.repository.post.PostRepository;
 import com.eunbinlib.api.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -29,8 +30,12 @@ class UserServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PostRepository postRepository;
+
     @BeforeEach
     void clean() {
+        postRepository.deleteAll();
         userRepository.deleteAll();
     }
 

@@ -3,12 +3,16 @@ package com.eunbinlib.api.service;
 import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.entity.post.Post;
 import com.eunbinlib.api.domain.entity.post.PostState;
+import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.request.PostEdit;
 import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
 import com.eunbinlib.api.domain.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
+import com.eunbinlib.api.exception.type.UserNotFoundException;
 import com.eunbinlib.api.repository.post.PostRepository;
+import com.eunbinlib.api.repository.user.MemberRepository;
+import com.eunbinlib.api.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,33 +33,43 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${images.post.dir}")
     private String imagesPostDir;
 
-    public OnlyId write(PostWrite postWrite) {
+    @Transactional
+    public OnlyId write(Long writerId, PostWrite postWrite) {
+
+        Post post = Post.builder()
+                .title(postWrite.getTitle())
+                .content(postWrite.getContent())
+                .state(PostState.NORMAL)
+                .build();
+
+        Member writer = memberRepository.findById(writerId)
+                .orElseThrow(UserNotFoundException::new);
+        post.setMember(writer);
+
+        List<MultipartFile> images = postWrite.getImages();
+        List<PostImageFile> storeFileResult = null;
+
         try {
-            Post post = Post.builder()
-                    .title(postWrite.getTitle())
-                    .content(postWrite.getContent())
-                    .state(PostState.NORMAL)
-                    .build();
-
-            List<MultipartFile> images = postWrite.getImages();
-            List<PostImageFile> storeFileResult = storeFiles(images);
-
-            for (PostImageFile image : storeFileResult) {
-                post.addImage(image);
-            }
-
-            Long postId = postRepository.save(post).getId();
-
-            return OnlyId.builder()
-                    .id(postId)
-                    .build();
+            storeFileResult = storeFiles(images);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        for (PostImageFile image : storeFileResult) {
+            post.addImage(image);
+        }
+
+        Long postId = postRepository.save(post).getId();
+
+        return OnlyId.builder()
+                .id(postId)
+                .build();
     }
 
     public PostDetailRes read(Long postId) {
@@ -94,6 +108,7 @@ public class PostService {
         post.edit(postEdit);
     }
 
+    @Transactional
     public void delete(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);

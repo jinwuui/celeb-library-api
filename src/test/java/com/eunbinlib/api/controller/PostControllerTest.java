@@ -1,5 +1,6 @@
 package com.eunbinlib.api.controller;
 
+import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.entity.post.Post;
@@ -11,6 +12,7 @@ import com.eunbinlib.api.domain.request.PostSearch;
 import com.eunbinlib.api.domain.request.PostWrite;
 import com.eunbinlib.api.repository.post.PostRepository;
 import com.eunbinlib.api.repository.postimagefile.PostImageFileRepository;
+import com.eunbinlib.api.repository.user.UserRepository;
 import com.eunbinlib.api.util.MultiValueMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,18 +58,24 @@ class PostControllerTest {
     JwtUtils jwtUtils;
 
     Member mockMember;
-
-    String mockMemberToken;
+    String mockMemberAccessToken;
+    String mockMemberRefreshToken;
 
     Guest mockGuest;
-
-    String mockGuestToken;
+    String mockGuestAccessToken;
+    String mockGuestRefreshToken;
 
     @Autowired
     PostRepository postRepository;
 
     @Autowired
     PostImageFileRepository postImageFileRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    UserContextRepository userContextRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -81,21 +89,26 @@ class PostControllerTest {
                 .password("mockPassword")
                 .build();
 
-        mockMemberToken = createAccessToken(mockMember.getUserType(), mockMember.getUsername());
-
+        mockMemberAccessToken = jwtUtils.createAccessToken(mockMember.getUserType(), mockMember.getUsername());
+        mockMemberRefreshToken = jwtUtils.createRefreshToken(mockMember.getUserType(), mockMember.getUsername());
 
         mockGuest = Guest.builder()
                 .username("mockGuest")
                 .password("mockPassword")
                 .build();
 
-        mockGuestToken = createAccessToken(mockGuest.getUserType(), mockGuest.getUsername());
+        mockGuestAccessToken = jwtUtils.createAccessToken(mockMember.getUserType(), mockMember.getUsername());
+        mockGuestRefreshToken = jwtUtils.createRefreshToken(mockMember.getUserType(), mockMember.getUsername());
+
+
+        userRepository.save(mockMember);
+        userRepository.save(mockGuest);
+
+        userContextRepository.saveUserInfo(mockMemberAccessToken, mockMemberRefreshToken, mockMember);
+        userContextRepository.saveUserInfo(mockGuestAccessToken, mockGuestRefreshToken, mockGuest);
+
 
         postRepository.deleteAll();
-    }
-
-    private String createAccessToken(String userType, String username) {
-        return TOKEN_PREFIX + jwtUtils.createAccessToken(userType, username);
     }
 
     @Test
@@ -111,7 +124,7 @@ class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isCreated())
@@ -154,7 +167,7 @@ class PostControllerTest {
                         .file((MockMultipartFile) images.get(1))
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isCreated())
@@ -187,7 +200,7 @@ class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isBadRequest())
@@ -209,7 +222,7 @@ class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isBadRequest())
@@ -232,7 +245,7 @@ class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                         .param("title", request.getTitle())
                         .param("content", request.getContent())
-                        .header(HEADER_STRING, mockGuestToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockGuestAccessToken)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                 )
                 .andExpect(status().isForbidden())
@@ -249,12 +262,13 @@ class PostControllerTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
 
         postRepository.save(post);
 
         // expected
         mockMvc.perform(get("/api/posts/{postId}", post.getId())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(post.getId()))
@@ -268,11 +282,15 @@ class PostControllerTest {
     void readMany() throws Exception {
         // given
         List<Post> requestPosts = IntStream.range(0, 20)
-                .mapToObj(i -> Post.builder()
-                        .title("제목" + i)
-                        .content("내용" + i)
-                        .state(PostState.NORMAL)
-                        .build())
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(PostState.NORMAL)
+                            .build();
+                    post.setMember(mockMember);
+                    return post;
+                })
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
@@ -286,7 +304,7 @@ class PostControllerTest {
         // expected
         mockMvc.perform(get("/api/posts")
                         .params(params)
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..['data'].length()", is(5)))
@@ -301,11 +319,15 @@ class PostControllerTest {
     void readManyEdgeCase() throws Exception {
         // given
         List<Post> requestPosts = IntStream.range(0, 2000)
-                .mapToObj(i -> Post.builder()
-                        .title("제목" + i)
-                        .content("내용" + i)
-                        .state(PostState.NORMAL)
-                        .build())
+                .mapToObj(i -> {
+                    Post post = Post.builder()
+                            .title("제목" + i)
+                            .content("내용" + i)
+                            .state(PostState.NORMAL)
+                            .build();
+                    post.setMember(mockMember);
+                    return post;
+                })
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
@@ -319,7 +341,7 @@ class PostControllerTest {
         // expected
         mockMvc.perform(get("/api/posts")
                         .params(params)
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..['data'].length()", is(MAX_SIZE)))
@@ -337,6 +359,7 @@ class PostControllerTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         PostEdit postEdit = PostEdit.builder()
@@ -346,7 +369,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(patch("/api/posts/{postId}", post.getId())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -363,6 +386,7 @@ class PostControllerTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         PostEdit postEdit = PostEdit.builder()
@@ -372,7 +396,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(patch("/api/posts/{postId}", post.getId())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -390,11 +414,12 @@ class PostControllerTest {
                 .content("내용")
                 .state(PostState.NORMAL)
                 .build();
+        post.setMember(mockMember);
         postRepository.save(post);
 
         // expected
         mockMvc.perform(delete("/api/posts/{postId}", post.getId())
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -405,7 +430,7 @@ class PostControllerTest {
     void readPostNotFound() throws Exception {
         // expected
         mockMvc.perform(get("/api/posts/{postId}", 1L)
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andDo(print());
@@ -422,7 +447,7 @@ class PostControllerTest {
 
         // expected
         mockMvc.perform(patch("/api/posts/{postId}", 1L)
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit))
                 )
@@ -435,7 +460,7 @@ class PostControllerTest {
     void deletePostNotFound() throws Exception {
         // expected
         mockMvc.perform(delete("/api/posts/{postId}", 1L)
-                        .header(HEADER_STRING, mockMemberToken)
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andDo(print());

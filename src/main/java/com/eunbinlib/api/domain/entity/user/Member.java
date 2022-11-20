@@ -2,12 +2,15 @@ package com.eunbinlib.api.domain.entity.user;
 
 
 import com.eunbinlib.api.domain.entity.imagefile.ProfileImageFile;
+import com.eunbinlib.api.domain.entity.post.Post;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,13 +20,23 @@ public class Member extends User {
 
     private String nickname;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "PROFILE_IMAGE_ID")
     private ProfileImageFile profileImage;
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private final List<Post> posts = new ArrayList<>();
 
     @Builder
     public Member(String username, String password, String nickname) {
         super(username, password);
         this.nickname = nickname;
+    }
+
+    public void addPost(Post post) {
+        this.posts.add(post);
+        if (post.getMember() != this) {
+            post.setMember(this);
+        }
     }
 }

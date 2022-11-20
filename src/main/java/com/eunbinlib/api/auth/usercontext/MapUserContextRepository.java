@@ -31,9 +31,11 @@ public class MapUserContextRepository implements UserContextRepository {
     }
 
     public void expireUserInfoContext(String refreshToken) {
-        String accessToken = refreshTokenToAccessTokenStorage.get(refreshToken);
+        if (refreshTokenToAccessTokenStorage.containsKey(refreshToken)) {
+            String accessToken = refreshTokenToAccessTokenStorage.get(refreshToken);
+            refreshTokenToAccessTokenStorage.remove(refreshToken);
 
-        refreshTokenToAccessTokenStorage.remove(refreshToken);
-        storage.remove(accessToken);
+            storage.remove(accessToken);
+        }
     }
 }

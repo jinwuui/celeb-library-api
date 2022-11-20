@@ -2,6 +2,7 @@ package com.eunbinlib.api.domain.entity.post;
 
 import com.eunbinlib.api.domain.entity.BaseTimeEntity;
 import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
+import com.eunbinlib.api.domain.entity.user.Member;
 import com.eunbinlib.api.domain.request.PostEdit;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -45,14 +46,17 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<PostImageFile> images = new ArrayList<>();
 
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "MEMBER_ID", nullable = false)
+    private Member member;
+
     @Builder
-    public Post(String title, PostState state, String content, Long likeCount, Long viewCount, List<PostImageFile> images) {
+    public Post(String title, PostState state, String content, Long likeCount, Long viewCount) {
         this.title = title;
         this.state = state;
         this.content = content;
         this.likeCount = likeCount;
         this.viewCount = viewCount;
-        this.images = images;
     }
 
     public void edit(PostEdit postEdit) {
@@ -66,11 +70,16 @@ public class Post extends BaseTimeEntity {
     }
 
     public void addImage(PostImageFile image) {
-        if (this.images == null) this.images = new ArrayList<>();
-
         this.images.add(image);
         if (image.getPost() != this) {
             image.setPost(this);
+        }
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+        if (!member.getPosts().contains(this)) {
+            member.getPosts().add(this);
         }
     }
 
