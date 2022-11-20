@@ -3,15 +3,16 @@ package com.eunbinlib.api.service;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.dto.request.PostUpdateRequest;
-import com.eunbinlib.api.dto.request.PostReadRequest;
-import com.eunbinlib.api.dto.request.PostCreateRequest;
-import com.eunbinlib.api.dto.response.*;
-import com.eunbinlib.api.exception.type.PostNotFoundException;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
 import com.eunbinlib.api.domain.repository.postimagefile.PostImageFileRepository;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.dto.request.PostCreateRequest;
+import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import com.eunbinlib.api.dto.response.*;
+import com.eunbinlib.api.exception.type.PostNotFoundException;
+import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
 @SpringBootTest
+//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class PostServiceTest {
 
     @Autowired
@@ -71,7 +73,7 @@ class PostServiceTest {
                 .build();
 
         // when
-        OnlyIdResponse onlyIdResponse = postService.write(mockMember.getId(), postCreateRequest);
+        OnlyIdResponse onlyIdResponse = postService.create(mockMember.getId(), postCreateRequest);
 
         // then
         assertThat(postRepository.count()).isEqualTo(1L);
@@ -97,7 +99,7 @@ class PostServiceTest {
                 .build();
 
         // when
-        OnlyIdResponse onlyIdResponse = postService.write(mockMember.getId(), postCreateRequest);
+        OnlyIdResponse onlyIdResponse = postService.create(mockMember.getId(), postCreateRequest);
 
         // then
         assertThat(postRepository.count()).isEqualTo(1L);
@@ -356,7 +358,7 @@ class PostServiceTest {
                 .build();
 
         // when
-        postService.edit(post.getId(), postUpdateRequest);
+        postService.update(post.getId(), postUpdateRequest);
 
         // then
         Post editedPost = postRepository.findById(post.getId())
@@ -384,7 +386,7 @@ class PostServiceTest {
                 .build();
 
         // when
-        postService.edit(post.getId(), postUpdateRequest);
+        postService.update(post.getId(), postUpdateRequest);
 
         // then
         Post editedPost = postRepository.findById(post.getId())
@@ -412,7 +414,7 @@ class PostServiceTest {
                 .build();
 
         // when
-        assertThatThrownBy(() -> postService.edit(post.getId() + 1L, postUpdateRequest))
+        assertThatThrownBy(() -> postService.update(post.getId() + 1L, postUpdateRequest))
                 .isInstanceOf(PostNotFoundException.class);
     }
 
@@ -429,10 +431,11 @@ class PostServiceTest {
         postRepository.save(post);
 
         // when
-        postService.delete(post.getId());
+        postService.delete(mockMember.getId(), post.getId());
 
         // then
-        assertThat(postRepository.count()).isEqualTo(0);
+        assertThat(postRepository.count())
+                .isEqualTo(0);
     }
 
     @Test
@@ -448,8 +451,27 @@ class PostServiceTest {
         postRepository.save(post);
 
         // expected
-        assertThatThrownBy(() -> postService.delete(post.getId() + 1))
+        assertThatThrownBy(
+                () -> postService.delete(mockMember.getId(), post.getId() + 1L))
                 .isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("다른 사람의 글을 삭제하는 경우")
+    void deletePostOfAnotherUser() {
+        // given
+        Post post = Post.builder()
+                .title("제목")
+                .content("내용")
+                .state(PostState.NORMAL)
+                .build();
+        post.setMember(mockMember);
+        postRepository.save(post);
+
+        // expected
+        assertThatThrownBy(
+                () -> postService.delete(mockMember.getId() + 1L, post.getId()))
+                .isInstanceOf(UnauthorizedException.class);
     }
 
 }

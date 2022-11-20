@@ -28,14 +28,14 @@ public class PostController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public OnlyIdResponse write(UserSession userSession, @ModelAttribute @Valid PostCreateRequest postCreateRequest) {
+    public OnlyIdResponse create(UserSession userSession, @ModelAttribute @Valid PostCreateRequest postCreateRequest) {
 
         String userType = userSession.getUserType();
         if (StringUtils.equals(userType, "guest")) {
             throw new UnauthorizedException();
         }
 
-        return postService.write(userSession.getId(), postCreateRequest);
+        return postService.create(userSession.getId(), postCreateRequest);
     }
 
     @GetMapping("/{postId}")
@@ -49,13 +49,13 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}")
-    public void edit(@PathVariable Long postId, @RequestBody @Valid PostUpdateRequest postUpdateRequest) {
-        postService.edit(postId, postUpdateRequest);
+    public void update(UserSession userSession, @PathVariable Long postId, @RequestBody @Valid PostUpdateRequest postUpdateRequest) {
+        postService.update(postId, postUpdateRequest);
     }
 
     @DeleteMapping("/{postId}")
-    public void delete(@PathVariable Long postId) {
-        postService.delete(postId);
+    public void delete(UserSession userSession, @PathVariable Long postId) {
+        postService.delete(userSession.getId(), postId);
     }
 
 }

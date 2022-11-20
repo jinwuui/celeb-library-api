@@ -3,16 +3,17 @@ package com.eunbinlib.api.service;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.dto.request.PostUpdateRequest;
-import com.eunbinlib.api.dto.request.PostReadRequest;
-import com.eunbinlib.api.dto.request.PostCreateRequest;
-import com.eunbinlib.api.dto.response.*;
-import com.eunbinlib.api.exception.type.PostNotFoundException;
-import com.eunbinlib.api.exception.type.UserNotFoundException;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
 import com.eunbinlib.api.domain.repository.user.MemberRepository;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.dto.request.PostCreateRequest;
+import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import com.eunbinlib.api.dto.response.*;
+import com.eunbinlib.api.exception.type.PostNotFoundException;
+import com.eunbinlib.api.exception.type.UserNotFoundException;
+import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +41,7 @@ public class PostService {
     private String imagesPostDir;
 
     @Transactional
-    public OnlyIdResponse write(Long writerId, PostCreateRequest postCreateRequest) {
+    public OnlyIdResponse create(Long userId, PostCreateRequest postCreateRequest) {
 
         Post post = Post.builder()
                 .title(postCreateRequest.getTitle())
@@ -48,7 +49,7 @@ public class PostService {
                 .state(PostState.NORMAL)
                 .build();
 
-        Member writer = memberRepository.findById(writerId)
+        Member writer = memberRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
         post.setMember(writer);
 
@@ -101,7 +102,7 @@ public class PostService {
     }
 
     @Transactional
-    public void edit(Long postId, PostUpdateRequest postUpdateRequest) {
+    public void update(Long postId, PostUpdateRequest postUpdateRequest) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);
 
@@ -109,9 +110,13 @@ public class PostService {
     }
 
     @Transactional
-    public void delete(Long postId) {
+    public void delete(Long userId, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);
+
+        if (!post.getMember().getId().equals(userId)) {
+            throw new UnauthorizedException();
+        }
 
         postRepository.delete(post);
     }

@@ -97,8 +97,8 @@ class PostControllerTest {
                 .password("mockPassword")
                 .build();
 
-        mockGuestAccessToken = jwtUtils.createAccessToken(mockMember.getUserType(), mockMember.getUsername());
-        mockGuestRefreshToken = jwtUtils.createRefreshToken(mockMember.getUserType(), mockMember.getUsername());
+        mockGuestAccessToken = jwtUtils.createAccessToken(mockGuest.getUserType(), mockGuest.getUsername());
+        mockGuestRefreshToken = jwtUtils.createRefreshToken(mockGuest.getUserType(), mockGuest.getUsername());
 
 
         userRepository.save(mockMember);
@@ -404,7 +404,6 @@ class PostControllerTest {
                 .andDo(print());
     }
 
-
     @Test
     @DisplayName("글 삭제")
     void deletePost() throws Exception {
@@ -463,6 +462,41 @@ class PostControllerTest {
                         .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("다른 사람의 글을 삭제하는 경우")
+    void deletePostOfAnotherUser() throws Exception {
+        // given
+        Post post = Post.builder()
+                .title("제목")
+                .content("내용")
+                .state(PostState.NORMAL)
+                .build();
+        post.setMember(mockMember);
+        postRepository.save(post);
+
+
+        Member mockMember2 = Member.builder()
+                .username("mockMember2")
+                .nickname("mockMember2")
+                .password("mockPassword2")
+                .build();
+
+        String mockMemberAccessToken2 = jwtUtils.createAccessToken(mockMember2.getUserType(), mockMember2.getUsername());
+        String mockMemberRefreshToken2 = jwtUtils.createRefreshToken(mockMember2.getUserType(), mockMember2.getUsername());
+
+        userRepository.save(mockMember2);
+
+        userContextRepository.saveUserInfo(mockMemberAccessToken2, mockMemberRefreshToken2, mockMember2);
+
+
+        // expected
+        mockMvc.perform(delete("/api/posts/{postId}", post.getId())
+                        .header(HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken2)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden())
                 .andDo(print());
     }
 
