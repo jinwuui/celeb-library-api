@@ -1,5 +1,6 @@
 package com.eunbinlib.api.domain.post;
 
+import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.common.BaseTimeEntity;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.user.Member;
@@ -45,6 +46,9 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<PostImageFile> images = new ArrayList<>();
 
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "MEMBER_ID", nullable = false)
     private Member member;
@@ -71,6 +75,13 @@ public class Post extends BaseTimeEntity {
         this.images.add(image);
         if (image.getPost() != this) {
             image.setPost(this);
+        }
+    }
+
+    public void addComment(Comment comment) {
+        this.comments.add(comment);
+        if (comment.getPost() != this) {
+            comment.setPost(this);
         }
     }
 
