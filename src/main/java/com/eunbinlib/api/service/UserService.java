@@ -1,11 +1,11 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.entity.user.Guest;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.entity.user.User;
-import com.eunbinlib.api.domain.request.UserJoin;
+import com.eunbinlib.api.domain.user.Guest;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.UserCreateRequest;
 import com.eunbinlib.api.exception.type.UserNotFoundException;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,12 +25,12 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(username));
     }
 
-    public void joinMember(UserJoin userJoin) {
+    public void joinMember(UserCreateRequest userCreateRequest) {
 
         try {
             Member member = Member.builder()
-                    .username(userJoin.getUsername())
-                    .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                    .username(userCreateRequest.getUsername())
+                    .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
                     .build();
 
             userRepository.save(member);
@@ -39,12 +39,12 @@ public class UserService {
         }
     }
 
-    public void joinGuest(UserJoin userJoin) {
+    public void joinGuest(UserCreateRequest userCreateRequest) {
 
         try {
             Guest guest = Guest.builder()
-                    .username(userJoin.getUsername())
-                    .password(userJoin.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                    .username(userCreateRequest.getUsername())
+                    .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
                     .build();
 
             userRepository.save(guest);

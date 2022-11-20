@@ -1,12 +1,12 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.entity.user.Guest;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.entity.user.User;
-import com.eunbinlib.api.domain.request.UserJoin;
+import com.eunbinlib.api.domain.user.Guest;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.UserCreateRequest;
 import com.eunbinlib.api.exception.type.UserNotFoundException;
-import com.eunbinlib.api.repository.post.PostRepository;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.repository.post.PostRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,13 +43,13 @@ class UserServiceTest {
     @DisplayName("게스트 유저 회원가입")
     void joinGuest() {
         // given
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username("username")
                 .password("password")
                 .build();
 
         // when
-        userService.joinGuest(userJoin);
+        userService.joinGuest(userCreateRequest);
 
         // then
         assertDoesNotThrow(() -> userRepository.findByUsername("username"));
@@ -65,27 +65,27 @@ class UserServiceTest {
                 .build();
         userRepository.save(guest);
 
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username("username")
                 .password("password")
                 .build();
 
         // then
         assertThrows(EntityExistsException.class,
-                () -> userService.joinGuest(userJoin));
+                () -> userService.joinGuest(userCreateRequest));
     }
 
     @Test
     @DisplayName("회원 유저 회원가입")
     void joinMember() {
         // given
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username("username")
                 .password("password")
                 .build();
 
         // when
-        userService.joinMember(userJoin);
+        userService.joinMember(userCreateRequest);
 
         // then
         assertDoesNotThrow(() -> userRepository.findByUsername("username"));
@@ -101,14 +101,14 @@ class UserServiceTest {
                 .build();
         userRepository.save(member);
 
-        UserJoin userJoin = UserJoin.builder()
+        UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username("username")
                 .password("password")
                 .build();
 
         // then
         assertThrows(EntityExistsException.class,
-                () -> userService.joinMember(userJoin));
+                () -> userService.joinMember(userCreateRequest));
     }
 
     @Test

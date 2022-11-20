@@ -3,7 +3,7 @@ package com.eunbinlib.api.config;
 import com.eunbinlib.api.auth.*;
 import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

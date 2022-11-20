@@ -1,18 +1,18 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.entity.imagefile.PostImageFile;
-import com.eunbinlib.api.domain.entity.post.Post;
-import com.eunbinlib.api.domain.entity.post.PostState;
-import com.eunbinlib.api.domain.entity.user.Member;
-import com.eunbinlib.api.domain.request.PostEdit;
-import com.eunbinlib.api.domain.request.PostSearch;
-import com.eunbinlib.api.domain.request.PostWrite;
-import com.eunbinlib.api.domain.response.*;
+import com.eunbinlib.api.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.domain.post.Post;
+import com.eunbinlib.api.domain.post.PostState;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.dto.request.PostCreateRequest;
+import com.eunbinlib.api.dto.response.*;
 import com.eunbinlib.api.exception.type.PostNotFoundException;
 import com.eunbinlib.api.exception.type.UserNotFoundException;
-import com.eunbinlib.api.repository.post.PostRepository;
-import com.eunbinlib.api.repository.user.MemberRepository;
-import com.eunbinlib.api.repository.user.UserRepository;
+import com.eunbinlib.api.domain.repository.post.PostRepository;
+import com.eunbinlib.api.domain.repository.user.MemberRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,11 +40,11 @@ public class PostService {
     private String imagesPostDir;
 
     @Transactional
-    public OnlyId write(Long writerId, PostWrite postWrite) {
+    public OnlyIdResponse write(Long writerId, PostCreateRequest postCreateRequest) {
 
         Post post = Post.builder()
-                .title(postWrite.getTitle())
-                .content(postWrite.getContent())
+                .title(postCreateRequest.getTitle())
+                .content(postCreateRequest.getContent())
                 .state(PostState.NORMAL)
                 .build();
 
@@ -52,7 +52,7 @@ public class PostService {
                 .orElseThrow(UserNotFoundException::new);
         post.setMember(writer);
 
-        List<MultipartFile> images = postWrite.getImages();
+        List<MultipartFile> images = postCreateRequest.getImages();
         List<PostImageFile> storeFileResult = null;
 
         try {
@@ -67,26 +67,26 @@ public class PostService {
 
         Long postId = postRepository.save(post).getId();
 
-        return OnlyId.builder()
+        return OnlyIdResponse.builder()
                 .id(postId)
                 .build();
     }
 
-    public PostDetailRes read(Long postId) {
+    public PostDetailResposne read(Long postId) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);
 
-        return PostDetailRes.builder()
+        return PostDetailResposne.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .build();
     }
 
-    public PaginationRes<PostRes> readMany(PostSearch postSearch) {
-        List<PostRes> data = postRepository.getList(postSearch).stream()
-                .map(PostRes::new)
+    public PaginationResponse<PostResponse> readMany(PostReadRequest postReadRequest) {
+        List<PostResponse> data = postRepository.getList(postReadRequest).stream()
+                .map(PostResponse::new)
                 .collect(Collectors.toList());
 
         PaginationMeta meta = PaginationMeta.builder()
@@ -94,18 +94,18 @@ public class PostService {
                 .hasMore(isHasMore(data))
                 .build();
 
-        return PaginationRes.<PostRes>builder()
+        return PaginationResponse.<PostResponse>builder()
                 .meta(meta)
                 .data(data)
                 .build();
     }
 
     @Transactional
-    public void edit(Long postId, PostEdit postEdit) {
+    public void edit(Long postId, PostUpdateRequest postUpdateRequest) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(PostNotFoundException::new);
 
-        post.edit(postEdit);
+        post.edit(postUpdateRequest);
     }
 
     @Transactional
@@ -116,7 +116,7 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    private boolean isHasMore(List<PostRes> data) {
+    private boolean isHasMore(List<PostResponse> data) {
         return !data.isEmpty() && postRepository.existsNext(data.get(data.size() - 1).getId());
     }
 

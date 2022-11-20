@@ -1,6 +1,6 @@
 package com.eunbinlib.api.exception.handler;
 
-import com.eunbinlib.api.domain.response.ErrorResponse;
+import com.eunbinlib.api.dto.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;

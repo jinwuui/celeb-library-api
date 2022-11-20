@@ -1,6 +1,6 @@
 package com.eunbinlib.api.auth;
 
-import com.eunbinlib.api.domain.response.ErrorResponse;
+import com.eunbinlib.api.dto.response.ErrorResponse;
 import com.eunbinlib.api.exception.type.EunbinlibException;
 import com.eunbinlib.api.exception.type.auth.CustomJwtException;
 import com.fasterxml.jackson.databind.ObjectMapper;
