@@ -8,7 +8,7 @@ import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.UserCreateRequest;
-import com.eunbinlib.api.exception.type.UserNotFoundException;
+import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -96,7 +96,7 @@ class UserControllerTest {
 
         // expected
         mockMvc.perform(get("/api/users/me")
-                        .header(JwtProperties.HEADER_STRING, TOKEN_PREFIX + mockMemberAccessToken)
+                        .header(JwtProperties.HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userType").value(savedMember.getUserType()))
@@ -114,7 +114,7 @@ class UserControllerTest {
 
         // expected
         mockMvc.perform(get("/api/users/me")
-                        .header(JwtProperties.HEADER_STRING, TOKEN_PREFIX + mockGuestAccessToken)
+                        .header(JwtProperties.HEADER_AUTHORIZATION, TOKEN_PREFIX + mockGuestAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userType").value(savedGuest.getUserType()))

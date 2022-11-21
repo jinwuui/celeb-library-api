@@ -1,11 +1,12 @@
 package com.eunbinlib.api.service;
 
+import com.eunbinlib.api.domain.repository.user.MemberRepository;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.UserCreateRequest;
-import com.eunbinlib.api.exception.type.UserNotFoundException;
-import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,6 +20,13 @@ import javax.persistence.EntityExistsException;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    private final MemberRepository memberRepository;
+
+    public Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(UserNotFoundException::new);
+    }
 
     public User readMeByUsername(String username) {
         return userRepository.findByUsername(username)
@@ -52,8 +60,4 @@ public class UserService {
             throw new EntityExistsException("중복되는 아이디 입니다.", e);
         }
     }
-
-//    public UserMeRes readMe() {
-//
-//    }
 }

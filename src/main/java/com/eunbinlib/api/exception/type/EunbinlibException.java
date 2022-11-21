@@ -10,13 +10,13 @@ public abstract class EunbinlibException extends RuntimeException {
 
     private final Map<String, String> validation = new HashMap<>();
 
-    public EunbinlibException(String message) {
+    public EunbinlibException(final String message) {
         super(message);
     }
 
     public abstract int getStatusCode();
 
-    public void addValidation(String fieldName, String message) {
+    public void addValidation(final String fieldName, final String message) {
         validation.put(fieldName, message);
     }
 

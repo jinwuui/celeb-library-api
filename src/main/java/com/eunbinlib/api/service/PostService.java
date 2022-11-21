@@ -4,15 +4,13 @@ import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
-import com.eunbinlib.api.domain.repository.user.MemberRepository;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import com.eunbinlib.api.dto.response.*;
-import com.eunbinlib.api.exception.type.PostNotFoundException;
-import com.eunbinlib.api.exception.type.UserNotFoundException;
 import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
+import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,10 +31,16 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final MemberRepository memberRepository;
+
+    private final UserService userService;
 
     @Value("${images.post.dir}")
     private String imagesPostDir;
+
+    public Post findById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(PostNotFoundException::new);
+    }
 
     @Transactional
     public OnlyIdResponse create(Long userId, PostCreateRequest postCreateRequest) {
@@ -47,8 +51,7 @@ public class PostService {
                 .state(PostState.NORMAL)
                 .build();
 
-        Member writer = memberRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+        Member writer = userService.findMemberById(userId);
         post.setMember(writer);
 
         List<MultipartFile> images = postCreateRequest.getImages();
@@ -105,24 +108,18 @@ public class PostService {
 
     @Transactional
     public void update(Long userId, Long postId, PostUpdateRequest postUpdateRequest) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(PostNotFoundException::new);
+        Post post = findById(postId);
 
-        if (!post.getMember().getId().equals(userId)) {
-            throw new UnauthorizedException();
-        }
+        validateWriter(userId, post.getMember().getId());
 
         post.update(postUpdateRequest.getTitle(), postUpdateRequest.getContent());
     }
 
     @Transactional
     public void delete(Long userId, Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(PostNotFoundException::new);
+        Post post = findById(postId);
 
-        if (!post.getMember().getId().equals(userId)) {
-            throw new UnauthorizedException();
-        }
+        validateWriter(userId, post.getMember().getId());
 
         post.delete();
     }
@@ -184,5 +181,11 @@ public class PostService {
     private String extractExtension(String originalFilename) {
         int index = originalFilename.lastIndexOf(".");
         return originalFilename.substring(index + 1);
+    }
+
+    private void validateWriter(Long userId, Long postWriterId) {
+        if (!postWriterId.equals(userId)) {
+            throw new UnauthorizedException();
+        }
     }
 }

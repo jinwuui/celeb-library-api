@@ -1,22 +1,22 @@
 package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.UserSession;
-import com.eunbinlib.api.dto.request.PostUpdateRequest;
-import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
+import com.eunbinlib.api.dto.request.PostReadRequest;
+import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
 import com.eunbinlib.api.dto.response.PaginationResponse;
 import com.eunbinlib.api.dto.response.PostDetailResposne;
 import com.eunbinlib.api.dto.response.PostResponse;
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
+import static com.eunbinlib.api.auth.utils.AuthUtils.authorizeUserSession;
 
 @Slf4j
 @RestController
@@ -29,12 +29,7 @@ public class PostController {
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public OnlyIdResponse create(UserSession userSession, @ModelAttribute @Valid PostCreateRequest postCreateRequest) {
-
-        String userType = userSession.getUserType();
-        if (StringUtils.equals(userType, "guest")) {
-            throw new UnauthorizedException();
-        }
-
+        authorizeUserSession(userSession);
         return postService.create(userSession.getId(), postCreateRequest);
     }
 
@@ -50,12 +45,13 @@ public class PostController {
 
     @PatchMapping("/{postId}")
     public void update(UserSession userSession, @PathVariable Long postId, @RequestBody @Valid PostUpdateRequest postUpdateRequest) {
+        authorizeUserSession(userSession);
         postService.update(userSession.getId(), postId, postUpdateRequest);
     }
 
     @DeleteMapping("/{postId}")
     public void delete(UserSession userSession, @PathVariable Long postId) {
+        authorizeUserSession(userSession);
         postService.delete(userSession.getId(), postId);
     }
-
 }

@@ -40,7 +40,7 @@ public class JwtUtils {
     }
 
     public Optional<String> extractToken(HttpServletRequest request) {
-        String header = request.getHeader(HEADER_STRING);
+        String header = request.getHeader(HEADER_AUTHORIZATION);
 
         if (header == null || !header.startsWith(TOKEN_PREFIX)) {
             return Optional.empty();
