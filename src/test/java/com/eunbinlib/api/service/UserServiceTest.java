@@ -4,7 +4,7 @@ import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.UserCreateRequest;
-import com.eunbinlib.api.exception.type.UserNotFoundException;
+import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;

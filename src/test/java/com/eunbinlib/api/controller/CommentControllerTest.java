@@ -13,10 +13,8 @@ import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,15 +22,18 @@ import org.springframework.http.HttpMethod;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Objects;
+
 import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
 import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -68,6 +69,8 @@ class CommentControllerTest {
 
     Post mockPost;
 
+    Comment mockComment;
+
     @BeforeEach
     void beforeEach() {
 
@@ -102,97 +105,109 @@ class CommentControllerTest {
         post.setMember(mockMember);
 
         mockPost = postRepository.save(post);
+
+
+        Comment comment = Comment.builder()
+                .content("댓글내용")
+                .member(mockMember)
+                .post(mockPost)
+                .build();
+
+        mockComment = commentRepository.save(comment);
     }
 
     @AfterEach
     void afterEach() {
+        commentRepository.deleteAll();
         postRepository.deleteAll();
         userRepository.deleteAll();
     }
 
-    @Test
-    @DisplayName("댓글 생성")
-    void createComment() throws Exception {
-        // given
-        CommentCreateRequest request = CommentCreateRequest.builder()
-                .content("댓글내용")
-                .postId(mockPost.getId())
-                .build();
+    @Nested
+    @DisplayName("create")
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+    class Create {
 
-        String json = objectMapper.writeValueAsString(request);
+        @Test
+        @DisplayName("댓글 작성")
+        void createComment() throws Exception {
+            // given
+            CommentCreateRequest request = CommentCreateRequest.builder()
+                    .content("댓글내용")
+                    .postId(mockPost.getId())
+                    .build();
 
-        // when & expected
-        mockMvc.perform(multipart(HttpMethod.POST, "/api/comments")
-                        .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
-                        .contentType(APPLICATION_JSON)
-                        .content(json)
-                )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andDo(print());
+            String json = objectMapper.writeValueAsString(request);
 
-        // then
-        Comment comment = commentRepository.findAll().get(0);
-        assertThat(comment.getContent())
-                .isEqualTo("댓글내용");
-        assertThat(comment.getPost().getId())
-                .isEqualTo(mockPost.getId());
-        assertThat(comment.getWriterId())
-                .isEqualTo(mockMember.getId());
-    }
+            // when & expected
+            mockMvc.perform(post("/api/comments")
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isCreated())
+                    .andDo(print());
 
-    @Test
-    @DisplayName("유저 멘션이 있는 댓글 작성(대댓글)")
-    void createCommentWithMention() throws Exception {
-        // given
-        CommentCreateRequest request = CommentCreateRequest.builder()
-                .content("댓글내용")
-                .postId(mockPost.getId())
-                .mentionId(2L)
-                .build();
+            // then
+            Comment comment = commentRepository.findAll().get(0);
+            assertThat(comment.getContent())
+                    .isEqualTo("댓글내용");
+            assertThat(comment.getPost().getId())
+                    .isEqualTo(mockPost.getId());
+            assertThat(comment.getMember().getId())
+                    .isEqualTo(mockMember.getId());
+        }
 
-        String json = objectMapper.writeValueAsString(request);
+        @Test
+        @DisplayName("대댓글을 작성하는 경우")
+        void createCommentWithMention() throws Exception {
+            // given
+            CommentCreateRequest request = CommentCreateRequest.builder()
+                    .content("댓글내용")
+                    .postId(mockPost.getId())
+                    .parentId(mockComment.getId())
+                    .build();
 
-        // when & expected
-        mockMvc.perform(multipart(HttpMethod.POST, "/api/comments")
-                        .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
-                        .contentType(APPLICATION_JSON)
-                        .content(json)
-                )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andDo(print());
+            String json = objectMapper.writeValueAsString(request);
 
-        // then
-        Comment comment = commentRepository.findAll().get(0);
-        assertThat(comment.getContent())
-                .isEqualTo("댓글내용");
-        assertThat(comment.getPost().getId())
-                .isEqualTo(mockPost.getId());
-        assertThat(comment.getWriterId())
-                .isEqualTo(mockMember.getId());
-        assertThat(comment.getMentionId())
-                .isEqualTo(2L);
-    }
+            // when & expected
+            mockMvc.perform(post("/api/comments")
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn();
 
-    @Test
-    @DisplayName("게스트가 댓글을 다는 경우")
-    void createCommentByGuest() throws Exception {
-        // given
-        CommentCreateRequest request = CommentCreateRequest.builder()
-                .content("댓글내용")
-                .postId(mockPost.getId())
-                .build();
+            // then
+            assertThat(commentRepository.findAll()
+                    .stream()
+                    .anyMatch((e) ->
+                            e.getParent() != null &&
+                                    Objects.equals(e.getParent().getId(), mockComment.getId()))
+            ).isTrue();
+        }
 
-        String json = objectMapper.writeValueAsString(request);
+        @Test
+        @DisplayName("게스트가 댓글을 다는 경우")
+        void createCommentByGuest() throws Exception {
+            // given
+            CommentCreateRequest request = CommentCreateRequest.builder()
+                    .content("댓글내용")
+                    .postId(mockPost.getId())
+                    .build();
 
-        // expected
-        mockMvc.perform(multipart(HttpMethod.POST, "/api/comments")
-                        .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockGuestAccessToken)
-                        .contentType(APPLICATION_JSON)
-                        .content(json)
-                )
-                .andExpect(status().isForbidden())
-                .andDo(print());
+            String json = objectMapper.writeValueAsString(request);
+
+            // expected
+            mockMvc.perform(multipart(HttpMethod.POST, "/api/comments")
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockGuestAccessToken)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isForbidden())
+                    .andDo(print());
+        }
     }
 }

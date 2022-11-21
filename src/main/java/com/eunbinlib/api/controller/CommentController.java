@@ -2,6 +2,7 @@ package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.UserSession;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
+import com.eunbinlib.api.dto.request.CommentUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
 import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.service.CommentService;
@@ -31,5 +32,15 @@ public class CommentController {
         }
 
         return commentService.create(userSession.getId(), commentCreateRequest);
+    }
+
+    @PatchMapping("/{commentId}")
+    public void update(UserSession userSession, @PathVariable Long commentId, @RequestBody @Valid CommentUpdateRequest commentUpdateRequest) {
+        commentService.update(userSession.getId(), commentId, commentUpdateRequest);
+    }
+
+    @DeleteMapping("/{commentId}")
+    public void update(UserSession userSession, @PathVariable Long commentId) {
+        commentService.delete(userSession.getId(), commentId);
     }
 }

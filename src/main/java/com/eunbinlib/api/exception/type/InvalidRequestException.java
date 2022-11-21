@@ -14,7 +14,7 @@ public class InvalidRequestException extends EunbinlibException {
         super(MESSAGE);
     }
 
-    public InvalidRequestException(String fieldName, String message) {
+    public InvalidRequestException(final String fieldName, final String message) {
         super(MESSAGE);
         addValidation(fieldName, message);
     }

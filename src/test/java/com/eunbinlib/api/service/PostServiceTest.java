@@ -11,7 +11,7 @@ import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import com.eunbinlib.api.dto.response.*;
-import com.eunbinlib.api.exception.type.PostNotFoundException;
+import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
 import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;

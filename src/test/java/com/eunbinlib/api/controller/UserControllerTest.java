@@ -8,7 +8,7 @@ import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.UserCreateRequest;
-import com.eunbinlib.api.exception.type.UserNotFoundException;
+import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
