@@ -1,20 +1,24 @@
 package com.eunbinlib.api.domain.imagefile;
 
+import com.eunbinlib.api.domain.common.BaseTimeEntity;
 import com.eunbinlib.api.domain.post.Post;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Entity
 @Getter
-@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PostImageFile extends BaseImageFile {
+public class PostImageFile extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
+
+    @Embedded
+    private BaseImageFile baseImageFile;
 
     @ManyToOne
     @JoinColumn(name = "POST_ID")
@@ -26,5 +30,4 @@ public class PostImageFile extends BaseImageFile {
             post.getImages().add(this);
         }
     }
-
 }

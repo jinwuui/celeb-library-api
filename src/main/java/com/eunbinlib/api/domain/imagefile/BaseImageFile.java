@@ -1,27 +1,20 @@
 package com.eunbinlib.api.domain.imagefile;
 
-import com.eunbinlib.api.domain.common.BaseTimeEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 
-@Entity
 @Getter
-@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class BaseImageFile extends BaseTimeEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+@Embeddable
+public class BaseImageFile {
 
     @NotNull
-    private String savedFilename;
+    private String storedFilename;
 
     @NotNull
     private String originalFilename;
@@ -32,4 +25,11 @@ public abstract class BaseImageFile extends BaseTimeEntity {
     @NotNull
     private Long byteSize;
 
+    @Builder
+    public BaseImageFile(String storedFilename, String originalFilename, String contentType, Long byteSize) {
+        this.storedFilename = storedFilename;
+        this.originalFilename = originalFilename;
+        this.contentType = contentType;
+        this.byteSize = byteSize;
+    }
 }
