@@ -12,6 +12,7 @@ import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
+import com.eunbinlib.api.dto.request.CommentUpdateRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -28,8 +29,7 @@ import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
 import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,6 +63,10 @@ class CommentControllerTest {
     String mockMemberAccessToken;
     String mockMemberRefreshToken;
 
+    Member mockMember2;
+    String mockMember2AccessToken;
+    String mockMember2RefreshToken;
+
     Guest mockGuest;
     String mockGuestAccessToken;
     String mockGuestRefreshToken;
@@ -83,6 +87,15 @@ class CommentControllerTest {
         mockMemberAccessToken = jwtUtils.createAccessToken(mockMember.getUserType(), mockMember.getUsername());
         mockMemberRefreshToken = jwtUtils.createRefreshToken(mockMember.getUserType(), mockMember.getUsername());
 
+        mockMember2 = Member.builder()
+                .username("mockMember2")
+                .nickname("mockMember2")
+                .password("mockPassword2")
+                .build();
+
+        mockMember2AccessToken = jwtUtils.createAccessToken(mockMember2.getUserType(), mockMember2.getUsername());
+        mockMember2RefreshToken = jwtUtils.createRefreshToken(mockMember2.getUserType(), mockMember2.getUsername());
+
         mockGuest = Guest.builder()
                 .username("mockGuest")
                 .password("mockPassword")
@@ -92,9 +105,11 @@ class CommentControllerTest {
         mockGuestRefreshToken = jwtUtils.createRefreshToken(mockGuest.getUserType(), mockGuest.getUsername());
 
         userRepository.save(mockMember);
+        userRepository.save(mockMember2);
         userRepository.save(mockGuest);
 
         userContextRepository.saveUserInfo(mockMemberAccessToken, mockMemberRefreshToken, mockMember);
+        userContextRepository.saveUserInfo(mockMember2AccessToken, mockMember2RefreshToken, mockMember2);
         userContextRepository.saveUserInfo(mockGuestAccessToken, mockGuestRefreshToken, mockGuest);
 
         Post post = Post.builder()
@@ -205,6 +220,122 @@ class CommentControllerTest {
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockGuestAccessToken)
                             .contentType(APPLICATION_JSON)
                             .content(json)
+                    )
+                    .andExpect(status().isForbidden())
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("update")
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+    class Update {
+
+        @Test
+        @DisplayName("댓글을 수정하는 경우")
+        void updateComment() throws Exception {
+            // given
+            CommentUpdateRequest request = CommentUpdateRequest.builder()
+                    .content("수정된 댓글 내용")
+                    .build();
+
+            String json = objectMapper.writeValueAsString(request);
+
+            // when & expected
+            mockMvc.perform(patch("/api/comments/{commentId}", mockComment.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            // then
+            Comment comment = commentRepository.findAll().get(0);
+            assertThat(comment.getContent())
+                    .isEqualTo(request.getContent());
+            assertThat(comment.getPost().getId())
+                    .isEqualTo(mockPost.getId());
+            assertThat(comment.getMember().getId())
+                    .isEqualTo(mockMember.getId());
+        }
+
+        @Test
+        @DisplayName("다른 사람의 댓글을 수정하는 경우")
+        void updateCommentOfAnotherUser() throws Exception {
+            // given
+            CommentUpdateRequest request = CommentUpdateRequest.builder()
+                    .content("수정된 댓글 내용")
+                    .build();
+
+            String json = objectMapper.writeValueAsString(request);
+
+            // expected
+            mockMvc.perform(patch("/api/comments/{commentId}", mockComment.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMember2AccessToken)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isForbidden())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("게스트가 댓글을 다는 경우")
+        void updateCommentByGuest() throws Exception {
+            // given
+            CommentUpdateRequest request = CommentUpdateRequest.builder()
+                    .content("댓글내용")
+                    .build();
+
+            String json = objectMapper.writeValueAsString(request);
+
+            // expected
+            mockMvc.perform(patch("/api/comments/{commentId}", mockComment.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockGuestAccessToken)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isForbidden())
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("delete")
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+    class Delete {
+
+        @Test
+        @DisplayName("댓글을 삭제하는 경우")
+        void deleteComment() throws Exception {
+            // expected
+            mockMvc.perform(delete("/api/comments/{commentId}", mockComment.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("다른 사람의 댓글을 삭제하는 경우")
+        void deleteCommentOfAnotherUser() throws Exception {
+            // expected
+            mockMvc.perform(delete("/api/comments/{commentId}", mockComment.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMember2AccessToken)
+                            .contentType(APPLICATION_JSON)
+                    )
+                    .andExpect(status().isForbidden())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("게스트가 댓글을 삭제하는 경우")
+        void deleteCommentByGuest() throws Exception {
+            // expected
+            mockMvc.perform(delete("/api/comments/{commentId}", mockComment.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + mockGuestAccessToken)
+                            .contentType(APPLICATION_JSON)
                     )
                     .andExpect(status().isForbidden())
                     .andDo(print());

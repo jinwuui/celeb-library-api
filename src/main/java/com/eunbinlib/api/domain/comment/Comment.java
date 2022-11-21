@@ -20,7 +20,7 @@ public class Comment extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "댓글을 입력해주세요.")
     String content;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -45,5 +45,9 @@ public class Comment extends BaseTimeEntity {
 
     public void setPost(Post post) {
         this.post = post;
+    }
+
+    public void update(final String content) {
+        this.content = content != null ? content : this.content;
     }
 }

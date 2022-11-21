@@ -369,7 +369,6 @@ class PostServiceTest {
                             .state(i % 2 == 0 ? PostState.NORMAL : PostState.DELETED)
                             .build();
                     post.setMember(mockMember);
-                    log.info("state {}: {}", i, post.getState());
                     return post;
                 })
                 .collect(Collectors.toList());
