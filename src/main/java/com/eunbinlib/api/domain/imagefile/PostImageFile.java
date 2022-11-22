@@ -1,6 +1,6 @@
 package com.eunbinlib.api.domain.imagefile;
 
-import com.eunbinlib.api.domain.common.BaseTimeEntity;
+import com.eunbinlib.api.domain.BaseTimeEntity;
 import com.eunbinlib.api.domain.post.Post;
 import lombok.AccessLevel;
 import lombok.Builder;

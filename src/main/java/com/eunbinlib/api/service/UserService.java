@@ -39,6 +39,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(username));
     }
 
+    @Transactional
     public void createMember(UserCreateRequest userCreateRequest) {
 
             Member member = Member.builder()
@@ -50,6 +51,7 @@ public class UserService {
             userRepository.save(member);
     }
 
+    @Transactional
     public void createGuest(UserCreateRequest userCreateRequest) {
 
             Guest guest = Guest.builder()

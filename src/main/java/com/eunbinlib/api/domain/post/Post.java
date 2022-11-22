@@ -1,7 +1,7 @@
 package com.eunbinlib.api.domain.post;
 
 import com.eunbinlib.api.domain.comment.Comment;
-import com.eunbinlib.api.domain.common.BaseTimeEntity;
+import com.eunbinlib.api.domain.BaseTimeEntity;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.user.Member;

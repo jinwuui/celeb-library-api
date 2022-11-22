@@ -1,6 +1,6 @@
 package com.eunbinlib.api.domain.user;
 
-import com.eunbinlib.api.domain.common.BaseTimeEntity;
+import com.eunbinlib.api.domain.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
