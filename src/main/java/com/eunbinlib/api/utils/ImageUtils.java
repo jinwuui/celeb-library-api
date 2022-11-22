@@ -12,7 +12,8 @@ import java.util.UUID;
 
 public class ImageUtils {
 
-    public static BaseImageFile storeImage(String dirPath, MultipartFile image) {
+    public static BaseImageFile storeImage(final String dirPath, final MultipartFile image) {
+
         if (dirPath == null || image == null || image.isEmpty()) {
             return null;
         }
@@ -20,7 +21,7 @@ public class ImageUtils {
         try {
             String contentType = image.getContentType();
 
-            if (contentType == null || isNotImage(contentType) || isNotVideo(contentType)) {
+            if (contentType == null || (isNotImage(contentType) && isNotVideo(contentType))) {
                 // NOTE: In this app, video is same to an image.
                 // NOTE: Because, this app will also show videos to the users of the app, like image.
                 return null;
@@ -42,7 +43,8 @@ public class ImageUtils {
         }
     }
 
-    public static List<BaseImageFile> saveImages(String dirPath, List<MultipartFile> images) {
+    public static List<BaseImageFile> storeImages(final String dirPath, final List<MultipartFile> images) {
+
         if (dirPath == null || images == null || images.isEmpty()) {
             return List.of();
         }
@@ -60,26 +62,26 @@ public class ImageUtils {
         return result;
     }
 
-    private static String createStoreFilename(String originalFilename) {
+    private static String createStoreFilename(final String originalFilename) {
         String extension = extractExtension(originalFilename);
         String uuid = UUID.randomUUID().toString();
         return StringUtils.join(uuid, ".", extension);
     }
 
-    private static String extractExtension(String originalFilename) {
+    private static String extractExtension(final String originalFilename) {
         int index = originalFilename.lastIndexOf(".");
         return originalFilename.substring(index + 1);
     }
 
-    private static String getFullPath(String dirPath, String filename) {
+    private static String getFullPath(final String dirPath, final String filename) {
         return StringUtils.join(dirPath, filename);
     }
 
-    private static boolean isNotImage(String contentType) {
+    private static boolean isNotImage(final String contentType) {
         return !contentType.contains("image");
     }
 
-    private static boolean isNotVideo(String contentType) {
+    private static boolean isNotVideo(final String contentType) {
         return !contentType.contains("video");
     }
 

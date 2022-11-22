@@ -1,8 +1,10 @@
 package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.UserSession;
+import com.eunbinlib.api.auth.utils.AuthUtils;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.UserCreateRequest;
 import com.eunbinlib.api.dto.response.UserMeResponse;
 import com.eunbinlib.api.service.UserService;
@@ -39,13 +41,20 @@ public class UserController {
     }
 
     @PostMapping("/members")
-    public void joinMember(@RequestBody @Valid UserCreateRequest userCreateRequest) {
-        userService.joinMember(userCreateRequest);
+    public void createMember(@RequestBody @Valid UserCreateRequest userCreateRequest) {
+        userService.createMember(userCreateRequest);
     }
 
     @PostMapping("/guests")
-    public void joinGuest(@RequestBody @Valid UserCreateRequest userCreateRequest) {
-        userService.joinGuest(userCreateRequest);
+    public void createGuest(@RequestBody @Valid UserCreateRequest userCreateRequest) {
+        userService.createGuest(userCreateRequest);
+    }
+
+    @PatchMapping("/me")
+    public void updateMe(UserSession userSession, @RequestBody @Valid MeUpdateRequest meUpdateRequest) {
+        AuthUtils.authorizeUserSession(userSession);
+        userService.updateMe(userSession.getId(), meUpdateRequest);
+        // 프로필 수정
     }
 
     private String getImageUrl(User user) {

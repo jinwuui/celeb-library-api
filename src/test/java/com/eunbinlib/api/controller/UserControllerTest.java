@@ -129,9 +129,11 @@ class UserControllerTest {
         // given
         String username = "testId";
         String password = "testPw";
+        String nickname = "tester";
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
+                .nickname(nickname)
                 .build();
 
         String json = objectMapper.writeValueAsString(userCreateRequest);
@@ -160,7 +162,7 @@ class UserControllerTest {
         // given
         String username = "testId";
         String password = "testPw";
-        String nickname = "testNickname";
+        String nickname = "nickname";
 
         Member member = Member.builder()
                 .username(username)
@@ -173,6 +175,7 @@ class UserControllerTest {
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
+                .nickname(nickname + "2")
                 .build();
 
         String json = objectMapper.writeValueAsString(userCreateRequest);

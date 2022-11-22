@@ -2,6 +2,7 @@ package com.eunbinlib.api.domain.post;
 
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.common.BaseTimeEntity;
+import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.user.Member;
 import lombok.AccessLevel;
@@ -54,12 +55,13 @@ public class Post extends BaseTimeEntity {
     private Member member;
 
     @Builder
-    public Post(String title, PostState state, String content, Long likeCount, Long viewCount) {
+    public Post(String title, PostState state, String content, Long likeCount, Long viewCount, Member member) {
         this.title = title;
         this.state = state;
         this.content = content;
         this.likeCount = likeCount;
         this.viewCount = viewCount;
+        this.member = member;
     }
 
     public void update(final String title, final String content) {
@@ -71,10 +73,18 @@ public class Post extends BaseTimeEntity {
         this.state = PostState.DELETED;
     }
 
-    public void addImage(PostImageFile image) {
-        this.images.add(image);
-        if (image.getPost() != this) {
-            image.setPost(this);
+    public void addImage(BaseImageFile baseImageFile) {
+        PostImageFile postImageFile = new PostImageFile(baseImageFile, this);
+
+        this.images.add(postImageFile);
+        if (postImageFile.getPost() != this) {
+            postImageFile.setPost(this);
+        }
+    }
+
+    public void addImages(List<BaseImageFile> baseImageFiles) {
+        for (BaseImageFile baseImageFile : baseImageFiles) {
+            addImage(baseImageFile);
         }
     }
 
