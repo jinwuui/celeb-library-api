@@ -1,24 +1,15 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.auth.data.JwtProperties;
-import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
-import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.ControllerTest;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.UserCreateRequest;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.servlet.MockMvc;
 
+import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
 import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.controller.UserController.JOIN_GUEST_URL;
 import static com.eunbinlib.api.controller.UserController.JOIN_MEMBER_URL;
@@ -31,77 +22,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+class UserControllerTest extends ControllerTest {
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-class UserControllerTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    JwtUtils jwtUtils;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    MapUserContextRepository userContextRepository;
-
-    Member mockMember;
-
-    String mockMemberAccessToken;
-
-    String mockMemberRefreshToken;
-
-    Guest mockGuest;
-
-    String mockGuestAccessToken;
-
-    String mockGuestRefreshToken;
-
-    @BeforeEach
-    void clean() {
-
-        mockMember = Member.builder()
-                .username("mockMember")
-                .nickname("mockMember")
-                .password("mockPassword")
-                .build();
-
-        mockMemberAccessToken = jwtUtils.createAccessToken(mockMember.getUserType(), mockMember.getUsername());
-        mockMemberRefreshToken = jwtUtils.createRefreshToken(mockMember.getUserType(), mockMember.getUsername());
-
-        mockGuest = Guest.builder()
-                .username("mockGuest")
-                .password("mockPassword")
-                .build();
-
-        mockGuestAccessToken = jwtUtils.createAccessToken(mockMember.getUserType(), mockMember.getUsername());
-        mockGuestRefreshToken = jwtUtils.createRefreshToken(mockMember.getUserType(), mockMember.getUsername());
-
-        userRepository.deleteAll();
-    }
+    public static final String MEMBER_TYPE = "member";
+    public static final String GUEST_TYPE = "guest";
 
     @Test
     @DisplayName("회원 유저가 자신의 정보 조회하는 경우")
     void readMeByMember() throws Exception {
         // given
-        Member savedMember = userRepository.save(mockMember);
-        userContextRepository.saveUserInfo(mockMemberAccessToken, mockMemberRefreshToken, savedMember);
+        loginMember();
 
         // expected
         mockMvc.perform(get("/api/users/me")
-                        .header(JwtProperties.HEADER_AUTHORIZATION, TOKEN_PREFIX + mockMemberAccessToken)
+                        .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userType").value(savedMember.getUserType()))
-                .andExpect(jsonPath("$.id").value(savedMember.getId()))
-                .andExpect(jsonPath("$.username").value(savedMember.getUsername()))
+                .andExpect(jsonPath("$.userType").value(member.getUserType()))
+                .andExpect(jsonPath("$.id").value(member.getId()))
+                .andExpect(jsonPath("$.username").value(member.getUsername()))
                 .andDo(print());
     }
 
@@ -109,17 +48,16 @@ class UserControllerTest {
     @DisplayName("게스트 유저가 자신의 정보 조회하는 경우")
     void readMeByGuest() throws Exception {
         // given
-        Guest savedGuest = userRepository.save(mockGuest);
-        userContextRepository.saveUserInfo(mockGuestAccessToken, mockGuestRefreshToken, savedGuest);
+        loginGuest();
 
         // expected
         mockMvc.perform(get("/api/users/me")
-                        .header(JwtProperties.HEADER_AUTHORIZATION, TOKEN_PREFIX + mockGuestAccessToken)
+                        .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userType").value(savedGuest.getUserType()))
-                .andExpect(jsonPath("$.id").value(savedGuest.getId()))
-                .andExpect(jsonPath("$.username").value(savedGuest.getUsername()))
+                .andExpect(jsonPath("$.userType").value(guest.getUserType()))
+                .andExpect(jsonPath("$.id").value(guest.getId()))
+                .andExpect(jsonPath("$.username").value(guest.getUsername()))
                 .andDo(print());
     }
 
@@ -130,6 +68,7 @@ class UserControllerTest {
         String username = "testId";
         String password = "testPw";
         String nickname = "tester";
+
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
@@ -153,29 +92,22 @@ class UserControllerTest {
         );
 
         assertEquals(findUser.getUsername(), username);
-        assertEquals(findUser.getUserType(), "member");
+        assertEquals(findUser.getUserType(), MEMBER_TYPE);
     }
 
     @Test
     @DisplayName("회원 가입 시, 중복된 아이디로 가입하는 경우")
     void joinMemberDuplicatedUsername() throws Exception {
         // given
-        String username = "testId";
-        String password = "testPw";
-        String nickname = "nickname";
+        Member member = getMember();
 
-        Member member = Member.builder()
-                .username(username)
-                .password(password)
-                .nickname(nickname)
-                .build();
-
-        userRepository.save(member);
+        String differentPassword = member.getPassword() + "2";
+        String differentNickname = member.getNickname() + "2";
 
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
-                .username(username)
-                .password(password)
-                .nickname(nickname + "2")
+                .username(member.getUsername())
+                .password(differentPassword)
+                .nickname(differentNickname)
                 .build();
 
         String json = objectMapper.writeValueAsString(userCreateRequest);
@@ -193,8 +125,6 @@ class UserControllerTest {
     @DisplayName("게스트 유저 가입")
     void joinGuest() throws Exception {
         // given
-        String username = "testId";
-        String password = "testPw";
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                 .username(username)
                 .password(password)
@@ -217,26 +147,19 @@ class UserControllerTest {
         );
 
         assertEquals(findUser.getUsername(), username);
-        assertEquals(findUser.getUserType(), "guest");
+        assertEquals(findUser.getUserType(), GUEST_TYPE);
     }
 
     @Test
     @DisplayName("게스트 가입 시, 중복된 아이디로 가입하는 경우")
     void joinGuestDuplicatedUsername() throws Exception {
         // given
-        String username = "testId";
-        String password = "testPw";
+        Guest guest = getGuest();
 
-        Guest guest = Guest.builder()
-                .username(username)
-                .password(password)
-                .build();
-
-        userRepository.save(guest);
-
+        String differentPassword = guest.getPassword() + "2";
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
-                .username(username)
-                .password(password)
+                .username(guest.getUsername())
+                .password(differentPassword)
                 .build();
 
         String json = objectMapper.writeValueAsString(userCreateRequest);

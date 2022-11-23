@@ -1,6 +1,6 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.ApplicationTest;
+import com.eunbinlib.api.ServiceTest;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
@@ -26,42 +26,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @Slf4j
-class UserServiceTest extends ApplicationTest {
-
-    private static Integer SEQ = 0;
+class UserServiceTest extends ServiceTest {
 
     @Autowired
     UserService userService;
-
-    String username = "username";
-    String password = "password";
-    String nickname = "nickname";
-
-    Member getMember() {
-        ++SEQ;
-        return Member.builder()
-                .username(username + SEQ)
-                .password(password + SEQ)
-                .nickname(nickname + SEQ)
-                .build();
-    }
-
-    Member getSavedMember() {
-        return userRepository.save(getMember());
-    }
-
-    Guest getGuest() {
-        ++SEQ;
-        return Guest.builder()
-                .username(username + SEQ)
-                .password(password + SEQ)
-                .build();
-    }
-
-    Guest getSavedGuest() {
-        return userRepository.save(getGuest());
-    }
-
 
     @Nested
     @DisplayName("유저 생성")
@@ -84,7 +52,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("이미 존재하는 게스트 유저를 회원가입")
         void createGuestAlreadyExist() {
             // given
-            Guest guest = getSavedGuest();
+            Guest guest = getGuest();
 
             UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                     .username(guest.getUsername())
@@ -210,7 +178,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("이미 존재하는 회원 유저를 회원가입")
         void createMemberAlreadyExist() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
 
             UserCreateRequest userCreateRequest = UserCreateRequest.builder()
                     .username(member.getUsername())
@@ -233,7 +201,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("이름으로 유저 조회")
         void readMeByUsername() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
 
             // when
             User user = userService.readMeByUsername(member.getUsername());
@@ -259,33 +227,28 @@ class UserServiceTest extends ApplicationTest {
     public class UpdateMe {
 
         @Test
-//        @Transactional(value = Transactional.TxType.REQUIRES_NEW)
         @DisplayName("자신의 프로필 수정 - 닉네임만 변경")
         void updateMeNickname() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MeUpdateRequest request = new MeUpdateRequest("수정 닉네임", null);
 
-            log.info("================member================member================member================member================member1");
             // when
             userService.updateMe(member.getId(), request);
 
-            log.info("================member================member================member================member================member2");
             // then
             Member findMember = memberRepository.findById(member.getId())
                     .orElseThrow(UserNotFoundException::new);
 
-            log.info("================member================member================member================member================member3");
             assertThat(findMember.getNickname().getValue())
                     .isEqualTo(request.getNickname());
-            log.info("================member================member================member================member================member4");
         }
 
         @Test
         @DisplayName("자신의 프로필 수정 - 닉네임이 너무 짧을 때")
         void updateMeNicknameTooShort() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MeUpdateRequest request = new MeUpdateRequest("닉", null);
 
             // expected
@@ -297,7 +260,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("자신의 프로필 수정 - 닉네임이 너무 길 때")
         void updateMeNicknameTooLong() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MeUpdateRequest request = new MeUpdateRequest("가나다라마바사아자차카타파하", null);
 
             // expected
@@ -309,7 +272,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("공백 닉네임으로 수정할 때")
         void updateMeNicknameBlank() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MeUpdateRequest request = new MeUpdateRequest(" ", null);
 
             // expected
@@ -321,7 +284,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("특수문자가 포함된 닉네임으로 수정할 때")
         void updateMeNicknameInvalidCharacter() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MeUpdateRequest request = new MeUpdateRequest("!@#$" + nickname, null);
 
             // expected
@@ -334,7 +297,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("자신의 프로필 수정 - 프로필 이미지만 변경")
         void updateMeProfileImageFile() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MockMultipartFile profileImageFile = new MockMultipartFile(
                     "images",
                     "test.jpg",
@@ -360,7 +323,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("잘못된 타입의 파일을 프로필에 넣은 경우")
         void updateMeInvalidFileContentType() throws IOException {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MockMultipartFile profileImageFile = new MockMultipartFile(
                     "images",
                     "test.jpg",
@@ -383,7 +346,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("자신의 프로필 수정 - 닉네임 & 프로필 모두 변경")
         void updateMeNicknameAndProfileImageFile() throws IOException {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             MockMultipartFile profileImageFile = new MockMultipartFile(
                     "images",
                     "test2.jpg",
@@ -423,7 +386,7 @@ class UserServiceTest extends ApplicationTest {
         @DisplayName("자신의 프로필 수정 - 닉네임 & 프로필 둘 다 없는 경우")
         void updateMeNoUpdateInfo() {
             // given
-            Member member = getSavedMember();
+            Member member = getMember();
             String oldNickname = member.getNickname().getValue();
             MeUpdateRequest request = new MeUpdateRequest(null, null);
 
