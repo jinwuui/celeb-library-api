@@ -34,8 +34,8 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public PostDetailResposne read(@PathVariable Long postId) {
-        return postService.read(postId);
+    public PostDetailResposne readDetail(@PathVariable Long postId) {
+        return postService.readDetail(postId);
     }
 
     @GetMapping()

@@ -62,10 +62,11 @@ public class PostService {
                 .build();
     }
 
-    public PostDetailResposne read(Long postId) {
+    public PostDetailResposne readDetail(Long postId) {
 
         Post post = postRepository.findByIdAndStateNot(postId, PostState.DELETED)
                 .orElseThrow(PostNotFoundException::new);
+        post.increaseViewCount();
 
         return PostDetailResposne.builder()
                 .id(post.getId())

@@ -109,7 +109,7 @@ class PostServiceTest extends ServiceTest {
             Post savedPost = postRepository.save(post);
 
             // when
-            PostDetailResposne findPost = postService.read(savedPost.getId());
+            PostDetailResposne findPost = postService.readDetail(savedPost.getId());
 
             // then
             assertThat(findPost).isNotNull();
@@ -131,7 +131,7 @@ class PostServiceTest extends ServiceTest {
             postRepository.save(post);
 
             // expected
-            assertThatThrownBy(() -> postService.read(post.getId() + 1L))
+            assertThatThrownBy(() -> postService.readDetail(post.getId() + 1L))
                     .isInstanceOf(PostNotFoundException.class);
         }
 
@@ -149,7 +149,7 @@ class PostServiceTest extends ServiceTest {
             postRepository.save(post);
 
             // expected
-            assertThatThrownBy(() -> postService.read(post.getId()))
+            assertThatThrownBy(() -> postService.readDetail(post.getId()))
                     .isInstanceOf(PostNotFoundException.class);
         }
 
