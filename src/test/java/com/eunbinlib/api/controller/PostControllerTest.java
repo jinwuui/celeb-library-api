@@ -180,8 +180,8 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("글 1개 조회")
-    void readOne() throws Exception {
+    @DisplayName("글 상세 조회")
+    void readDetail() throws Exception {
         // given
         loginMember();
         Post post = getPost(member);
@@ -194,6 +194,8 @@ class PostControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.id").value(post.getId()))
                 .andExpect(jsonPath("$.title").value(post.getTitle()))
                 .andExpect(jsonPath("$.content").value(post.getContent()))
+                .andExpect(jsonPath("$.viewCount").value(1L))
+                .andExpect(jsonPath("$.likeCount").value(0L))
                 .andDo(print());
     }
 

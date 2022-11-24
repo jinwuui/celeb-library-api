@@ -94,41 +94,31 @@ class PostServiceTest extends ServiceTest {
     @Nested
     @DisplayName("글 조회 테스트")
     class Read {
+
         @Test
-        @DisplayName("글 1개 조회")
-        void readOne() {
+        @DisplayName("글 상세 조회")
+        void readDetail() {
             // given
             Member member = getMember();
-            Post post = Post.builder()
-                    .title("제목")
-                    .content("내용")
-                    .state(PostState.NORMAL)
-                    .build();
-            post.setMember(member);
-
-            Post savedPost = postRepository.save(post);
+            Post post = getPost(member);
 
             // when
-            PostDetailResposne findPost = postService.readDetail(savedPost.getId());
+            PostDetailResponse findPost = postService.readDetail(post.getId());
 
             // then
             assertThat(findPost).isNotNull();
-            assertThat(findPost.getTitle()).isEqualTo("제목");
-            assertThat(findPost.getContent()).isEqualTo("내용");
+            assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
+            assertThat(findPost.getContent()).isEqualTo(post.getContent());
+            assertThat(findPost.getViewCount()).isEqualTo(1L);
+            assertThat(findPost.getLikeCount()).isEqualTo(0L);
         }
 
         @Test
-        @DisplayName("글 1개 조회 - 존재하지 않는 글")
-        void readOnePostNotFound() {
+        @DisplayName("글 상세 조회 - 존재하지 않는 글")
+        void readDetailPostNotFound() {
             // given
             Member member = getMember();
-            Post post = Post.builder()
-                    .title("제목")
-                    .content("내용")
-                    .state(PostState.NORMAL)
-                    .build();
-            post.setMember(member);
-            postRepository.save(post);
+            Post post = getPost(member);
 
             // expected
             assertThatThrownBy(() -> postService.readDetail(post.getId() + 1L))
@@ -136,17 +126,13 @@ class PostServiceTest extends ServiceTest {
         }
 
         @Test
-        @DisplayName("삭제된 글을 조회하는 경우")
-        void readOneDeletedPost() {
+        @DisplayName("삭제된 글을 상세 조회하는 경우")
+        void readDetailDeletedPost() {
             // given
             Member member = getMember();
-            Post post = Post.builder()
-                    .title("제목")
-                    .content("내용")
-                    .state(PostState.DELETED)
-                    .build();
-            post.setMember(member);
-            postRepository.save(post);
+            Post post = getPost(member);
+
+            postService.delete(member.getId(), post.getId());
 
             // expected
             assertThatThrownBy(() -> postService.readDetail(post.getId()))

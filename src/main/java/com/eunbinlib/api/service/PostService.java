@@ -43,13 +43,8 @@ public class PostService {
 
         Member writer = userService.findMemberById(userId);
 
-        Post post = Post.builder()
-                .title(postCreateRequest.getTitle())
-                .content(postCreateRequest.getContent())
-                .state(PostState.NORMAL)
-                .member(writer)
-                .build();
-
+        Post post = postCreateRequest.toEntity(writer);
+        
         List<BaseImageFile> baseImageFiles = ImageUtils.storeImages(
                 postImageDir, postCreateRequest.getImages());
 
@@ -57,22 +52,16 @@ public class PostService {
 
         Long postId = postRepository.save(post).getId();
 
-        return OnlyIdResponse.builder()
-                .id(postId)
-                .build();
+        return OnlyIdResponse.from(postId);
     }
 
-    public PostDetailResposne readDetail(Long postId) {
-
+    public PostDetailResponse readDetail(Long postId) {
         Post post = postRepository.findByIdAndStateNot(postId, PostState.DELETED)
                 .orElseThrow(PostNotFoundException::new);
+
         post.increaseViewCount();
 
-        return PostDetailResposne.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .build();
+        return PostDetailResponse.from(post);
     }
 
     public PaginationResponse<PostResponse> readMany(PostReadRequest postReadRequest) {

@@ -63,8 +63,8 @@ public class ServiceTest {
     protected Post getPost(Member member) {
         ++SEQ;
         return postRepository.save(Post.builder()
-                .title("제목")
-                .content("내용")
+                .title("제목" + SEQ)
+                .content("내용" + SEQ)
                 .state(PostState.NORMAL)
                 .member(member)
                 .build());
@@ -73,7 +73,7 @@ public class ServiceTest {
     protected Comment getComment(Member member, Post post) {
         ++SEQ;
         return commentRepository.save(Comment.builder()
-                .content("댓글 내용")
+                .content("댓글 내용" + SEQ)
                 .member(member)
                 .post(post)
                 .build());

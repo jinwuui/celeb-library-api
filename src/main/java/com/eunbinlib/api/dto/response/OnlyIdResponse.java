@@ -11,4 +11,10 @@ public class OnlyIdResponse {
     public OnlyIdResponse(Long id) {
         this.id = id;
     }
+
+    public static OnlyIdResponse from(Long id) {
+        return OnlyIdResponse.builder()
+                .id(id)
+                .build();
+    }
 }
