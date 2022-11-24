@@ -1,6 +1,7 @@
 package com.eunbinlib.api.utils;
 
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.exception.type.EunbinlibIllegalArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,19 +15,11 @@ public class ImageUtils {
 
     public static BaseImageFile storeImage(final String dirPath, final MultipartFile image) {
 
-        if (dirPath == null || image == null || image.isEmpty()) {
-            return null;
-        }
+        validateDirPath(dirPath);
+        validateImage(image);
+        validateContentType(image.getContentType());
 
         try {
-            String contentType = image.getContentType();
-
-            if (contentType == null || (isNotImage(contentType) && isNotVideo(contentType))) {
-                // NOTE: In this app, video is same to an image.
-                // NOTE: Because, this app will also show videos to the users of the app, like image.
-                return null;
-            }
-
             String originalFilename = image.getOriginalFilename();
             String storeFilename = createStoreFilename(originalFilename);
 
@@ -85,4 +78,23 @@ public class ImageUtils {
         return !contentType.contains("video");
     }
 
+    private static void validateDirPath(String dirPath) {
+        if (dirPath == null) {
+            throw new EunbinlibIllegalArgumentException("잘못된 저장 위치가 입력되었습니다.");
+        }
+    }
+
+    private static void validateImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new EunbinlibIllegalArgumentException("image", "사진이 존재하지 않습니다.");
+        }
+    }
+
+    private static void validateContentType(String contentType) {
+        if (contentType == null || (isNotImage(contentType) && isNotVideo(contentType))) {
+            // NOTE: In this app, video is same to an image.
+            // NOTE: Because, this app will also show videos to the users of the app, like image.
+            throw new EunbinlibIllegalArgumentException("contentType", "이미지/비디오 형식의 파일을 넣어주세요.");
+        }
+    }
 }

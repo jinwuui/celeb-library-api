@@ -1,7 +1,6 @@
 package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.auth.data.UserSession;
-import com.eunbinlib.api.auth.utils.AuthUtils;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Objects;
+
+import static com.eunbinlib.api.auth.utils.AuthUtils.authorizePassOnlyMember;
 
 @Slf4j
 @RestController
@@ -51,8 +52,9 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    public void updateMe(UserSession userSession, @RequestBody @Valid MeUpdateRequest meUpdateRequest) {
-        AuthUtils.authorizeUserSession(userSession);
+    public void updateMe(UserSession userSession, @ModelAttribute @Valid MeUpdateRequest meUpdateRequest) {
+        authorizePassOnlyMember(userSession);
+
         userService.updateMe(userSession.getId(), meUpdateRequest);
         // 프로필 수정
     }

@@ -1,7 +1,11 @@
 package com.eunbinlib.api.dto.request;
 
 import com.eunbinlib.api.domain.user.Nickname;
-import lombok.*;
+import com.eunbinlib.api.dto.validannotation.AllFieldsIsNullOrNot;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Pattern;
@@ -11,6 +15,7 @@ import javax.validation.constraints.Size;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@AllFieldsIsNullOrNot(fields = {"nickname", "profileImageFile"})
 public class MeUpdateRequest {
 
     @Size(min = Nickname.MIN_NICKNAME_LENGTH, max = Nickname.MAX_NICKNAME_LENGTH, message = "{min} ~ {max} 글자의 닉네임을 입력해주세요. 현재 닉네임: ${validatedValue}")
@@ -18,4 +23,5 @@ public class MeUpdateRequest {
     private String nickname;
 
     private MultipartFile profileImageFile;
+
 }

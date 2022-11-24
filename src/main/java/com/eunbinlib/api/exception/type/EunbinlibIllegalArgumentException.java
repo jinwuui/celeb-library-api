@@ -16,7 +16,7 @@ public class EunbinlibIllegalArgumentException extends EunbinlibException {
     }
 
     public EunbinlibIllegalArgumentException(final String fieldName, final String message) {
-        super(StringUtils.join(MESSAGE, " {\"" + fieldName + "\" : \"" + message + "\"}"));
+        super(StringUtils.join(MESSAGE));
         addValidation(fieldName, message);
     }
 

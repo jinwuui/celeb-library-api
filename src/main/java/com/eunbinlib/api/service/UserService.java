@@ -22,12 +22,10 @@ import javax.transaction.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     @Value("${images.profile.dir}")
     private String profileImageDir;
-
-    private final UserRepository userRepository;
-
-    private final MemberRepository memberRepository;
 
     public Member findMemberById(Long memberId) {
         return memberRepository.findById(memberId)
@@ -42,32 +40,36 @@ public class UserService {
     @Transactional
     public void createMember(UserCreateRequest userCreateRequest) {
 
-            Member member = Member.builder()
-                    .username(userCreateRequest.getUsername())
-                    .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
-                    .nickname(userCreateRequest.getNickname())
-                    .build();
+        Member member = Member.builder()
+                .username(userCreateRequest.getUsername())
+                .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                .nickname(userCreateRequest.getNickname())
+                .build();
 
-            userRepository.save(member);
+        userRepository.save(member);
     }
 
     @Transactional
     public void createGuest(UserCreateRequest userCreateRequest) {
 
-            Guest guest = Guest.builder()
-                    .username(userCreateRequest.getUsername())
-                    .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
-                    .build();
+        Guest guest = Guest.builder()
+                .username(userCreateRequest.getUsername())
+                .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                .build();
 
-            userRepository.save(guest);
+        userRepository.save(guest);
     }
 
     @Transactional
     public void updateMe(Long userId, MeUpdateRequest meUpdateRequest) {
         Member me = findMemberById(userId);
 
-        BaseImageFile baseImageFile = ImageUtils.storeImage(
-                profileImageDir, meUpdateRequest.getProfileImageFile());
+        BaseImageFile baseImageFile = null;
+        if (meUpdateRequest.getProfileImageFile() != null) {
+            baseImageFile = ImageUtils.storeImage(
+                    profileImageDir, meUpdateRequest.getProfileImageFile());
+
+        }
 
         me.update(meUpdateRequest.getNickname(), baseImageFile);
     }

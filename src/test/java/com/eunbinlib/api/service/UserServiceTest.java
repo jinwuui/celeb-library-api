@@ -197,7 +197,6 @@ class UserServiceTest extends ServiceTest {
     class Read {
 
         @Test
-//        @Transactional
         @DisplayName("이름으로 유저 조회")
         void readMeByUsername() {
             // given
@@ -206,11 +205,10 @@ class UserServiceTest extends ServiceTest {
             // when
             User user = userService.readMeByUsername(member.getUsername());
 
-            // expected
-//            assertThat(user)
-//                    .isEqualTo(member);
             assertThat(user.getId())
                     .isEqualTo(member.getId());
+            assertThat(user.getUsername())
+                    .isEqualTo(member.getUsername());
         }
 
         @Test
@@ -333,12 +331,9 @@ class UserServiceTest extends ServiceTest {
 
             MeUpdateRequest request = new MeUpdateRequest(null, profileImageFile);
 
-            // when
-            userService.updateMe(member.getId(), request);
-
-            // then
-            assertThat(member.getProfileImageFile())
-                    .isNull();
+            // expected
+            assertThatThrownBy(() -> userService.updateMe(member.getId(), request))
+                    .isInstanceOf(EunbinlibIllegalArgumentException.class);
         }
 
         @Test
