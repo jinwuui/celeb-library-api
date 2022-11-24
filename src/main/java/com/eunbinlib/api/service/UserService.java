@@ -6,8 +6,9 @@ import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
-import com.eunbinlib.api.dto.request.UserCreateRequest;
+import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
@@ -38,23 +39,23 @@ public class UserService {
     }
 
     @Transactional
-    public void createMember(UserCreateRequest userCreateRequest) {
+    public void createMember(MemberCreateRequest memberCreateRequest) {
 
         Member member = Member.builder()
-                .username(userCreateRequest.getUsername())
-                .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
-                .nickname(userCreateRequest.getNickname())
+                .username(memberCreateRequest.getUsername())
+                .password(memberCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                .nickname(memberCreateRequest.getNickname())
                 .build();
 
         userRepository.save(member);
     }
 
     @Transactional
-    public void createGuest(UserCreateRequest userCreateRequest) {
+    public void createGuest(GuestCreateRequest guestCreateRequest) {
 
         Guest guest = Guest.builder()
-                .username(userCreateRequest.getUsername())
-                .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                .username(guestCreateRequest.getUsername())
+                .password(guestCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
                 .build();
 
         userRepository.save(guest);

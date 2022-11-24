@@ -3,8 +3,9 @@ package com.eunbinlib.api.controller;
 import com.eunbinlib.api.auth.data.UserSession;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
-import com.eunbinlib.api.dto.request.UserCreateRequest;
+import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.dto.response.UserMeResponse;
 import com.eunbinlib.api.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -42,13 +43,13 @@ public class UserController {
     }
 
     @PostMapping("/members")
-    public void createMember(@RequestBody @Valid UserCreateRequest userCreateRequest) {
-        userService.createMember(userCreateRequest);
+    public void createMember(@RequestBody @Valid MemberCreateRequest memberCreateRequest) {
+        userService.createMember(memberCreateRequest);
     }
 
     @PostMapping("/guests")
-    public void createGuest(@RequestBody @Valid UserCreateRequest userCreateRequest) {
-        userService.createGuest(userCreateRequest);
+    public void createGuest(@RequestBody @Valid GuestCreateRequest guestCreateRequest) {
+        userService.createGuest(guestCreateRequest);
     }
 
     @PatchMapping("/me")

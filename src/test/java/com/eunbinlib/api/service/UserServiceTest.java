@@ -5,8 +5,9 @@ import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
-import com.eunbinlib.api.dto.request.UserCreateRequest;
+import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.exception.type.EunbinlibIllegalArgumentException;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -39,13 +40,13 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("게스트 유저 가입")
         void createGuest() {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            GuestCreateRequest request = GuestCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .build();
 
             // expected
-            assertDoesNotThrow(() -> userService.createGuest(userCreateRequest));
+            assertDoesNotThrow(() -> userService.createGuest(request));
         }
 
         @Test
@@ -54,13 +55,13 @@ class UserServiceTest extends ServiceTest {
             // given
             Guest guest = getGuest();
 
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            GuestCreateRequest request = GuestCreateRequest.builder()
                     .username(guest.getUsername())
                     .password(guest.getPassword())
                     .build();
 
             // expected
-            assertThatThrownBy(() -> userService.createGuest(userCreateRequest))
+            assertThatThrownBy(() -> userService.createGuest(request))
                     .isInstanceOf(DataIntegrityViolationException.class);
         }
 
@@ -68,28 +69,28 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("회원 유저 가입")
         void createMember() {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest request = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .nickname(nickname)
                     .build();
 
             // expected
-            assertDoesNotThrow(() -> userService.createMember(userCreateRequest));
+            assertDoesNotThrow(() -> userService.createMember(request));
         }
 
         @Test
         @DisplayName("공백 닉네임으로 회원 유저 가입")
         void createMemberNicknameBlank() {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest request = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .nickname("  ")
                     .build();
 
             // expected
-            assertThatThrownBy(() -> userService.createMember(userCreateRequest))
+            assertThatThrownBy(() -> userService.createMember(request))
                     .isInstanceOf(EunbinlibIllegalArgumentException.class);
         }
 
@@ -97,14 +98,14 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("너무 짧은 닉네임으로 회원 유저 가입")
         void createMemberNicknameTooShort() {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest request = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .nickname("닉")
                     .build();
 
             // expected
-            assertThatThrownBy(() -> userService.createMember(userCreateRequest))
+            assertThatThrownBy(() -> userService.createMember(request))
                     .isInstanceOf(EunbinlibIllegalArgumentException.class);
         }
 
@@ -112,14 +113,14 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("너무 긴 닉네임으로 회원 유저 가입")
         void createMemberNicknameTooLong() {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest request = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .nickname("가나다라마바사아자차카타파하")
                     .build();
 
             // expected
-            assertThatThrownBy(() -> userService.createMember(userCreateRequest))
+            assertThatThrownBy(() -> userService.createMember(request))
                     .isInstanceOf(EunbinlibIllegalArgumentException.class);
         }
 
@@ -127,14 +128,14 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("특수문자가 포함된 닉네임으로 회원 유저 가입")
         void createMemberNicknameInvalidCharacter() {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest request = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .nickname("@#$%" + nickname)
                     .build();
 
             // expected
-            assertThatThrownBy(() -> userService.createMember(userCreateRequest))
+            assertThatThrownBy(() -> userService.createMember(request))
                     .isInstanceOf(EunbinlibIllegalArgumentException.class);
         }
 
@@ -142,14 +143,14 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("중복 닉네임으로 회원 유저 가입")
         void createMemberDuplicatedNickname() {
             // given
-            UserCreateRequest request1 = UserCreateRequest.builder()
+            MemberCreateRequest request1 = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .nickname(nickname)
                     .build();
             userService.createMember(request1);
 
-            UserCreateRequest request2 = UserCreateRequest.builder()
+            MemberCreateRequest request2 = MemberCreateRequest.builder()
                     .username(username + "2")
                     .password(password)
                     .nickname(nickname)
@@ -164,13 +165,13 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("닉네임 없이 회원 유저 가입")
         void createMemberWithoutNickname() {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest request = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .build();
 
             // expected
-            assertThatThrownBy(() -> userService.createMember(userCreateRequest))
+            assertThatThrownBy(() -> userService.createMember(request))
                     .isInstanceOf(EunbinlibIllegalArgumentException.class);
         }
 
@@ -180,14 +181,14 @@ class UserServiceTest extends ServiceTest {
             // given
             Member member = getMember();
 
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest request = MemberCreateRequest.builder()
                     .username(member.getUsername())
                     .password(member.getPassword())
                     .nickname(member.getNickname().getValue())
                     .build();
 
             // expected
-            assertThatThrownBy(() -> userService.createMember(userCreateRequest))
+            assertThatThrownBy(() -> userService.createMember(request))
                     .isInstanceOf(DataIntegrityViolationException.class);
         }
     }

@@ -84,21 +84,19 @@ public class ControllerTest {
 
     protected Member getMember() {
         ++SEQ;
-        Member member = Member.builder()
+        return userRepository.save(Member.builder()
                 .username(username + SEQ)
                 .password(password + SEQ)
                 .nickname(nickname + SEQ)
-                .build();
-        return userRepository.save(member);
+                .build());
     }
 
     protected Guest getGuest() {
         ++SEQ;
-        Guest guest = Guest.builder()
+        return userRepository.save(Guest.builder()
                 .username(username + SEQ)
                 .password(password + SEQ)
-                .build();
-        return userRepository.save(guest);
+                .build());
     }
 
     protected Post getPost(Member member) {

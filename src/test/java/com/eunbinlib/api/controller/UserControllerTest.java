@@ -5,8 +5,9 @@ import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
-import com.eunbinlib.api.dto.request.UserCreateRequest;
+import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -47,13 +48,13 @@ class UserControllerTest extends ControllerTest {
             String password = "testPw";
             String nickname = "tester";
 
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .nickname(nickname)
                     .build();
 
-            String json = objectMapper.writeValueAsString(userCreateRequest);
+            String json = objectMapper.writeValueAsString(memberCreateRequest);
 
             // when
             mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -74,6 +75,75 @@ class UserControllerTest extends ControllerTest {
         }
 
         @Test
+        @DisplayName("닉네임 없이 회원 유저 가입")
+        void createMemberNoNickname() throws Exception {
+            // given
+            String username = "testId";
+            String password = "testPw";
+
+            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
+                    .username(username)
+                    .password(password)
+                    .build();
+
+            String json = objectMapper.writeValueAsString(memberCreateRequest);
+
+            // when
+            mockMvc.perform(post(JOIN_MEMBER_URL)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("아이디 없이 회원 유저 가입")
+        void createMemberNoUsername() throws Exception {
+            // given
+            String password = "testPw";
+            String nickname = "tester";
+
+            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
+                    .password(password)
+                    .nickname(nickname)
+                    .build();
+
+            String json = objectMapper.writeValueAsString(memberCreateRequest);
+
+            // when
+            mockMvc.perform(post(JOIN_MEMBER_URL)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("비밀번호 없이 회원 유저 가입")
+        void createMemberNoPassword() throws Exception {
+            // given
+            String username = "testId";
+            String nickname = "tester";
+
+            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
+                    .username(username)
+                    .nickname(nickname)
+                    .build();
+
+            String json = objectMapper.writeValueAsString(memberCreateRequest);
+
+            // when
+            mockMvc.perform(post(JOIN_MEMBER_URL)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+
+        @Test
         @DisplayName("회원 가입 시, 중복된 아이디로 가입하는 경우")
         void createMemberDuplicatedUsername() throws Exception {
             // given
@@ -82,13 +152,13 @@ class UserControllerTest extends ControllerTest {
             String differentPassword = member.getPassword() + "2";
             String differentNickname = member.getNickname() + "2";
 
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
                     .username(member.getUsername())
                     .password(differentPassword)
                     .nickname(differentNickname)
                     .build();
 
-            String json = objectMapper.writeValueAsString(userCreateRequest);
+            String json = objectMapper.writeValueAsString(memberCreateRequest);
 
             // expected
             mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -103,12 +173,12 @@ class UserControllerTest extends ControllerTest {
         @DisplayName("게스트 유저 가입")
         void createGuest() throws Exception {
             // given
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
                     .username(username)
                     .password(password)
                     .build();
 
-            String json = objectMapper.writeValueAsString(userCreateRequest);
+            String json = objectMapper.writeValueAsString(guestCreateRequest);
 
             // when
             mockMvc.perform(post(JOIN_GUEST_URL)
@@ -135,14 +205,56 @@ class UserControllerTest extends ControllerTest {
             Guest guest = getGuest();
 
             String differentPassword = guest.getPassword() + "2";
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
                     .username(guest.getUsername())
                     .password(differentPassword)
                     .build();
 
-            String json = objectMapper.writeValueAsString(userCreateRequest);
+            String json = objectMapper.writeValueAsString(guestCreateRequest);
 
             // expected
+            mockMvc.perform(post(JOIN_GUEST_URL)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("아이디 없이 게스트 유저 가입")
+        void createGuestNoUsername() throws Exception {
+            // given
+            String password = "testPw";
+
+            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
+                    .password(password)
+                    .build();
+
+            String json = objectMapper.writeValueAsString(guestCreateRequest);
+
+            // when
+            mockMvc.perform(post(JOIN_GUEST_URL)
+                            .contentType(APPLICATION_JSON)
+                            .content(json)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("비밀번호 없이 게스트 유저 가입")
+        void createGuestNoPassword() throws Exception {
+            // given
+            String username = "testId";
+
+            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
+                    .username(username)
+                    .build();
+
+            String json = objectMapper.writeValueAsString(guestCreateRequest);
+
+            // when
             mockMvc.perform(post(JOIN_GUEST_URL)
                             .contentType(APPLICATION_JSON)
                             .content(json)
