@@ -1,4 +1,4 @@
-package com.eunbinlib.api.domain.common;
+package com.eunbinlib.api.domain;
 
 
 import lombok.AccessLevel;
