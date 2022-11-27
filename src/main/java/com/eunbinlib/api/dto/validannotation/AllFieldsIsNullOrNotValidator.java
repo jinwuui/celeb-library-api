@@ -22,33 +22,30 @@ public class AllFieldsIsNullOrNotValidator implements ConstraintValidator<AllFie
     @Override
     public boolean isValid(Object o, ConstraintValidatorContext context) {
         for (String field : fields) {
-            Object fieldValue = getFieldValue(o, field);
-
-            if (fieldValue != null) {
+            if (isExistField(o, field)) {
                 return true;
             }
         }
         return false;
     }
 
-    private Object getFieldValue(Object object, String fieldName) {
-        Class<?> clazz = object.getClass();
+    private boolean isExistField(Object object, String fieldName) {
 
         try {
+            Class<?> clazz = object.getClass();
+
             Field dateField = clazz.getDeclaredField(fieldName);
             dateField.setAccessible(true);
             Object target = dateField.get(object);
 
-            return target;
-        } catch (NoSuchFieldException e) {
-            log.error("NoSuchFieldException", e);
-        } catch (IllegalAccessException e) {
-            log.error("IllegalAccessException", e);
+            if (target != null) {
+                return true;
+            }
         } catch (Exception e) {
             log.error("Exception", e);
         }
 
-        return null;
+        return false;
     }
 }
 
