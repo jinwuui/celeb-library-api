@@ -38,10 +38,7 @@ class CommentServiceTest extends ServiceTest {
             Member member = getMember();
             Post post = getPost(member);
 
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(post.getId())
-                    .build();
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", post.getId(), null);
 
             // when
             OnlyIdResponse onlyIdResponse = commentService.create(member.getId(), request);
@@ -61,11 +58,7 @@ class CommentServiceTest extends ServiceTest {
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(post.getId())
-                    .parentId(comment.getId())
-                    .build();
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", post.getId(), comment.getId());
 
             // when
             OnlyIdResponse onlyIdResponse = commentService.create(member.getId(), request);
@@ -85,9 +78,7 @@ class CommentServiceTest extends ServiceTest {
         void createCommentNoPostId() {
             // given
             Member member = getMember();
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .build();
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", null, null);
 
             // expected
             assertThatThrownBy(() -> commentService.create(member.getId(), request))
@@ -101,10 +92,7 @@ class CommentServiceTest extends ServiceTest {
             Member member = getMember();
             Post post = getPost(member);
 
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(post.getId() + 100L)
-                    .build();
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", post.getId() + 100L, null);
 
             // expected
             assertThatThrownBy(() -> commentService.create(member.getId(), request))
@@ -124,9 +112,7 @@ class CommentServiceTest extends ServiceTest {
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글내용")
-                    .build();
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             // when
             commentService.update(member.getId(), comment.getId(), request);
@@ -147,9 +133,7 @@ class CommentServiceTest extends ServiceTest {
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글내용")
-                    .build();
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             Long anotherMemberId = 100L;
 
@@ -167,9 +151,7 @@ class CommentServiceTest extends ServiceTest {
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글내용")
-                    .build();
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             // expected
             assertThatThrownBy(() ->
@@ -185,9 +167,8 @@ class CommentServiceTest extends ServiceTest {
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content(" ")
-                    .build();
+            CommentUpdateRequest request = new CommentUpdateRequest("  ");
+
             // expected
             assertThatThrownBy(() ->
                     commentService.update(member.getId(), comment.getId(), request))

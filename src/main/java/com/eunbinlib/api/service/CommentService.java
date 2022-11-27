@@ -41,7 +41,6 @@ public class CommentService {
             parent = findById(commentCreateRequest.getParentId());
         }
 
-
         Comment comment = commentCreateRequest.toEntity(member, post, parent);
 
         commentRepository.save(comment);

@@ -38,10 +38,7 @@ class CommentControllerTest extends ControllerTest {
             loginMember();
             Post post = getPost(member);
 
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(post.getId())
-                    .build();
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", post.getId(), null);
 
             String json = objectMapper.writeValueAsString(request);
 
@@ -72,11 +69,7 @@ class CommentControllerTest extends ControllerTest {
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(post.getId())
-                    .parentId(comment.getId())
-                    .build();
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", post.getId(), comment.getId());
 
             String json = objectMapper.writeValueAsString(request);
 
@@ -106,10 +99,7 @@ class CommentControllerTest extends ControllerTest {
             loginMember();
             Post post = getPost(member);
 
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(post.getId())
-                    .build();
+            CommentCreateRequest request = new CommentCreateRequest("댓글 내용", post.getId(), null);
 
             String json = objectMapper.writeValueAsString(request);
 
@@ -139,9 +129,7 @@ class CommentControllerTest extends ControllerTest {
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글 내용")
-                    .build();
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             String json = objectMapper.writeValueAsString(request);
 
@@ -179,9 +167,7 @@ class CommentControllerTest extends ControllerTest {
 
             userContextRepository.saveUserInfo(memberAccessToken2, memberRefreshToken2, member2);
 
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글 내용")
-                    .build();
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             String json = objectMapper.writeValueAsString(request);
 
@@ -196,16 +182,14 @@ class CommentControllerTest extends ControllerTest {
         }
 
         @Test
-        @DisplayName("게스트가 댓글을 다는 경우")
+        @DisplayName("게스트가 댓글을 수정하는 경우")
         void updateCommentByGuest() throws Exception {
             // given
             loginMember();
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("댓글내용")
-                    .build();
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             String json = objectMapper.writeValueAsString(request);
 
