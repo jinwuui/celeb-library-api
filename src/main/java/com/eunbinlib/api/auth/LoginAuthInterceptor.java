@@ -2,16 +2,15 @@ package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
+import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.LoginRequest;
 import com.eunbinlib.api.dto.response.LoginResponse;
 import com.eunbinlib.api.exception.type.UnsupportedMethodException;
 import com.eunbinlib.api.exception.type.auth.InvalidLoginInfoException;
-import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -51,12 +50,8 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
 
             LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
 
-
-            User user = authenticate(
-                    loginRequest.getUsername(),
-                    loginRequest.getPassword()
-            );
-
+            User user = userRepository.findByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword())
+                    .orElseThrow(InvalidLoginInfoException::new);
 
             LoginResponse loginResponse = createLoginRes(user);
 
@@ -86,17 +81,5 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-    }
-
-    private User authenticate(String username, String password) {
-        User findUser = userRepository.findByUsername(username)
-                .orElseThrow(InvalidLoginInfoException::new);
-
-        boolean isInvalidPassword = !StringUtils.equals(password, findUser.getPassword());
-        if (isInvalidPassword) {
-            throw new InvalidLoginInfoException();
-        }
-
-        return findUser;
     }
 }
