@@ -55,7 +55,7 @@ public class Post extends BaseTimeEntity {
     private Member member;
 
     @Builder
-    public Post(String title, PostState state, String content, Long likeCount, Long viewCount, Member member) {
+    public Post(final String title, final PostState state, final String content, final Long likeCount, final Long viewCount, final Member member) {
         this.title = title;
         this.state = state;
         this.content = content;
@@ -73,7 +73,11 @@ public class Post extends BaseTimeEntity {
         this.state = PostState.DELETED;
     }
 
-    public void addImage(BaseImageFile baseImageFile) {
+    public void addImage(final BaseImageFile baseImageFile) {
+        if (baseImageFile == null) {
+            return;
+        }
+
         PostImageFile postImageFile = PostImageFile.builder()
                 .baseImageFile(baseImageFile)
                 .post(this)
@@ -82,20 +86,20 @@ public class Post extends BaseTimeEntity {
         this.images.add(postImageFile);
     }
 
-    public void addImages(List<BaseImageFile> baseImageFiles) {
+    public void addImages(final List<BaseImageFile> baseImageFiles) {
         for (BaseImageFile baseImageFile : baseImageFiles) {
             addImage(baseImageFile);
         }
     }
 
-    public void addComment(Comment comment) {
+    public void addComment(final Comment comment) {
         this.comments.add(comment);
         if (comment.getPost() != this) {
             comment.setPost(this);
         }
     }
 
-    public void setMember(Member member) {
+    public void setMember(final Member member) {
         this.member = member;
         if (!member.getPosts().contains(this)) {
             member.getPosts().add(this);
@@ -111,6 +115,8 @@ public class Post extends BaseTimeEntity {
     }
 
     public void decreaseLikeCount() {
-        --likeCount;
+        if (likeCount > 0) {
+            --likeCount;
+        }
     }
 }
