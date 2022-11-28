@@ -74,12 +74,12 @@ public class Post extends BaseTimeEntity {
     }
 
     public void addImage(BaseImageFile baseImageFile) {
-        PostImageFile postImageFile = new PostImageFile(baseImageFile, this);
+        PostImageFile postImageFile = PostImageFile.builder()
+                .baseImageFile(baseImageFile)
+                .post(this)
+                .build();
 
         this.images.add(postImageFile);
-        if (postImageFile.getPost() != this) {
-            postImageFile.setPost(this);
-        }
     }
 
     public void addImages(List<BaseImageFile> baseImageFiles) {
