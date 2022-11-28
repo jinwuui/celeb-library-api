@@ -1,5 +1,8 @@
 package com.eunbinlib.api.dto.request;
 
+import com.eunbinlib.api.domain.post.Post;
+import com.eunbinlib.api.domain.post.PostState;
+import com.eunbinlib.api.domain.user.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,4 +39,12 @@ public class PostCreateRequest {
 //        }
     }
 
+    public Post toEntity(Member member) {
+        return Post.builder()
+                .title(this.title)
+                .content(this.content)
+                .state(PostState.NORMAL)
+                .member(member)
+                .build();
+    }
 }

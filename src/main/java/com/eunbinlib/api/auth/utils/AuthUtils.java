@@ -14,7 +14,7 @@ public class AuthUtils {
         request.setAttribute(EXCEPTION, exception);
     }
 
-    public static void authorizeUserSession(UserSession userSession) {
+    public static void authorizePassOnlyMember(UserSession userSession) {
         String userType = userSession.getUserType();
         if (StringUtils.equals(userType, "guest")) {
             throw new UnauthorizedException();

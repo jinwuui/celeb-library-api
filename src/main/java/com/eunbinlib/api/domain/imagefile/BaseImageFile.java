@@ -26,7 +26,7 @@ public class BaseImageFile {
     private Long byteSize;
 
     @Builder
-    public BaseImageFile(String storedFilename, String originalFilename, String contentType, Long byteSize) {
+    public BaseImageFile(final String storedFilename, final String originalFilename, final String contentType, final Long byteSize) {
         this.storedFilename = storedFilename;
         this.originalFilename = originalFilename;
         this.contentType = contentType;

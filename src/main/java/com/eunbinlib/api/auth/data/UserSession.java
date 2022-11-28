@@ -18,5 +18,4 @@ public class UserSession {
         this.userType = userType;
         this.username = username;
     }
-
 }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
-import static com.eunbinlib.api.auth.utils.AuthUtils.authorizeUserSession;
+import static com.eunbinlib.api.auth.utils.AuthUtils.authorizePassOnlyMember;
 
 @Slf4j
 @RestController
@@ -26,19 +26,19 @@ public class CommentController {
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public OnlyIdResponse create(UserSession userSession, @RequestBody @Valid CommentCreateRequest commentCreateRequest) {
-        authorizeUserSession(userSession);
+        authorizePassOnlyMember(userSession);
         return commentService.create(userSession.getId(), commentCreateRequest);
     }
 
     @PatchMapping("/{commentId}")
     public void update(UserSession userSession, @PathVariable Long commentId, @RequestBody @NotBlank CommentUpdateRequest commentUpdateRequest) {
-        authorizeUserSession(userSession);
+        authorizePassOnlyMember(userSession);
         commentService.update(userSession.getId(), commentId, commentUpdateRequest);
     }
 
     @DeleteMapping("/{commentId}")
     public void delete(UserSession userSession, @PathVariable Long commentId) {
-        authorizeUserSession(userSession);
+        authorizePassOnlyMember(userSession);
         commentService.delete(userSession.getId(), commentId);
     }
 }

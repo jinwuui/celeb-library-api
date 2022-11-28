@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public class InvalidLoginInfoException extends EunbinlibException {
 
-    private static final String MESSAGE = "잘못된 로그인 정보입니다.";
+    private static final String MESSAGE = "아이디/비밀번호가 올바르지 않습니다.";
 
     public InvalidLoginInfoException() {
         super(MESSAGE);

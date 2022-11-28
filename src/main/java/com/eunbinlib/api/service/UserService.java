@@ -1,18 +1,23 @@
 package com.eunbinlib.api.service;
 
+import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.repository.user.MemberRepository;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.domain.user.User;
-import com.eunbinlib.api.dto.request.UserCreateRequest;
+import com.eunbinlib.api.dto.request.GuestCreateRequest;
+import com.eunbinlib.api.dto.request.MeUpdateRequest;
+import com.eunbinlib.api.dto.request.MemberCreateRequest;
+import com.eunbinlib.api.dto.response.UserMeResponse;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.utils.EncryptUtils;
+import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityExistsException;
+import javax.transaction.Transactional;
 
 @Slf4j
 @Service
@@ -20,44 +25,55 @@ import javax.persistence.EntityExistsException;
 public class UserService {
 
     private final UserRepository userRepository;
-
     private final MemberRepository memberRepository;
+
+    @Value("${images.profile.dir}")
+    private String profileImageDir;
 
     public Member findMemberById(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    public User readMeByUsername(String username) {
-        return userRepository.findByUsername(username)
+    public UserMeResponse readMeByUsername(String username) {
+        Member findMember = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
+
+        return UserMeResponse.from(findMember, profileImageDir);
     }
 
-    public void joinMember(UserCreateRequest userCreateRequest) {
+    public void createMember(MemberCreateRequest memberCreateRequest) {
 
-        try {
-            Member member = Member.builder()
-                    .username(userCreateRequest.getUsername())
-                    .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
-                    .build();
+        Member member = Member.builder()
+                .username(memberCreateRequest.getUsername())
+                .password(EncryptUtils.encrypt(memberCreateRequest.getPassword()))
+                .nickname(memberCreateRequest.getNickname())
+                .build();
 
-            userRepository.save(member);
-        } catch (DataIntegrityViolationException e) {
-            throw new EntityExistsException("중복되는 아이디 입니다.", e);
-        }
+        userRepository.save(member);
     }
 
-    public void joinGuest(UserCreateRequest userCreateRequest) {
+    public void createGuest(GuestCreateRequest guestCreateRequest) {
 
-        try {
-            Guest guest = Guest.builder()
-                    .username(userCreateRequest.getUsername())
-                    .password(userCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
-                    .build();
+        Guest guest = Guest.builder()
+                .username(guestCreateRequest.getUsername())
+                .password(EncryptUtils.encrypt(guestCreateRequest.getPassword()))
+                .build();
 
-            userRepository.save(guest);
-        } catch (DataIntegrityViolationException e) {
-            throw new EntityExistsException("중복되는 아이디 입니다.", e);
+        userRepository.save(guest);
+    }
+
+    @Transactional
+    public void updateMe(Long userId, MeUpdateRequest meUpdateRequest) {
+
+        Member me = findMemberById(userId);
+
+        BaseImageFile baseImageFile = null;
+        if (meUpdateRequest.getProfileImageFile() != null) {
+            baseImageFile = ImageUtils.storeImage(
+                    profileImageDir, meUpdateRequest.getProfileImageFile());
         }
+
+        me.update(meUpdateRequest.getNickname(), baseImageFile);
     }
 }

@@ -1,8 +1,9 @@
 package com.eunbinlib.api.domain.imagefile;
 
-import com.eunbinlib.api.domain.common.BaseTimeEntity;
+import com.eunbinlib.api.domain.BaseTimeEntity;
 import com.eunbinlib.api.domain.post.Post;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,7 +25,13 @@ public class PostImageFile extends BaseTimeEntity {
     @JoinColumn(name = "POST_ID")
     private Post post;
 
-    public void setPost(Post post) {
+    @Builder
+    public PostImageFile(final BaseImageFile baseImageFile, final Post post) {
+        this.baseImageFile = baseImageFile;
+        this.post = post;
+    }
+
+    public void setPost(final Post post) {
         this.post = post;
         if (!post.getImages().contains(this)) {
             post.getImages().add(this);

@@ -1,7 +1,8 @@
 package com.eunbinlib.api.domain.post;
 
 import com.eunbinlib.api.domain.comment.Comment;
-import com.eunbinlib.api.domain.common.BaseTimeEntity;
+import com.eunbinlib.api.domain.BaseTimeEntity;
+import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.user.Member;
 import lombok.AccessLevel;
@@ -54,12 +55,13 @@ public class Post extends BaseTimeEntity {
     private Member member;
 
     @Builder
-    public Post(String title, PostState state, String content, Long likeCount, Long viewCount) {
+    public Post(final String title, final PostState state, final String content, final Long likeCount, final Long viewCount, final Member member) {
         this.title = title;
         this.state = state;
         this.content = content;
         this.likeCount = likeCount;
         this.viewCount = viewCount;
+        this.member = member;
     }
 
     public void update(final String title, final String content) {
@@ -71,21 +73,33 @@ public class Post extends BaseTimeEntity {
         this.state = PostState.DELETED;
     }
 
-    public void addImage(PostImageFile image) {
-        this.images.add(image);
-        if (image.getPost() != this) {
-            image.setPost(this);
+    public void addImage(final BaseImageFile baseImageFile) {
+        if (baseImageFile == null) {
+            return;
+        }
+
+        PostImageFile postImageFile = PostImageFile.builder()
+                .baseImageFile(baseImageFile)
+                .post(this)
+                .build();
+
+        this.images.add(postImageFile);
+    }
+
+    public void addImages(final List<BaseImageFile> baseImageFiles) {
+        for (BaseImageFile baseImageFile : baseImageFiles) {
+            addImage(baseImageFile);
         }
     }
 
-    public void addComment(Comment comment) {
+    public void addComment(final Comment comment) {
         this.comments.add(comment);
         if (comment.getPost() != this) {
             comment.setPost(this);
         }
     }
 
-    public void setMember(Member member) {
+    public void setMember(final Member member) {
         this.member = member;
         if (!member.getPosts().contains(this)) {
             member.getPosts().add(this);
@@ -101,6 +115,8 @@ public class Post extends BaseTimeEntity {
     }
 
     public void decreaseLikeCount() {
-        --likeCount;
+        if (likeCount > 0) {
+            --likeCount;
+        }
     }
 }

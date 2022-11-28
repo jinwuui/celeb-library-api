@@ -1,11 +1,8 @@
 package com.eunbinlib.api.service;
 
+import com.eunbinlib.api.ServiceTest;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.post.PostState;
-import com.eunbinlib.api.domain.repository.comment.CommentRepository;
-import com.eunbinlib.api.domain.repository.post.PostRepository;
-import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
 import com.eunbinlib.api.dto.request.CommentUpdateRequest;
@@ -14,9 +11,10 @@ import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.exception.type.notfound.CommentNotFoundException;
 import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.TransactionSystemException;
 
@@ -24,62 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
-@SpringBootTest
-class CommentServiceTest {
+class CommentServiceTest extends ServiceTest {
 
     @Autowired
     CommentService commentService;
-
-    @Autowired
-    CommentRepository commentRepository;
-
-    @Autowired
-    PostRepository postRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    Member mockMember;
-
-    Post mockPost;
-
-    Comment mockComment;
-
-    @BeforeEach
-    void beforeEach() {
-        mockMember = userRepository.save(Member.builder()
-                .username("mockMember")
-                .nickname("mockMember")
-                .password("mockPassword")
-                .build()
-        );
-
-
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(mockMember);
-
-        mockPost = postRepository.save(post);
-
-
-        Comment comment = Comment.builder()
-                .content("댓글 내용")
-                .member(mockMember)
-                .post(mockPost)
-                .build();
-
-        mockComment = commentRepository.save(comment);
-    }
-
-    @AfterEach
-    void afterEach() {
-        commentRepository.deleteAll();
-        postRepository.deleteAll();
-        userRepository.deleteAll();
-    }
 
     @Nested
     @DisplayName("create")
@@ -89,13 +35,13 @@ class CommentServiceTest {
         @DisplayName("댓글 작성")
         void createComment() {
             // given
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(mockPost.getId())
-                    .build();
+            Member member = getMember();
+            Post post = getPost(member);
+
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", post.getId(), null);
 
             // when
-            OnlyIdResponse onlyIdResponse = commentService.create(mockMember.getId(), request);
+            OnlyIdResponse onlyIdResponse = commentService.create(member.getId(), request);
 
             // then
             Comment findComment = commentRepository.findById(onlyIdResponse.getId())
@@ -108,14 +54,14 @@ class CommentServiceTest {
         @DisplayName("대댓글을 작성하는 경우")
         void createCommentWithMention() {
             // given
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(mockPost.getId())
-                    .parentId(mockComment.getId())
-                    .build();
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
+
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", post.getId(), comment.getId());
 
             // when
-            OnlyIdResponse onlyIdResponse = commentService.create(mockMember.getId(), request);
+            OnlyIdResponse onlyIdResponse = commentService.create(member.getId(), request);
 
             // then
             Comment findComment = commentRepository.findById(onlyIdResponse.getId())
@@ -124,19 +70,18 @@ class CommentServiceTest {
             assertThat(onlyIdResponse.getId())
                     .isEqualTo(findComment.getId());
             assertThat(findComment.getParent().getId())
-                    .isEqualTo(mockComment.getId());
+                    .isEqualTo(comment.getId());
         }
 
         @Test
         @DisplayName("게시글을 지정하지 않고 댓글을 작성하는 경우")
         void createCommentNoPostId() {
             // given
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .build();
+            Member member = getMember();
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", null, null);
 
             // expected
-            assertThatThrownBy(() -> commentService.create(mockMember.getId(), request))
+            assertThatThrownBy(() -> commentService.create(member.getId(), request))
                     .isInstanceOf(InvalidDataAccessApiUsageException.class);
         }
 
@@ -144,13 +89,13 @@ class CommentServiceTest {
         @DisplayName("존재하지 않는 게시글에 댓글을 작성하는 경우")
         void createCommentNotExistPost() {
             // given
-            CommentCreateRequest request = CommentCreateRequest.builder()
-                    .content("댓글내용")
-                    .postId(mockPost.getId() + 100L)
-                    .build();
+            Member member = getMember();
+            Post post = getPost(member);
+
+            CommentCreateRequest request =  new CommentCreateRequest("댓글 내용", post.getId() + 100L, null);
 
             // expected
-            assertThatThrownBy(() -> commentService.create(mockMember.getId(), request))
+            assertThatThrownBy(() -> commentService.create(member.getId(), request))
                     .isInstanceOf(PostNotFoundException.class);
         }
     }
@@ -163,15 +108,17 @@ class CommentServiceTest {
         @DisplayName("댓글을 수정하는 경우")
         void updateComment() {
             // given
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글내용")
-                    .build();
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
+
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             // when
-            commentService.update(mockMember.getId(), mockComment.getId(), request);
+            commentService.update(member.getId(), comment.getId(), request);
 
             // then
-            Comment findComment = commentRepository.findById(mockComment.getId())
+            Comment findComment = commentRepository.findById(comment.getId())
                     .orElseThrow(CommentNotFoundException::new);
 
             assertThat(findComment.getContent())
@@ -182,15 +129,17 @@ class CommentServiceTest {
         @DisplayName("다른 사람의 댓글을 수정하는 경우")
         void updateCommentOfAnotherUser() {
             // given
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글내용")
-                    .build();
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
+
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             Long anotherMemberId = 100L;
 
             // expected
             assertThatThrownBy(() ->
-                    commentService.update(anotherMemberId, mockComment.getId(), request))
+                    commentService.update(anotherMemberId, comment.getId(), request))
                     .isInstanceOf(UnauthorizedException.class);
         }
 
@@ -198,13 +147,15 @@ class CommentServiceTest {
         @DisplayName("존재하지 않는 댓글을 수정하려는 경우")
         void updateCommentNotExist() {
             // given
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content("수정된 댓글내용")
-                    .build();
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
+
+            CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             // expected
             assertThatThrownBy(() ->
-                    commentService.update(mockMember.getId(), mockComment.getId() + 100L, request))
+                    commentService.update(member.getId(), comment.getId() + 100L, request))
                     .isInstanceOf(CommentNotFoundException.class);
         }
 
@@ -212,12 +163,15 @@ class CommentServiceTest {
         @DisplayName("댓글을 빈값으로 수정하는 경우")
         void updateCommentEmptyContent() {
             // given
-            CommentUpdateRequest request = CommentUpdateRequest.builder()
-                    .content(" ")
-                    .build();
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
+
+            CommentUpdateRequest request = new CommentUpdateRequest("  ");
+
             // expected
             assertThatThrownBy(() ->
-                    commentService.update(mockMember.getId(), mockComment.getId(), request))
+                    commentService.update(member.getId(), comment.getId(), request))
                     .isInstanceOf(TransactionSystemException.class);
         }
     }
@@ -230,30 +184,43 @@ class CommentServiceTest {
         @DisplayName("댓글을 삭제하는 경우")
         void deleteComment() {
             // when
-            commentService.delete(mockMember.getId(), mockComment.getId());
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
+
+            commentService.delete(member.getId(), comment.getId());
 
             // expected
-            assertThat(commentRepository.findById(mockComment.getId()).isEmpty())
+            assertThat(commentRepository.findById(comment.getId()).isEmpty())
                     .isTrue();
         }
 
         @Test
         @DisplayName("다른 사람의 댓글을 삭제하는 경우")
         void deleteCommentOfAnotherUser() {
+            // given
             Long anotherMemberId = 100L;
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
 
             // expected
             assertThatThrownBy(() ->
-                    commentService.delete(anotherMemberId, mockComment.getId()))
+                    commentService.delete(anotherMemberId, comment.getId()))
                     .isInstanceOf(UnauthorizedException.class);
         }
 
         @Test
         @DisplayName("존재하지 않는 댓글을 삭제하려는 경우")
         void deleteCommentNotExist() {
+            // given
+            Member member = getMember();
+            Post post = getPost(member);
+            Comment comment = getComment(member, post);
+
             // expected
             assertThatThrownBy(() ->
-                    commentService.delete(mockMember.getId(), mockComment.getId() + 100L))
+                    commentService.delete(member.getId(), comment.getId() + 100L))
                     .isInstanceOf(CommentNotFoundException.class);
         }
     }

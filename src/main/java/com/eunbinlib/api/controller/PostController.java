@@ -6,7 +6,7 @@ import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
 import com.eunbinlib.api.dto.response.PaginationResponse;
-import com.eunbinlib.api.dto.response.PostDetailResposne;
+import com.eunbinlib.api.dto.response.PostDetailResponse;
 import com.eunbinlib.api.dto.response.PostResponse;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.eunbinlib.api.auth.utils.AuthUtils.authorizeUserSession;
+import static com.eunbinlib.api.auth.utils.AuthUtils.authorizePassOnlyMember;
 
 @Slf4j
 @RestController
@@ -29,13 +29,13 @@ public class PostController {
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public OnlyIdResponse create(UserSession userSession, @ModelAttribute @Valid PostCreateRequest postCreateRequest) {
-        authorizeUserSession(userSession);
+        authorizePassOnlyMember(userSession);
         return postService.create(userSession.getId(), postCreateRequest);
     }
 
     @GetMapping("/{postId}")
-    public PostDetailResposne read(@PathVariable Long postId) {
-        return postService.read(postId);
+    public PostDetailResponse readDetail(@PathVariable Long postId) {
+        return postService.readDetail(postId);
     }
 
     @GetMapping()
@@ -45,13 +45,13 @@ public class PostController {
 
     @PatchMapping("/{postId}")
     public void update(UserSession userSession, @PathVariable Long postId, @RequestBody @Valid PostUpdateRequest postUpdateRequest) {
-        authorizeUserSession(userSession);
+        authorizePassOnlyMember(userSession);
         postService.update(userSession.getId(), postId, postUpdateRequest);
     }
 
     @DeleteMapping("/{postId}")
     public void delete(UserSession userSession, @PathVariable Long postId) {
-        authorizeUserSession(userSession);
+        authorizePassOnlyMember(userSession);
         postService.delete(userSession.getId(), postId);
     }
 }

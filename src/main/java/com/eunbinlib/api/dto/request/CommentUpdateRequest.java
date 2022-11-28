@@ -5,15 +5,10 @@ import lombok.*;
 import javax.validation.constraints.NotBlank;
 
 @Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentUpdateRequest {
 
-    @NotBlank(message = "댓글을 입력해주세요.")
+    @NotBlank(message = "내용을 입력해주세요.")
     private String content;
-
-    @Builder
-    public CommentUpdateRequest(String content) {
-        this.content = content;
-    }
 }

@@ -1,6 +1,6 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
@@ -11,18 +11,14 @@ import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import com.eunbinlib.api.dto.response.*;
 import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
+import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,7 +31,7 @@ public class PostService {
     private final UserService userService;
 
     @Value("${images.post.dir}")
-    private String imagesPostDir;
+    private String postImageDir;
 
     public Post findById(Long postId) {
         return postRepository.findById(postId)
@@ -45,45 +41,27 @@ public class PostService {
     @Transactional
     public OnlyIdResponse create(Long userId, PostCreateRequest postCreateRequest) {
 
-        Post post = Post.builder()
-                .title(postCreateRequest.getTitle())
-                .content(postCreateRequest.getContent())
-                .state(PostState.NORMAL)
-                .build();
-
         Member writer = userService.findMemberById(userId);
-        post.setMember(writer);
 
-        List<MultipartFile> images = postCreateRequest.getImages();
-        List<PostImageFile> storeFileResult = null;
+        Post post = postCreateRequest.toEntity(writer);
+        
+        List<BaseImageFile> baseImageFiles = ImageUtils.storeImages(
+                postImageDir, postCreateRequest.getImages());
 
-        try {
-            storeFileResult = storeFiles(images);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        for (PostImageFile image : storeFileResult) {
-            post.addImage(image);
-        }
+        post.addImages(baseImageFiles);
 
         Long postId = postRepository.save(post).getId();
 
-        return OnlyIdResponse.builder()
-                .id(postId)
-                .build();
+        return OnlyIdResponse.from(postId);
     }
 
-    public PostDetailResposne read(Long postId) {
-
+    public PostDetailResponse readDetail(Long postId) {
         Post post = postRepository.findByIdAndStateNot(postId, PostState.DELETED)
                 .orElseThrow(PostNotFoundException::new);
 
-        return PostDetailResposne.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .build();
+        post.increaseViewCount();
+
+        return PostDetailResponse.from(post);
     }
 
     public PaginationResponse<PostResponse> readMany(PostReadRequest postReadRequest) {
@@ -126,61 +104,6 @@ public class PostService {
 
     private boolean isHasMore(List<PostResponse> data) {
         return !data.isEmpty() && postRepository.existsNext(data.get(data.size() - 1).getId());
-    }
-
-    private PostImageFile storeFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
-        if (!(file.getContentType().contains("image") || file.getContentType().contains("video"))) {
-            return null;
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        String storeFilename = createStoreFilename(originalFilename);
-
-        file.transferTo(new File(getPullPath(storeFilename)));
-
-        return PostImageFile.builder()
-                .savedFilename(storeFilename)
-                .originalFilename(originalFilename)
-                .contentType(file.getContentType())
-                .byteSize(file.getSize())
-                .build();
-    }
-
-    private List<PostImageFile> storeFiles(List<MultipartFile> files) throws IOException {
-        if (files == null || files.isEmpty()) {
-            return List.of();
-        }
-
-        List<PostImageFile> result = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            PostImageFile storedFile = storeFile(file);
-
-            if (storedFile != null) {
-                result.add(storedFile);
-            }
-        }
-
-        return result;
-    }
-
-    private String getPullPath(String filename) {
-        return imagesPostDir + filename;
-    }
-
-    private String createStoreFilename(String originalFilename) {
-        String extension = extractExtension(originalFilename);
-        String uuid = UUID.randomUUID().toString();
-        return uuid + "." + extension;
-    }
-
-    private String extractExtension(String originalFilename) {
-        int index = originalFilename.lastIndexOf(".");
-        return originalFilename.substring(index + 1);
     }
 
     private void validateWriter(Long userId, Long postWriterId) {
