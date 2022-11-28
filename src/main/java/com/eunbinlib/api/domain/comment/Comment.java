@@ -36,14 +36,18 @@ public class Comment extends BaseTimeEntity {
     private Comment parent;
 
     @Builder
-    public Comment(String content, Member member, Post post, Comment parent) {
+    public Comment(final String content, final Member member, final Post post, final Comment parent) {
         this.content = content;
         this.member = member;
         this.post = post;
         this.parent = parent;
     }
 
-    public void setPost(Post post) {
+    public void setPost(final Post post) {
+        if (post == null) {
+            throw new IllegalArgumentException("댓글이 속하는 게시글은 null 값이 될 수 없습니다.");
+        }
+
         this.post = post;
     }
 

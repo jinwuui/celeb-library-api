@@ -1,6 +1,5 @@
 package com.eunbinlib.api.exception.type;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 
 public class EunbinlibIllegalArgumentException extends EunbinlibException {
@@ -16,7 +15,7 @@ public class EunbinlibIllegalArgumentException extends EunbinlibException {
     }
 
     public EunbinlibIllegalArgumentException(final String fieldName, final String message) {
-        super(StringUtils.join(MESSAGE));
+        super(MESSAGE);
         addValidation(fieldName, message);
     }
 
