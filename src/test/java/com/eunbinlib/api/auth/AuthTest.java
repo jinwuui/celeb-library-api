@@ -2,9 +2,11 @@ package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.data.JwtProperties;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.dto.request.LoginRequest;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.dto.request.LoginRequest;
+import com.eunbinlib.api.dto.request.MemberCreateRequest;
+import com.eunbinlib.api.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -46,6 +48,9 @@ public class AuthTest {
     JwtUtils jwtUtils;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -53,13 +58,12 @@ public class AuthTest {
 
     @BeforeAll()
     void beforeAll() {
-        Member member = Member.builder()
-                .username(username)
-                .password(password)
-                .nickname(nickname)
-                .build();
+        MemberCreateRequest request = new MemberCreateRequest(username, password, nickname);
+        userService.createMember(request);
 
-        userRepository.save(member);
+        User member = userRepository.findByUsername(username)
+                .orElseThrow(IllegalArgumentException::new);
+
         accessToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createAccessToken(member.getUserType(), username);
         refreshToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createRefreshToken(member.getUserType(), username);
     }

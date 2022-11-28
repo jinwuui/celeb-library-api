@@ -8,6 +8,7 @@ import com.eunbinlib.api.dto.request.LoginRequest;
 import com.eunbinlib.api.dto.response.LoginResponse;
 import com.eunbinlib.api.exception.type.UnsupportedMethodException;
 import com.eunbinlib.api.exception.type.auth.InvalidLoginInfoException;
+import com.eunbinlib.api.utils.EncryptUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -50,10 +51,12 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
 
             LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
 
-            User user = userRepository.findByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword())
+            User findUser = userRepository.findByUsername(loginRequest.getUsername())
                     .orElseThrow(InvalidLoginInfoException::new);
 
-            LoginResponse loginResponse = createLoginRes(user);
+            authenticate(findUser, loginRequest.getPassword());
+
+            LoginResponse loginResponse = createLoginRes(findUser);
 
             // setting response
             response.setStatus(SC_OK);
@@ -62,8 +65,8 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
 
             objectMapper.writeValue(response.getWriter(), loginResponse);
 
-            // save logged-in user // TODO: change to Redis
-            userContextRepository.saveUserInfo(loginResponse.getAccessToken(), loginResponse.getRefreshToken(), user);
+            // save logged-in findUser // TODO: change to Redis
+            userContextRepository.saveUserInfo(loginResponse.getAccessToken(), loginResponse.getRefreshToken(), findUser);
 
             return false;
         } catch (Exception e) {
@@ -81,5 +84,11 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    private void authenticate(User findUser, String plainPassword) {
+        if (EncryptUtils.isNotMatch(plainPassword, findUser.getPassword())) {
+            throw new InvalidLoginInfoException();
+        }
     }
 }

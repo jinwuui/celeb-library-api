@@ -10,6 +10,7 @@ import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.dto.response.UserMeResponse;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.utils.EncryptUtils;
 import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +46,7 @@ public class UserService {
 
         Member member = Member.builder()
                 .username(memberCreateRequest.getUsername())
-                .password(memberCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                .password(EncryptUtils.encrypt(memberCreateRequest.getPassword()))
                 .nickname(memberCreateRequest.getNickname())
                 .build();
 
@@ -56,7 +57,7 @@ public class UserService {
 
         Guest guest = Guest.builder()
                 .username(guestCreateRequest.getUsername())
-                .password(guestCreateRequest.getPassword()) // TODO: 비밀번호 해싱 필요, BScrypt 인코딩 필요
+                .password(EncryptUtils.encrypt(guestCreateRequest.getPassword()))
                 .build();
 
         userRepository.save(guest);
