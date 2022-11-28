@@ -1,24 +1,19 @@
 package com.eunbinlib.api.dto.request;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class GuestCreateRequest {
 
     @NotBlank(message = "아이디를 입력해주세요.")
-    private final String username;
+    private String username;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
-    private final String password;
-
-    @Builder
-    public GuestCreateRequest(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+    private String password;
 }

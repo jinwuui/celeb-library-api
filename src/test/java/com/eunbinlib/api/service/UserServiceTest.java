@@ -4,10 +4,10 @@ import com.eunbinlib.api.ServiceTest;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
+import com.eunbinlib.api.dto.response.UserMeResponse;
 import com.eunbinlib.api.exception.type.EunbinlibIllegalArgumentException;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -40,10 +40,7 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("게스트 유저 가입")
         void createGuest() {
             // given
-            GuestCreateRequest request = GuestCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .build();
+            GuestCreateRequest request = new GuestCreateRequest(username, password);
 
             // expected
             assertDoesNotThrow(() -> userService.createGuest(request));
@@ -55,10 +52,7 @@ class UserServiceTest extends ServiceTest {
             // given
             Guest guest = getGuest();
 
-            GuestCreateRequest request = GuestCreateRequest.builder()
-                    .username(guest.getUsername())
-                    .password(guest.getPassword())
-                    .build();
+            GuestCreateRequest request = new GuestCreateRequest(guest.getUsername(), guest.getPassword());
 
             // expected
             assertThatThrownBy(() -> userService.createGuest(request))
@@ -69,11 +63,7 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("회원 유저 가입")
         void createMember() {
             // given
-            MemberCreateRequest request = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .nickname(nickname)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, nickname);
 
             // expected
             assertDoesNotThrow(() -> userService.createMember(request));
@@ -83,11 +73,7 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("공백 닉네임으로 회원 유저 가입")
         void createMemberNicknameBlank() {
             // given
-            MemberCreateRequest request = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .nickname("  ")
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, "  ");
 
             // expected
             assertThatThrownBy(() -> userService.createMember(request))
@@ -98,11 +84,7 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("너무 짧은 닉네임으로 회원 유저 가입")
         void createMemberNicknameTooShort() {
             // given
-            MemberCreateRequest request = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .nickname("닉")
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, "닉");
 
             // expected
             assertThatThrownBy(() -> userService.createMember(request))
@@ -113,11 +95,7 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("너무 긴 닉네임으로 회원 유저 가입")
         void createMemberNicknameTooLong() {
             // given
-            MemberCreateRequest request = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .nickname("가나다라마바사아자차카타파하")
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, "가나다라마바사아자차카타파하");
 
             // expected
             assertThatThrownBy(() -> userService.createMember(request))
@@ -128,11 +106,7 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("특수문자가 포함된 닉네임으로 회원 유저 가입")
         void createMemberNicknameInvalidCharacter() {
             // given
-            MemberCreateRequest request = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .nickname("@#$%" + nickname)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, "@#$%" + nickname);
 
             // expected
             assertThatThrownBy(() -> userService.createMember(request))
@@ -143,18 +117,10 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("중복 닉네임으로 회원 유저 가입")
         void createMemberDuplicatedNickname() {
             // given
-            MemberCreateRequest request1 = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .nickname(nickname)
-                    .build();
+            MemberCreateRequest request1 = new MemberCreateRequest(username, password, nickname);
             userService.createMember(request1);
 
-            MemberCreateRequest request2 = MemberCreateRequest.builder()
-                    .username(username + "2")
-                    .password(password)
-                    .nickname(nickname)
-                    .build();
+            MemberCreateRequest request2 = new MemberCreateRequest(username + "2", password, nickname);
 
             // expected
             assertThatThrownBy(() -> userService.createMember(request2))
@@ -165,10 +131,7 @@ class UserServiceTest extends ServiceTest {
         @DisplayName("닉네임 없이 회원 유저 가입")
         void createMemberWithoutNickname() {
             // given
-            MemberCreateRequest request = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, null);
 
             // expected
             assertThatThrownBy(() -> userService.createMember(request))
@@ -181,11 +144,10 @@ class UserServiceTest extends ServiceTest {
             // given
             Member member = getMember();
 
-            MemberCreateRequest request = MemberCreateRequest.builder()
-                    .username(member.getUsername())
-                    .password(member.getPassword())
-                    .nickname(member.getNickname().getValue())
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(member.getUsername(),
+                    member.getPassword(),
+                    member.getNickname().getValue()
+            );
 
             // expected
             assertThatThrownBy(() -> userService.createMember(request))
@@ -204,12 +166,12 @@ class UserServiceTest extends ServiceTest {
             Member member = getMember();
 
             // when
-            User user = userService.readMeByUsername(member.getUsername());
+            UserMeResponse userMeResponse = userService.readMeByUsername(member.getUsername());
 
-            assertThat(user.getId())
+            assertThat(userMeResponse.getId())
                     .isEqualTo(member.getId());
-            assertThat(user.getUsername())
-                    .isEqualTo(member.getUsername());
+            assertThat(userMeResponse.getNickname())
+                    .isEqualTo(member.getNickname().getValue());
         }
 
         @Test

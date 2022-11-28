@@ -23,5 +23,4 @@ public class MeUpdateRequest {
     private String nickname;
 
     private MultipartFile profileImageFile;
-
 }

@@ -48,13 +48,9 @@ class UserControllerTest extends ControllerTest {
             String password = "testPw";
             String nickname = "tester";
 
-            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .nickname(nickname)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, nickname);
 
-            String json = objectMapper.writeValueAsString(memberCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // when
             mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -81,12 +77,9 @@ class UserControllerTest extends ControllerTest {
             String username = "testId";
             String password = "testPw";
 
-            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, password, null);
 
-            String json = objectMapper.writeValueAsString(memberCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // when
             mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -104,12 +97,9 @@ class UserControllerTest extends ControllerTest {
             String password = "testPw";
             String nickname = "tester";
 
-            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
-                    .password(password)
-                    .nickname(nickname)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(null, password, nickname);
 
-            String json = objectMapper.writeValueAsString(memberCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // when
             mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -127,12 +117,9 @@ class UserControllerTest extends ControllerTest {
             String username = "testId";
             String nickname = "tester";
 
-            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
-                    .username(username)
-                    .nickname(nickname)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(username, null, nickname);
 
-            String json = objectMapper.writeValueAsString(memberCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // when
             mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -152,13 +139,9 @@ class UserControllerTest extends ControllerTest {
             String differentPassword = member.getPassword() + "2";
             String differentNickname = member.getNickname() + "2";
 
-            MemberCreateRequest memberCreateRequest = MemberCreateRequest.builder()
-                    .username(member.getUsername())
-                    .password(differentPassword)
-                    .nickname(differentNickname)
-                    .build();
+            MemberCreateRequest request = new MemberCreateRequest(member.getUsername(), differentPassword, differentNickname);
 
-            String json = objectMapper.writeValueAsString(memberCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // expected
             mockMvc.perform(post(JOIN_MEMBER_URL)
@@ -173,12 +156,10 @@ class UserControllerTest extends ControllerTest {
         @DisplayName("게스트 유저 가입")
         void createGuest() throws Exception {
             // given
-            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .build();
 
-            String json = objectMapper.writeValueAsString(guestCreateRequest);
+            GuestCreateRequest request = new GuestCreateRequest(username, password);
+
+            String json = objectMapper.writeValueAsString(request);
 
             // when
             mockMvc.perform(post(JOIN_GUEST_URL)
@@ -205,12 +186,9 @@ class UserControllerTest extends ControllerTest {
             Guest guest = getGuest();
 
             String differentPassword = guest.getPassword() + "2";
-            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
-                    .username(guest.getUsername())
-                    .password(differentPassword)
-                    .build();
+            GuestCreateRequest request = new GuestCreateRequest(guest.getUsername(), differentPassword);
 
-            String json = objectMapper.writeValueAsString(guestCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // expected
             mockMvc.perform(post(JOIN_GUEST_URL)
@@ -227,11 +205,9 @@ class UserControllerTest extends ControllerTest {
             // given
             String password = "testPw";
 
-            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
-                    .password(password)
-                    .build();
+            GuestCreateRequest request = new GuestCreateRequest(null, password);
 
-            String json = objectMapper.writeValueAsString(guestCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // when
             mockMvc.perform(post(JOIN_GUEST_URL)
@@ -248,11 +224,9 @@ class UserControllerTest extends ControllerTest {
             // given
             String username = "testId";
 
-            GuestCreateRequest guestCreateRequest = GuestCreateRequest.builder()
-                    .username(username)
-                    .build();
+            GuestCreateRequest request = new GuestCreateRequest(username, null);
 
-            String json = objectMapper.writeValueAsString(guestCreateRequest);
+            String json = objectMapper.writeValueAsString(request);
 
             // when
             mockMvc.perform(post(JOIN_GUEST_URL)
@@ -281,7 +255,7 @@ class UserControllerTest extends ControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userType").value(member.getUserType()))
                     .andExpect(jsonPath("$.id").value(member.getId()))
-                    .andExpect(jsonPath("$.username").value(member.getUsername()))
+                    .andExpect(jsonPath("$.nickname").value(member.getNickname().getValue()))
                     .andDo(print());
         }
 
@@ -295,10 +269,7 @@ class UserControllerTest extends ControllerTest {
             mockMvc.perform(get("/api/users/me")
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
                             .contentType(APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.userType").value(guest.getUserType()))
-                    .andExpect(jsonPath("$.id").value(guest.getId()))
-                    .andExpect(jsonPath("$.username").value(guest.getUsername()))
+                    .andExpect(status().isForbidden())
                     .andDo(print());
         }
     }

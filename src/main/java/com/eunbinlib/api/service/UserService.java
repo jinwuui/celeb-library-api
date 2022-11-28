@@ -5,10 +5,10 @@ import com.eunbinlib.api.domain.repository.user.MemberRepository;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
+import com.eunbinlib.api.dto.response.UserMeResponse;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
+
     @Value("${images.profile.dir}")
     private String profileImageDir;
 
@@ -33,12 +34,13 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    public User readMeByUsername(String username) {
-        return userRepository.findByUsername(username)
+    public UserMeResponse readMeByUsername(String username) {
+        Member findMember = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
+
+        return UserMeResponse.from(findMember, profileImageDir);
     }
 
-    @Transactional
     public void createMember(MemberCreateRequest memberCreateRequest) {
 
         Member member = Member.builder()
@@ -50,7 +52,6 @@ public class UserService {
         userRepository.save(member);
     }
 
-    @Transactional
     public void createGuest(GuestCreateRequest guestCreateRequest) {
 
         Guest guest = Guest.builder()
@@ -63,13 +64,13 @@ public class UserService {
 
     @Transactional
     public void updateMe(Long userId, MeUpdateRequest meUpdateRequest) {
+
         Member me = findMemberById(userId);
 
         BaseImageFile baseImageFile = null;
         if (meUpdateRequest.getProfileImageFile() != null) {
             baseImageFile = ImageUtils.storeImage(
                     profileImageDir, meUpdateRequest.getProfileImageFile());
-
         }
 
         me.update(meUpdateRequest.getNickname(), baseImageFile);
