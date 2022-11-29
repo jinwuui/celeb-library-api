@@ -1,6 +1,5 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.ControllerTest;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
@@ -8,7 +7,7 @@ import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
-import com.eunbinlib.api.util.MultiValueMapper;
+import com.eunbinlib.api.testutils.MultiValueMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;

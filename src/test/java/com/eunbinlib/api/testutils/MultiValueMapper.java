@@ -1,4 +1,4 @@
-package com.eunbinlib.api.util;
+package com.eunbinlib.api.testutils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

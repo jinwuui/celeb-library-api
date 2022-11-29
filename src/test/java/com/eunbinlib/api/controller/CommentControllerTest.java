@@ -1,6 +1,5 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.ControllerTest;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.user.Member;

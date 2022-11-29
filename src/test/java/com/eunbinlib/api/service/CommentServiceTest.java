@@ -1,6 +1,5 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.ServiceTest;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.user.Member;

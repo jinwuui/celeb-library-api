@@ -1,5 +1,6 @@
-package com.eunbinlib.api;
+package com.eunbinlib.api.controller;
 
+import com.eunbinlib.api.DatabaseCleaner;
 import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.comment.Comment;
@@ -21,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ControllerTest {
+public abstract class ControllerTest {
 
     private static Integer SEQ = 0;
 

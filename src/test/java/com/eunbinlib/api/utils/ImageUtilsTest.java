@@ -1,4 +1,4 @@
-package com.eunbinlib.api.util;
+package com.eunbinlib.api.utils;
 
 public class ImageUtilsTest {
 }

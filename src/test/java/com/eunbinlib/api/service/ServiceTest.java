@@ -1,5 +1,6 @@
-package com.eunbinlib.api;
+package com.eunbinlib.api.service;
 
+import com.eunbinlib.api.DatabaseCleaner;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
@@ -15,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class ServiceTest {
+public abstract class ServiceTest {
 
     private static Integer SEQ = 0;
 

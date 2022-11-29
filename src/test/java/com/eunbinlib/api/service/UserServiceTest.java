@@ -1,6 +1,5 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.ServiceTest;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
