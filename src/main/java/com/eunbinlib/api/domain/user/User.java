@@ -36,5 +36,4 @@ public abstract class User extends BaseTimeEntity {
     public String getUserType() {
         return this.getClass().getSimpleName().toLowerCase();
     }
-
 }

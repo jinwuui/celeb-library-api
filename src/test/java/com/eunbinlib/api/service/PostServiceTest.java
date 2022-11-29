@@ -3,6 +3,7 @@ package com.eunbinlib.api.service;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
+import com.eunbinlib.api.domain.postlike.PostLike;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
@@ -371,184 +372,263 @@ class PostServiceTest extends ServiceTest {
     @DisplayName("글 수정 테스트")
     class Update {
 
+        @Test
+        @DisplayName("글 제목 수정")
+        void updateTitle() {
+            // given
+            Member member = getMember();
+            Post post = Post.builder()
+                    .title("제목")
+                    .content("내용")
+                    .state(PostState.NORMAL)
+                    .build();
+            post.setMember(member);
+            postRepository.save(post);
 
+            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
+                    .title("수정된제목")
+                    .content("내용")
+                    .build();
+
+            // when
+            postService.update(member.getId(), post.getId(), postUpdateRequest);
+
+            // then
+            Post updatedPost = postRepository.findById(post.getId())
+                    .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
+
+            assertThat(updatedPost.getTitle()).isEqualTo("수정된제목");
+            assertThat(updatedPost.getContent()).isEqualTo("내용");
+        }
+
+        @Test
+        @DisplayName("글 내용 수정")
+        void updateContent() {
+            // given
+            Member member = getMember();
+            Post post = Post.builder()
+                    .title("제목")
+                    .content("내용")
+                    .state(PostState.NORMAL)
+                    .build();
+            post.setMember(member);
+            postRepository.save(post);
+
+            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
+                    .title("제목")
+                    .content("수정된내용")
+                    .build();
+
+            // when
+            postService.update(member.getId(), post.getId(), postUpdateRequest);
+
+            // then
+            Post updatedPost = postRepository.findById(post.getId())
+                    .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
+
+            assertThat(updatedPost.getTitle()).isEqualTo("제목");
+            assertThat(updatedPost.getContent()).isEqualTo("수정된내용");
+        }
+
+        @Test
+        @DisplayName("글 수정 - 존재하지 않는 글")
+        void updatePostNotFound() {
+            // given
+            Member member = getMember();
+            Post post = Post.builder()
+                    .title("제목")
+                    .content("내용")
+                    .state(PostState.NORMAL)
+                    .build();
+            post.setMember(member);
+            postRepository.save(post);
+
+            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
+                    .title("수정된제목")
+                    .content("수정된내용")
+                    .build();
+
+            // when
+            assertThatThrownBy(() -> postService.update(member.getId(), post.getId() + 1L, postUpdateRequest))
+                    .isInstanceOf(PostNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("다른 사람의 글을 수정하는 경우")
+        void updatePostOfAnotherUser() {
+            // given
+            Member member = getMember();
+            Post post = Post.builder()
+                    .title("제목")
+                    .content("내용")
+                    .state(PostState.NORMAL)
+                    .build();
+            post.setMember(member);
+            postRepository.save(post);
+
+            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
+                    .title("수정된제목")
+                    .content("수정된내용")
+                    .build();
+
+            // when
+            assertThatThrownBy(() -> postService.update(member.getId() + 1L, post.getId(), postUpdateRequest))
+                    .isInstanceOf(UnauthorizedException.class);
+        }
     }
+
     @Nested
     @DisplayName("글 삭제 테스트")
     class Delete {
 
+        @Test
+        @DisplayName("글 삭제")
+        void delete() {
+            // given
+            Member member = getMember();
+            Post post = Post.builder()
+                    .title("제목")
+                    .content("내용")
+                    .state(PostState.NORMAL)
+                    .build();
+            post.setMember(member);
+            postRepository.save(post);
 
+            // when
+            postService.delete(member.getId(), post.getId());
+
+            // then
+            Post findPost = postRepository.findById(post.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+
+            assertThat(postRepository.count())
+                    .isEqualTo(1L);
+            assertThat(findPost.getState())
+                    .isEqualTo(PostState.DELETED);
+        }
+
+        @Test
+        @DisplayName("글 삭제 - 존재하지 않는 글")
+        void deletePostNotFound() {
+            // given
+            Member member = getMember();
+            Post post = Post.builder()
+                    .title("제목")
+                    .content("내용")
+                    .state(PostState.NORMAL)
+                    .build();
+            post.setMember(member);
+            postRepository.save(post);
+
+            // expected
+            assertThatThrownBy(
+                    () -> postService.delete(member.getId(), post.getId() + 1L))
+                    .isInstanceOf(PostNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("다른 사람의 글을 삭제하는 경우")
+        void deletePostOfAnotherUser() {
+            // given
+            Member member = getMember();
+            Post post = Post.builder()
+                    .title("제목")
+                    .content("내용")
+                    .state(PostState.NORMAL)
+                    .build();
+            post.setMember(member);
+            postRepository.save(post);
+
+            // expected
+            assertThatThrownBy(
+                    () -> postService.delete(member.getId() + 1L, post.getId()))
+                    .isInstanceOf(UnauthorizedException.class);
+        }
     }
 
+    @Nested
+    @DisplayName("글과 관련된 기타 기능")
+    class Etc {
 
+        @Test
+        @DisplayName("게시글 좋아요 요청 - 기존에 좋아요가 없는 경우")
+        void likePost() {
+            // given
+            Member member = getMember();
+            Post post = getPost(member);
+            Boolean isLike = true;
 
+            // when
+            postService.likePost(member.getId(), post.getId(), isLike);
 
-    @Test
-    @DisplayName("글 제목 수정")
-    void updateTitle() {
-        // given
-        Member member = getMember();
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(member);
-        postRepository.save(post);
+            // then
+            assertThat(postLikeRepository.findByMemberIdAndPostId(member.getId(), post.getId())
+                    .isPresent())
+                    .isTrue();
+        }
 
-        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                .title("수정된제목")
-                .content("내용")
-                .build();
+        @Test
+        @DisplayName("게시글 좋아요 요청 - 기존에 좋아요가 있는 경우")
+        void likePostAlreadyLike() {
+            // given
+            Member member = getMember();
+            Post post = getPost(member);
+            PostLike postLike = PostLike.builder()
+                    .member(member)
+                    .post(post)
+                    .build();
+            postLikeRepository.save(postLike);
 
-        // when
-        postService.update(member.getId(), post.getId(), postUpdateRequest);
+            Boolean isLike = true;
 
-        // then
-        Post updatedPost = postRepository.findById(post.getId())
-                .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
+            // when
+            postService.likePost(member.getId(), post.getId(), isLike);
 
-        assertThat(updatedPost.getTitle()).isEqualTo("수정된제목");
-        assertThat(updatedPost.getContent()).isEqualTo("내용");
+            // then
+            assertThat(postLikeRepository.findByMemberIdAndPostId(member.getId(), post.getId())
+                    .isPresent())
+                    .isTrue();
+        }
+
+        @Test
+        @DisplayName("게시글 좋아요 해제 요청 - 기존에 좋아요가 있는 경우")
+        void unlikePost() {
+            // given
+            Member member = getMember();
+            Post post = getPost(member);
+            PostLike postLike = PostLike.builder()
+                    .member(member)
+                    .post(post)
+                    .build();
+            postLikeRepository.save(postLike);
+
+            Boolean isLike = false;
+
+            // when
+            postService.likePost(member.getId(), post.getId(), isLike);
+
+            // then
+            assertThat(postLikeRepository.findByMemberIdAndPostId(member.getId(), post.getId())
+                    .isPresent())
+                    .isFalse();
+        }
+
+        @Test
+        @DisplayName("게시글 좋아요 해제 요청 - 기존에 좋아요가 없는 경우")
+        void unlikePostAlreadyUnlike() {
+            // given
+            Member member = getMember();
+            Post post = getPost(member);
+
+            Boolean isLike = false;
+
+            // when
+            postService.likePost(member.getId(), post.getId(), isLike);
+
+            // then
+            assertThat(postLikeRepository.findByMemberIdAndPostId(member.getId(), post.getId())
+                    .isPresent())
+                    .isFalse();
+        }
     }
-
-    @Test
-    @DisplayName("글 내용 수정")
-    void updateContent() {
-        // given
-        Member member = getMember();
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(member);
-        postRepository.save(post);
-
-        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                .title("제목")
-                .content("수정된내용")
-                .build();
-
-        // when
-        postService.update(member.getId(), post.getId(), postUpdateRequest);
-
-        // then
-        Post updatedPost = postRepository.findById(post.getId())
-                .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
-
-        assertThat(updatedPost.getTitle()).isEqualTo("제목");
-        assertThat(updatedPost.getContent()).isEqualTo("수정된내용");
-    }
-
-    @Test
-    @DisplayName("글 수정 - 존재하지 않는 글")
-    void updatePostNotFound() {
-        // given
-        Member member = getMember();
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(member);
-        postRepository.save(post);
-
-        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                .title("수정된제목")
-                .content("수정된내용")
-                .build();
-
-        // when
-        assertThatThrownBy(() -> postService.update(member.getId(), post.getId() + 1L, postUpdateRequest))
-                .isInstanceOf(PostNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("다른 사람의 글을 수정하는 경우")
-    void updatePostOfAnotherUser() {
-        // given
-        Member member = getMember();
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(member);
-        postRepository.save(post);
-
-        PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                .title("수정된제목")
-                .content("수정된내용")
-                .build();
-
-        // when
-        assertThatThrownBy(() -> postService.update(member.getId() + 1L, post.getId(), postUpdateRequest))
-                .isInstanceOf(UnauthorizedException.class);
-    }
-
-    @Test
-    @DisplayName("글 삭제")
-    void delete() {
-        // given
-        Member member = getMember();
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(member);
-        postRepository.save(post);
-
-        // when
-        postService.delete(member.getId(), post.getId());
-
-        // then
-        Post findPost = postRepository.findById(post.getId())
-                .orElseThrow(IllegalArgumentException::new);
-
-        assertThat(postRepository.count())
-                .isEqualTo(1L);
-        assertThat(findPost.getState())
-                .isEqualTo(PostState.DELETED);
-    }
-
-    @Test
-    @DisplayName("글 삭제 - 존재하지 않는 글")
-    void deletePostNotFound() {
-        // given
-        Member member = getMember();
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(member);
-        postRepository.save(post);
-
-        // expected
-        assertThatThrownBy(
-                () -> postService.delete(member.getId(), post.getId() + 1L))
-                .isInstanceOf(PostNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("다른 사람의 글을 삭제하는 경우")
-    void deletePostOfAnotherUser() {
-        // given
-        Member member = getMember();
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .state(PostState.NORMAL)
-                .build();
-        post.setMember(member);
-        postRepository.save(post);
-
-        // expected
-        assertThatThrownBy(
-                () -> postService.delete(member.getId() + 1L, post.getId()))
-                .isInstanceOf(UnauthorizedException.class);
-    }
-
 }

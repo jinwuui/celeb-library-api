@@ -9,6 +9,7 @@ import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.repository.comment.CommentRepository;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
 import com.eunbinlib.api.domain.repository.postimagefile.PostImageFileRepository;
+import com.eunbinlib.api.domain.repository.postlike.PostLikeRepository;
 import com.eunbinlib.api.domain.repository.user.MemberRepository;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.Guest;
@@ -56,6 +57,8 @@ public abstract class ControllerTest {
     protected MemberRepository memberRepository;
     @Autowired
     protected PostRepository postRepository;
+    @Autowired
+    protected PostLikeRepository postLikeRepository;
     @Autowired
     protected PostImageFileRepository postImageFileRepository;
     @Autowired

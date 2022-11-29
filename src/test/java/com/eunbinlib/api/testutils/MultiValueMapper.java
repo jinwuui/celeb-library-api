@@ -25,4 +25,15 @@ public class MultiValueMapper {
         }
     }
 
+    public static MultiValueMap<String, String> convert(Map<String, String> fieldMap) {
+        try {
+            MultiValueMap<String, String> valueMap = new LinkedMultiValueMap<>();
+            valueMap.setAll(fieldMap);
+
+            return valueMap;
+        } catch (Exception e) {
+            log.error("error MultiValueMapper", e);
+            throw new IllegalArgumentException("MultiValueMapper 오류 발생");
+        }
+    }
 }

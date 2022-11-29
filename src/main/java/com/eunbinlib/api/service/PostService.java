@@ -3,7 +3,9 @@ package com.eunbinlib.api.service;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
+import com.eunbinlib.api.domain.postlike.PostLike;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
+import com.eunbinlib.api.domain.repository.postlike.PostLikeRepository;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+
+    private final PostLikeRepository postLikeRepository;
 
     private final UserService userService;
 
@@ -40,11 +45,10 @@ public class PostService {
 
     @Transactional
     public OnlyIdResponse create(Long userId, PostCreateRequest postCreateRequest) {
-
         Member writer = userService.findMemberById(userId);
 
         Post post = postCreateRequest.toEntity(writer);
-        
+
         List<BaseImageFile> baseImageFiles = ImageUtils.storeImages(
                 postImageDir, postCreateRequest.getImages());
 
@@ -100,6 +104,28 @@ public class PostService {
         validateWriter(userId, post.getMember().getId());
 
         post.delete();
+    }
+
+    public void likePost(Long userId, Long postId, Boolean isLike) {
+        Optional<PostLike> optionalPostLike = postLikeRepository.findByMemberIdAndPostId(userId, postId);
+
+        boolean alreadyLike = optionalPostLike.isPresent() && isLike;
+        boolean alreadyUnlike = optionalPostLike.isEmpty() && !isLike;
+        if (alreadyLike || alreadyUnlike) {
+            return;
+        }
+
+        if (optionalPostLike.isPresent()) {
+            postLikeRepository.delete(optionalPostLike.get());
+        } else {
+            Member member = userService.findMemberById(userId);
+            Post post = findById(postId);
+
+            postLikeRepository.save(PostLike.builder()
+                    .member(member)
+                    .post(post)
+                    .build());
+        }
     }
 
     private boolean isHasMore(List<PostResponse> data) {

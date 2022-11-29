@@ -54,4 +54,10 @@ public class PostController {
         authorizePassOnlyMember(userSession);
         postService.delete(userSession.getId(), postId);
     }
+
+    @PostMapping("/{postId}/like")
+    public void likePost(UserSession userSession, @PathVariable Long postId, @RequestParam Boolean isLike) {
+        authorizePassOnlyMember(userSession);
+        postService.likePost(userSession.getId(), postId, isLike);
+    }
 }
