@@ -42,13 +42,10 @@ class PostServiceTest extends ServiceTest {
         void writeNoImages() {
             // given
             Member member = getMember();
-            PostCreateRequest postCreateRequest = PostCreateRequest.builder()
-                    .title("제목")
-                    .content("내용")
-                    .build();
+            PostCreateRequest request = new PostCreateRequest("제목", "내용", null);
 
             // when
-            OnlyIdResponse onlyIdResponse = postService.create(member.getId(), postCreateRequest);
+            OnlyIdResponse onlyIdResponse = postService.create(member.getId(), request);
 
             // then
             assertThat(postRepository.count()).isEqualTo(1L);
@@ -68,14 +65,10 @@ class PostServiceTest extends ServiceTest {
                     new MockMultipartFile("images", "test2.jpg", MediaType.IMAGE_PNG_VALUE, "<<jpg data>>".getBytes())
             );
 
-            PostCreateRequest postCreateRequest = PostCreateRequest.builder()
-                    .title("제목")
-                    .content("내용")
-                    .images(images)
-                    .build();
+            PostCreateRequest request = new PostCreateRequest("제목", "내용", images);
 
             // when
-            OnlyIdResponse onlyIdResponse = postService.create(member.getId(), postCreateRequest);
+            OnlyIdResponse onlyIdResponse = postService.create(member.getId(), request);
 
             // then
             assertThat(postRepository.count()).isEqualTo(1L);
@@ -385,20 +378,17 @@ class PostServiceTest extends ServiceTest {
             post.setMember(member);
             postRepository.save(post);
 
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title("수정된제목")
-                    .content("내용")
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", post.getContent(), null);
 
             // when
-            postService.update(member.getId(), post.getId(), postUpdateRequest);
+            postService.update(member.getId(), post.getId(), request);
 
             // then
             Post updatedPost = postRepository.findById(post.getId())
                     .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
 
-            assertThat(updatedPost.getTitle()).isEqualTo("수정된제목");
-            assertThat(updatedPost.getContent()).isEqualTo("내용");
+            assertThat(updatedPost.getTitle()).isEqualTo(request.getTitle());
+            assertThat(updatedPost.getContent()).isEqualTo(request.getContent());
         }
 
         @Test
@@ -414,20 +404,17 @@ class PostServiceTest extends ServiceTest {
             post.setMember(member);
             postRepository.save(post);
 
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title("제목")
-                    .content("수정된내용")
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest(post.getTitle(), "수정된 내용", null);
 
             // when
-            postService.update(member.getId(), post.getId(), postUpdateRequest);
+            postService.update(member.getId(), post.getId(), request);
 
             // then
             Post updatedPost = postRepository.findById(post.getId())
                     .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다."));
 
-            assertThat(updatedPost.getTitle()).isEqualTo("제목");
-            assertThat(updatedPost.getContent()).isEqualTo("수정된내용");
+            assertThat(updatedPost.getTitle()).isEqualTo(request.getTitle());
+            assertThat(updatedPost.getContent()).isEqualTo(request.getContent());
         }
 
         @Test
@@ -443,13 +430,10 @@ class PostServiceTest extends ServiceTest {
             post.setMember(member);
             postRepository.save(post);
 
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title("수정된제목")
-                    .content("수정된내용")
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", "수정된 내용", null);
 
             // when
-            assertThatThrownBy(() -> postService.update(member.getId(), post.getId() + 1L, postUpdateRequest))
+            assertThatThrownBy(() -> postService.update(member.getId(), post.getId() + 1L, request))
                     .isInstanceOf(PostNotFoundException.class);
         }
 
@@ -466,13 +450,10 @@ class PostServiceTest extends ServiceTest {
             post.setMember(member);
             postRepository.save(post);
 
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title("수정된제목")
-                    .content("수정된내용")
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", "수정된 내용", null);
 
             // when
-            assertThatThrownBy(() -> postService.update(member.getId() + 1L, post.getId(), postUpdateRequest))
+            assertThatThrownBy(() -> postService.update(member.getId() + 1L, post.getId(), request))
                     .isInstanceOf(UnauthorizedException.class);
         }
     }

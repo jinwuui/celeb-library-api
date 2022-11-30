@@ -46,10 +46,7 @@ class PostControllerTest extends ControllerTest {
         void writeNoImages() throws Exception {
             // given
             loginMember();
-            PostCreateRequest request = PostCreateRequest.builder()
-                    .title("제목")
-                    .content("내용")
-                    .build();
+            PostCreateRequest request = new PostCreateRequest("제목", "내용", null);
 
             // when & expected
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
@@ -85,11 +82,7 @@ class PostControllerTest extends ControllerTest {
                     new MockMultipartFile("images", "test2.jpg", MediaType.IMAGE_JPEG_VALUE, "<<jpg data>>".getBytes())
             );
 
-            PostCreateRequest request = PostCreateRequest.builder()
-                    .title("제목")
-                    .content("내용")
-                    .images(images)
-                    .build();
+            PostCreateRequest request = new PostCreateRequest("제목", "내용", images);
 
             // when & expected
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
@@ -122,9 +115,7 @@ class PostControllerTest extends ControllerTest {
         void writeTitleNotBlank() throws Exception {
             // given
             loginMember();
-            PostCreateRequest request = PostCreateRequest.builder()
-                    .content("내용")
-                    .build();
+            PostCreateRequest request = new PostCreateRequest(null, "내용", null);
 
             // expected
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
@@ -145,9 +136,7 @@ class PostControllerTest extends ControllerTest {
         void writeContentNotBlank() throws Exception {
             // given
             loginMember();
-            PostCreateRequest request = PostCreateRequest.builder()
-                    .title("제목")
-                    .build();
+            PostCreateRequest request = new PostCreateRequest("제목", null, null);
 
             // expected
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
@@ -168,10 +157,7 @@ class PostControllerTest extends ControllerTest {
         void writeByGuest() throws Exception {
             // given
             loginGuest();
-            PostCreateRequest request = PostCreateRequest.builder()
-                    .title("제목")
-                    .content("내용")
-                    .build();
+            PostCreateRequest request = new PostCreateRequest("제목", "내용", null);
 
             // expected
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
@@ -306,16 +292,13 @@ class PostControllerTest extends ControllerTest {
             loginMember();
             Post post = getPost(member);
 
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title("수정된제목")
-                    .content(post.getContent())
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", post.getContent(), null);
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", post.getId())
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(postUpdateRequest))
+                            .content(objectMapper.writeValueAsString(request))
                     )
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -328,16 +311,13 @@ class PostControllerTest extends ControllerTest {
             loginMember();
             Post post = getPost(member);
 
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title(post.getTitle())
-                    .content("수정된내용")
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest(post.getTitle(), "수정된 내용", null);
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", post.getId())
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(postUpdateRequest))
+                            .content(objectMapper.writeValueAsString(request))
                     )
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -348,16 +328,13 @@ class PostControllerTest extends ControllerTest {
         void updatePostNotFound() throws Exception {
             // given
             loginMember();
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title("제목")
-                    .content("수정된내용")
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest("제목", "수정된 내용", null);
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", 1L)
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(postUpdateRequest))
+                            .content(objectMapper.writeValueAsString(request))
                     )
                     .andExpect(status().isNotFound())
                     .andDo(print());
@@ -377,16 +354,13 @@ class PostControllerTest extends ControllerTest {
 
             userContextRepository.saveUserInfo(memberAccessToken2, memberRefreshToken2, member2);
 
-            PostUpdateRequest postUpdateRequest = PostUpdateRequest.builder()
-                    .title("수정된 제목")
-                    .content("수정된 내용")
-                    .build();
+            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", "수정된 내용", null);
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", post.getId())
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken2)
                             .contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(postUpdateRequest))
+                            .content(objectMapper.writeValueAsString(request))
                     )
                     .andExpect(status().isForbidden())
                     .andDo(print());

@@ -1,8 +1,6 @@
 package com.eunbinlib.api.dto.request;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import static java.lang.Math.*;
 
@@ -22,13 +20,7 @@ public class PostReadRequest {
         this.size = size != null ? size : DEFAULT_SIZE;
     }
 
-    public long getOffset() {
-        return 0L;
-//        return (long) (max(1, page) - 1) * min(size, MAX_SIZE);
-    }
-
     public long getLimit() {
         return min(size, MAX_SIZE);
     }
-
 }

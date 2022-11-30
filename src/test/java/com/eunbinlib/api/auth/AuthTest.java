@@ -72,10 +72,7 @@ public class AuthTest {
     @DisplayName("로그인이 정상으로 되는 경우")
     void loginSuccessTest() throws Exception {
         // given
-        LoginRequest loginRequest = LoginRequest.builder()
-                .username(username)
-                .password(password)
-                .build();
+        LoginRequest loginRequest = new LoginRequest(username, password);
         String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
@@ -93,10 +90,7 @@ public class AuthTest {
     @DisplayName("로그인이 실패하는 경우 - 틀린 비밀번호")
     void loginFailTestInvalidPassword() throws Exception {
         // given
-        LoginRequest loginRequest = LoginRequest.builder()
-                .username(username)
-                .password("invalid" + password)
-                .build();
+        LoginRequest loginRequest = new LoginRequest(username, "invalid" + password);
         String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
@@ -114,10 +108,7 @@ public class AuthTest {
     void loginFailTestWrongHttpMethod() throws Exception {
 
         // given
-        LoginRequest loginRequest = LoginRequest.builder()
-                .username(username)
-                .password(password)
-                .build();
+        LoginRequest loginRequest = new LoginRequest(username, password);
         String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
