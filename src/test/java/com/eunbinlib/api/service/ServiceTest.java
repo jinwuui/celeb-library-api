@@ -4,6 +4,7 @@ import com.eunbinlib.api.DatabaseCleaner;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
+import com.eunbinlib.api.domain.repository.blockbetweenmembers.BlockRepository;
 import com.eunbinlib.api.domain.repository.comment.CommentRepository;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
 import com.eunbinlib.api.domain.repository.postimagefile.PostImageFileRepository;
@@ -25,6 +26,8 @@ public abstract class ServiceTest {
     protected UserRepository userRepository;
     @Autowired
     protected MemberRepository memberRepository;
+    @Autowired
+    protected BlockRepository blockRepository;
     @Autowired
     protected PostRepository postRepository;
     @Autowired
