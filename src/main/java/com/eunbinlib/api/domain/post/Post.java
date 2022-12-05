@@ -55,13 +55,13 @@ public class Post extends BaseTimeEntity {
     private Member member;
 
     @Builder
-    public Post(final String title, final PostState state, final String content, final Long likeCount, final Long viewCount, final Member member) {
+    public Post(final String title, final String content, final Long likeCount, final Long viewCount, final Member member) {
         this.title = title;
-        this.state = state;
         this.content = content;
         this.likeCount = likeCount;
         this.viewCount = viewCount;
         this.member = member;
+        this.state = PostState.NORMAL;
     }
 
     public void update(final String title, final String content) {

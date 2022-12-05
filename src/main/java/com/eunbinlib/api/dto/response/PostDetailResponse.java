@@ -31,5 +31,4 @@ public class PostDetailResponse {
                 .likeCount(post.getLikeCount())
                 .build();
     }
-
 }

@@ -3,7 +3,6 @@ package com.eunbinlib.api.service;
 import com.eunbinlib.api.DatabaseCleaner;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.repository.blockbetweenmembers.BlockRepository;
 import com.eunbinlib.api.domain.repository.comment.CommentRepository;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
@@ -72,7 +71,6 @@ public abstract class ServiceTest {
         return postRepository.save(Post.builder()
                 .title("제목" + SEQ)
                 .content("내용" + SEQ)
-                .state(PostState.NORMAL)
                 .member(member)
                 .build());
     }

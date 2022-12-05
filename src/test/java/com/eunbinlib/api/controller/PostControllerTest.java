@@ -2,7 +2,6 @@ package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.postlike.PostLike;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
@@ -206,7 +205,6 @@ class PostControllerTest extends ControllerTest {
                             Post.builder()
                                     .title("제목" + i)
                                     .content("내용" + i)
-                                    .state(PostState.NORMAL)
                                     .member(member)
                                     .build()
                     )
@@ -242,7 +240,6 @@ class PostControllerTest extends ControllerTest {
                             Post.builder()
                                     .title("제목" + i)
                                     .content("내용" + i)
-                                    .state(PostState.NORMAL)
                                     .member(member)
                                     .build()
                     )

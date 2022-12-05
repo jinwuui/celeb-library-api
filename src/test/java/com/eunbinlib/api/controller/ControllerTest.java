@@ -5,7 +5,6 @@ import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.repository.blockbetweenmembers.BlockRepository;
 import com.eunbinlib.api.domain.repository.comment.CommentRepository;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
@@ -111,7 +110,6 @@ public abstract class ControllerTest {
         return postRepository.save(Post.builder()
                 .title("제목" + SEQ)
                 .content("내용" + SEQ)
-                .state(PostState.NORMAL)
                 .member(member)
                 .build());
     }

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -22,6 +23,10 @@ public class Comment extends BaseTimeEntity {
 
     @NotBlank(message = "댓글을 입력해주세요.")
     String content;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private CommentState state;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "MEMBER_ID", nullable = false)
@@ -41,6 +46,7 @@ public class Comment extends BaseTimeEntity {
         this.member = member;
         this.post = post;
         this.parent = parent;
+        this.state = CommentState.NORMAL;
     }
 
     public void setPost(final Post post) {
@@ -53,5 +59,9 @@ public class Comment extends BaseTimeEntity {
 
     public void update(final String content) {
         this.content = content != null ? content : this.content;
+    }
+
+    public void delete() {
+        this.state = CommentState.DELETED;
     }
 }

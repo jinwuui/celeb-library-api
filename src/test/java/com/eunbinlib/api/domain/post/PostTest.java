@@ -83,7 +83,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         // when
@@ -101,7 +100,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .viewCount(0L)
                 .build();
 
@@ -120,7 +118,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .likeCount(0L)
                 .build();
 
@@ -139,7 +136,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .likeCount(100L)
                 .build();
 
@@ -158,7 +154,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .likeCount(0L)
                 .build();
 
@@ -177,7 +172,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         // when
@@ -195,7 +189,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         // when
@@ -213,7 +206,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         int size = 10;
@@ -236,7 +228,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         int size = 10;
@@ -259,7 +250,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         Comment comment = Comment.builder()
@@ -283,7 +273,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         Member member = Member.builder()

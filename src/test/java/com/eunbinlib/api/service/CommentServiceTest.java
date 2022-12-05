@@ -1,6 +1,7 @@
 package com.eunbinlib.api.service;
 
 import com.eunbinlib.api.domain.comment.Comment;
+import com.eunbinlib.api.domain.comment.CommentState;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
@@ -182,16 +183,19 @@ class CommentServiceTest extends ServiceTest {
         @Test
         @DisplayName("댓글을 삭제하는 경우")
         void deleteComment() {
-            // when
+            // given
             Member member = getMember();
             Post post = getPost(member);
             Comment comment = getComment(member, post);
 
+            // when
             commentService.delete(member.getId(), comment.getId());
 
             // expected
-            assertThat(commentRepository.findById(comment.getId()).isEmpty())
-                    .isTrue();
+            Comment findComment = commentRepository.findById(comment.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+            assertThat(findComment.getState())
+                    .isEqualTo(CommentState.DELETED);
         }
 
         @Test

@@ -1,9 +1,11 @@
 package com.eunbinlib.api.dto.request;
 
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.user.Member;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
@@ -27,7 +29,6 @@ public class PostCreateRequest {
         return Post.builder()
                 .title(this.title)
                 .content(this.content)
-                .state(PostState.NORMAL)
                 .member(member)
                 .build();
     }

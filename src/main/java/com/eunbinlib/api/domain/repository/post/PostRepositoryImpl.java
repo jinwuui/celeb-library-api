@@ -28,6 +28,17 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public boolean existsNext(Long afterCond) {
+        return jpaQueryFactory.selectOne()
+                .from(post)
+                .where(
+                        stateNe(PostState.DELETED),
+                        afterLt(afterCond)
+                )
+                .fetchFirst() != null;
+    }
+
     private BooleanExpression stateNe(PostState stateCond) {
         return post.state.ne(stateCond);
     }
@@ -35,13 +46,4 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     private BooleanExpression afterLt(Long afterCond) {
         return afterCond != null ? post.id.lt(afterCond) : null;
     }
-
-    @Override
-    public boolean existsNext(Long id) {
-        return jpaQueryFactory.selectOne()
-                .from(post)
-                .where(post.id.lt(id))
-                .fetchFirst() != null;
-    }
-
 }

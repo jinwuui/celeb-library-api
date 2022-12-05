@@ -65,7 +65,7 @@ public class CommentService {
 
         validateWriter(userId, comment.getMember().getId());
 
-        commentRepository.delete(comment);
+        comment.delete();
     }
 
     private void validateWriter(Long userId, Long commentWriterId) {

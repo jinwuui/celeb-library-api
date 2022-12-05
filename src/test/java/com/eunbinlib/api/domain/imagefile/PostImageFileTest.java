@@ -1,7 +1,6 @@
 package com.eunbinlib.api.domain.imagefile;
 
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.post.PostState;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ public class PostImageFileTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
-                .state(PostState.NORMAL)
                 .build();
 
         PostImageFile postImageFile = PostImageFile.builder()

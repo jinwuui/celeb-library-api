@@ -142,7 +142,6 @@ class PostServiceTest extends ServiceTest {
                         Post post = Post.builder()
                                 .title("제목" + i)
                                 .content("내용" + i)
-                                .state(PostState.NORMAL)
                                 .build();
                         post.setMember(member);
                         return post;
@@ -180,7 +179,6 @@ class PostServiceTest extends ServiceTest {
                         Post post = Post.builder()
                                 .title("제목" + i)
                                 .content("내용" + i)
-                                .state(PostState.NORMAL)
                                 .build();
                         post.setMember(member);
                         return post;
@@ -216,7 +214,6 @@ class PostServiceTest extends ServiceTest {
                         Post post = Post.builder()
                                 .title("제목" + i)
                                 .content("내용" + i)
-                                .state(PostState.NORMAL)
                                 .build();
                         post.setMember(member);
                         return post;
@@ -259,7 +256,6 @@ class PostServiceTest extends ServiceTest {
                         Post post = Post.builder()
                                 .title("제목" + i)
                                 .content("내용" + i)
-                                .state(PostState.NORMAL)
                                 .build();
                         post.setMember(member);
                         return post;
@@ -292,15 +288,13 @@ class PostServiceTest extends ServiceTest {
             // given
             Member member = getMember();
             List<Post> requestPosts = IntStream.range(0, 10)
-                    .mapToObj(i -> {
-                        Post post = Post.builder()
-                                .title("제목" + i)
-                                .content("내용" + i)
-                                .state(PostState.NORMAL)
-                                .build();
-                        post.setMember(member);
-                        return post;
-                    })
+                    .mapToObj(i ->
+                            Post.builder()
+                                    .title("제목" + i)
+                                    .content("내용" + i)
+                                    .member(member)
+                                    .build()
+                    )
                     .collect(Collectors.toList());
             postRepository.saveAll(requestPosts);
 
@@ -333,14 +327,17 @@ class PostServiceTest extends ServiceTest {
                         Post post = Post.builder()
                                 .title("제목" + i)
                                 .content("내용" + i)
-                                .state(i % 2 == 0 ? PostState.NORMAL : PostState.DELETED)
+                                .member(member)
                                 .build();
-                        post.setMember(member);
-                        return post;
+                        if (i % 2 == 1) {
+                            post.delete();
+                        }
+
+                        return postRepository.save(post);
                     })
                     .collect(Collectors.toList());
-            postRepository.saveAll(requestPosts);
 
+            log.info("================ 1");
             PostReadRequest postReadRequest = PostReadRequest.builder()
                     .size(20)
                     .build();
@@ -350,6 +347,7 @@ class PostServiceTest extends ServiceTest {
 
             PaginationMeta meta = result.getMeta();
             List<PostResponse> data = result.getData();
+            log.info("================ 2 {} {}", meta.getSize(), data.size());
 
             // then
             assertThat(meta.getSize()).isEqualTo(5);
@@ -373,7 +371,6 @@ class PostServiceTest extends ServiceTest {
             Post post = Post.builder()
                     .title("제목")
                     .content("내용")
-                    .state(PostState.NORMAL)
                     .build();
             post.setMember(member);
             postRepository.save(post);
@@ -399,7 +396,6 @@ class PostServiceTest extends ServiceTest {
             Post post = Post.builder()
                     .title("제목")
                     .content("내용")
-                    .state(PostState.NORMAL)
                     .build();
             post.setMember(member);
             postRepository.save(post);
@@ -425,7 +421,6 @@ class PostServiceTest extends ServiceTest {
             Post post = Post.builder()
                     .title("제목")
                     .content("내용")
-                    .state(PostState.NORMAL)
                     .build();
             post.setMember(member);
             postRepository.save(post);
@@ -445,7 +440,6 @@ class PostServiceTest extends ServiceTest {
             Post post = Post.builder()
                     .title("제목")
                     .content("내용")
-                    .state(PostState.NORMAL)
                     .build();
             post.setMember(member);
             postRepository.save(post);
@@ -470,7 +464,6 @@ class PostServiceTest extends ServiceTest {
             Post post = Post.builder()
                     .title("제목")
                     .content("내용")
-                    .state(PostState.NORMAL)
                     .build();
             post.setMember(member);
             postRepository.save(post);
@@ -496,7 +489,6 @@ class PostServiceTest extends ServiceTest {
             Post post = Post.builder()
                     .title("제목")
                     .content("내용")
-                    .state(PostState.NORMAL)
                     .build();
             post.setMember(member);
             postRepository.save(post);
@@ -515,7 +507,6 @@ class PostServiceTest extends ServiceTest {
             Post post = Post.builder()
                     .title("제목")
                     .content("내용")
-                    .state(PostState.NORMAL)
                     .build();
             post.setMember(member);
             postRepository.save(post);
