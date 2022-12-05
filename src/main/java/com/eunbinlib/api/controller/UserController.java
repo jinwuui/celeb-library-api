@@ -5,6 +5,7 @@ import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.dto.response.UserMeResponse;
+import com.eunbinlib.api.service.BlockService;
 import com.eunbinlib.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class UserController {
     public static final String JOIN_GUEST_URL ="/api/users/guests";
 
     private final UserService userService;
+    private final BlockService blockService;
 
     @PostMapping("/members")
     public void createMember(@RequestBody @Valid MemberCreateRequest memberCreateRequest) {
@@ -47,5 +49,19 @@ public class UserController {
         authorizePassOnlyMember(userSession);
 
         userService.updateMe(userSession.getId(), meUpdateRequest);
+    }
+
+    @PostMapping("/{userId}/block")
+    public void blockUser(UserSession userSession, @PathVariable Long userId) {
+        authorizePassOnlyMember(userSession);
+
+        blockService.blockUser(userSession.getId(), userId);
+    }
+
+    @PostMapping("/{userId}/unblock")
+    public void unblockUser(UserSession userSession, @PathVariable Long userId) {
+        authorizePassOnlyMember(userSession);
+
+        blockService.unblockUser(userSession.getId(), userId);
     }
 }

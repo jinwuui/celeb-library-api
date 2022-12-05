@@ -33,9 +33,9 @@ public class CommentService {
 
     @Transactional
     public OnlyIdResponse create(Long userId, CommentCreateRequest commentCreateRequest) {
-
         Member member = userService.findMemberById(userId);
         Post post = postService.findById(commentCreateRequest.getPostId());
+
         Comment parent = null;
         if (commentCreateRequest.getParentId() != null) {
             parent = findById(commentCreateRequest.getParentId());

@@ -1,6 +1,7 @@
 package com.eunbinlib.api.domain.user;
 
 
+import com.eunbinlib.api.domain.blockbetweenmembers.Block;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.ProfileImageFile;
 import com.eunbinlib.api.domain.post.Post;
@@ -34,6 +35,9 @@ public class Member extends User {
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private final List<PostLike> postLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "blocker", fetch = FetchType.LAZY)
+    private final List<Block> blocks = new ArrayList<>();
 
     @Builder
     public Member(final String username, final String password, final String nickname) {

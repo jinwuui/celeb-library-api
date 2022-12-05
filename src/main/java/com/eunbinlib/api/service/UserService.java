@@ -43,7 +43,6 @@ public class UserService {
     }
 
     public void createMember(MemberCreateRequest memberCreateRequest) {
-
         Member member = Member.builder()
                 .username(memberCreateRequest.getUsername())
                 .password(EncryptUtils.encrypt(memberCreateRequest.getPassword()))
@@ -54,7 +53,6 @@ public class UserService {
     }
 
     public void createGuest(GuestCreateRequest guestCreateRequest) {
-
         Guest guest = Guest.builder()
                 .username(guestCreateRequest.getUsername())
                 .password(EncryptUtils.encrypt(guestCreateRequest.getPassword()))
@@ -65,7 +63,6 @@ public class UserService {
 
     @Transactional
     public void updateMe(Long userId, MeUpdateRequest meUpdateRequest) {
-
         Member me = findMemberById(userId);
 
         BaseImageFile baseImageFile = null;
