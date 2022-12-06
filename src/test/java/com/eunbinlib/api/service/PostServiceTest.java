@@ -1,6 +1,8 @@
 package com.eunbinlib.api.service;
 
 import com.eunbinlib.api.domain.blockbetweenmembers.Block;
+import com.eunbinlib.api.domain.comment.Comment;
+import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
@@ -9,7 +11,11 @@ import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
-import com.eunbinlib.api.dto.response.*;
+import com.eunbinlib.api.dto.response.OnlyIdResponse;
+import com.eunbinlib.api.dto.response.PaginationMeta;
+import com.eunbinlib.api.dto.response.PaginationResponse;
+import com.eunbinlib.api.dto.response.PostResponse;
+import com.eunbinlib.api.dto.response.postdetailresponse.PostDetailResponse;
 import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -90,21 +97,86 @@ class PostServiceTest extends ServiceTest {
     class Read {
 
         @Test
-        @DisplayName("글 상세 조회")
-        void readDetail() {
+        @DisplayName("글 상세 조회 - 댓글과 사진이 없는 글 상세조회")
+        void readDetailNoCommentsAndNoImages() {
             // given
             Member member = getMember();
             Post post = getPost(member);
 
             // when
-            PostDetailResponse findPost = postService.readDetail(post.getId());
+            PostDetailResponse result = postService.readDetail(post.getId());
 
             // then
-            assertThat(findPost).isNotNull();
-            assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
-            assertThat(findPost.getContent()).isEqualTo(post.getContent());
-            assertThat(findPost.getViewCount()).isEqualTo(1L);
-            assertThat(findPost.getLikeCount()).isEqualTo(0L);
+            assertThat(result.getPost().getId())
+                    .isEqualTo(post.getId());
+            assertThat(result.getPost().getWriter().getId())
+                    .isEqualTo(member.getId());
+            assertThat(result.getComments().isEmpty())
+                    .isTrue();
+        }
+
+        @Test
+        @DisplayName("글 상세 조회 - 댓글이 있는 글 상세조회")
+        void readDetailWithComments() {
+            // given
+            Member member1 = getMember();
+            Member member2 = getMember();
+
+            Post post1 = getPost(member1);
+            Comment comment1 = getComment(member1, post1);
+            Comment comment2 = getComment(member2, post1);
+            Comment comment3 = getComment(member2, post1);
+
+            Post post2 = getPost(member2);
+            Comment comment4 = getComment(member1, post2);
+            Comment comment5 = getComment(member2, post2);
+
+            // when
+            PostDetailResponse result1 = postService.readDetail(post1.getId());
+            PostDetailResponse result2 = postService.readDetail(post2.getId());
+
+            // then
+            assertThat(result1.getPost().getId()).isEqualTo(post1.getId());
+            assertThat(result1.getPost().getWriter().getId()).isEqualTo(member1.getId());
+            assertThat(result1.getComments().size()).isEqualTo(3L);
+            assertThat(result1.getComments().get(0).getId()).isEqualTo(comment1.getId());
+            assertThat(result1.getComments().get(1).getWriter().getId()).isEqualTo(member2.getId());
+
+            assertThat(result2.getPost().getId()).isEqualTo(post2.getId());
+            assertThat(result2.getPost().getWriter().getId()).isEqualTo(member2.getId());
+            assertThat(result2.getComments().size()).isEqualTo(2L);
+            assertThat(result2.getComments().get(0).getId()).isEqualTo(comment4.getId());
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("글 상세 조회 - 사진이 있는 글 상세조회")
+        void readDetailWithImages() {
+            // given
+            Member member = getMember();
+            Post post = getPost(member);
+            post.addImages(IntStream.range(0, 5).mapToObj(i -> BaseImageFile.builder()
+                            .originalFilename(i + "origin.jpg")
+                            .storedFilename(i + "stored.jpg")
+                            .contentType(MediaType.IMAGE_JPEG_VALUE)
+                            .build())
+                    .collect(Collectors.toList())
+            );
+
+            // when
+            PostDetailResponse result = postService.readDetail(post.getId());
+
+            // then
+            assertThat(result.getPost().getId())
+                    .isEqualTo(post.getId());
+            assertThat(result.getPost().getWriter().getId())
+                    .isEqualTo(member.getId());
+            assertThat(result.getPost().getPostImageUrls().size())
+                    .isEqualTo(5L);
+            assertThat(result.getPost().getPostImageUrls().get(0).contains("stored.jpg"))
+                    .isTrue();
+            assertThat(result.getComments().isEmpty())
+                    .isTrue();
         }
 
         @Test

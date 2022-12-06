@@ -5,18 +5,22 @@ import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
 import com.eunbinlib.api.domain.postlike.PostLike;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
+import com.eunbinlib.api.domain.repository.postimagefile.PostImageFileRepository;
 import com.eunbinlib.api.domain.repository.postlike.PostLikeRepository;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
-import com.eunbinlib.api.dto.response.*;
+import com.eunbinlib.api.dto.response.OnlyIdResponse;
+import com.eunbinlib.api.dto.response.PaginationMeta;
+import com.eunbinlib.api.dto.response.PaginationResponse;
+import com.eunbinlib.api.dto.response.PostResponse;
+import com.eunbinlib.api.dto.response.postdetailresponse.PostDetailResponse;
 import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
 import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +35,11 @@ public class PostService {
 
     private final PostRepository postRepository;
 
+    private final PostImageFileRepository postImageFileRepository;
+
     private final PostLikeRepository postLikeRepository;
 
     private final UserService userService;
-
-    @Value("${images.post.dir}")
-    private String postImageDir;
 
     public Post findById(Long postId) {
         return postRepository.findById(postId)
@@ -49,8 +52,7 @@ public class PostService {
 
         Post post = postCreateRequest.toEntity(writer);
 
-        List<BaseImageFile> baseImageFiles = ImageUtils.storeImages(
-                postImageDir, postCreateRequest.getImages());
+        List<BaseImageFile> baseImageFiles = ImageUtils.storeImages(postCreateRequest.getImages());
 
         post.addImages(baseImageFiles);
 
@@ -59,9 +61,12 @@ public class PostService {
         return OnlyIdResponse.from(postId);
     }
 
+    @Transactional
     public PostDetailResponse readDetail(Long postId) {
-        Post post = postRepository.findByIdAndStateNot(postId, PostState.DELETED)
+        Post post = postRepository.findByIdAndState(postId, PostState.NORMAL)
                 .orElseThrow(PostNotFoundException::new);
+
+        postRepository.findWithImagesById(postId);
 
         post.increaseViewCount();
 

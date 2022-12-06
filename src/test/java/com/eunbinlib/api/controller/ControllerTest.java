@@ -4,6 +4,8 @@ import com.eunbinlib.api.DatabaseCleaner;
 import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.comment.Comment;
+import com.eunbinlib.api.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.repository.blockbetweenmembers.BlockRepository;
 import com.eunbinlib.api.domain.repository.comment.CommentRepository;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -119,6 +122,21 @@ public abstract class ControllerTest {
         return commentRepository.save(Comment.builder()
                 .content("댓글 내용" + SEQ)
                 .member(member)
+                .post(post)
+                .build());
+    }
+
+    protected void addPostImageFile(Post post) {
+        ++SEQ;
+        BaseImageFile baseImageFile = BaseImageFile.builder()
+                .originalFilename(SEQ + "original.jpg")
+                .storedFilename(SEQ + "stored.jpg")
+                .contentType(MediaType.IMAGE_JPEG_VALUE)
+                .byteSize(10L)
+                .build();
+
+        postImageFileRepository.save(PostImageFile.builder()
+                .baseImageFile(baseImageFile)
                 .post(post)
                 .build());
     }

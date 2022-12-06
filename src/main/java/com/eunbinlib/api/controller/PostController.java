@@ -6,7 +6,7 @@ import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
 import com.eunbinlib.api.dto.response.PaginationResponse;
-import com.eunbinlib.api.dto.response.PostDetailResponse;
+import com.eunbinlib.api.dto.response.postdetailresponse.PostDetailResponse;
 import com.eunbinlib.api.dto.response.PostResponse;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
