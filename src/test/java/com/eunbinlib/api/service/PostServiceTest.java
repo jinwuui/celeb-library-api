@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -149,19 +148,24 @@ class PostServiceTest extends ServiceTest {
         }
 
         @Test
-        @Transactional
         @DisplayName("글 상세 조회 - 사진이 있는 글 상세조회")
         void readDetailWithImages() {
             // given
             Member member = getMember();
             Post post = getPost(member);
-            post.addImages(IntStream.range(0, 5).mapToObj(i -> BaseImageFile.builder()
-                            .originalFilename(i + "origin.jpg")
-                            .storedFilename(i + "stored.jpg")
-                            .contentType(MediaType.IMAGE_JPEG_VALUE)
-                            .build())
-                    .collect(Collectors.toList())
-            );
+
+            for (int i = 0; i < 5; i++) {
+                BaseImageFile baseImageFile = BaseImageFile.builder()
+                        .originalFilename(i + "origin.jpg")
+                        .storedFilename(i + "stored.jpg")
+                        .contentType(MediaType.IMAGE_JPEG_VALUE)
+                        .build();
+
+                postImageFileRepository.save(PostImageFile.builder()
+                        .baseImageFile(baseImageFile)
+                        .post(post)
+                        .build());
+            }
 
             // when
             PostDetailResponse result = postService.readDetail(post.getId());
