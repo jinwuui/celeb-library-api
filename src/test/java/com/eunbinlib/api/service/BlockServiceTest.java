@@ -1,6 +1,6 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.blockbetweenmembers.Block;
+import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ class BlockServiceTest extends ServiceTest {
             blockService.blockUser(member1.getId(), member2.getId());
 
             // then
-            com.eunbinlib.api.domain.blockbetweenmembers.Block block = blockRepository
+            com.eunbinlib.api.domain.block.Block block = blockRepository
                     .findByBlockerAndBlocked(member1, member2)
                     .orElseThrow(IllegalArgumentException::new);
 
@@ -59,7 +59,7 @@ class BlockServiceTest extends ServiceTest {
 
             // when
             blockService.blockUser(member1.getId(), member2.getId());
-            List<com.eunbinlib.api.domain.blockbetweenmembers.Block> blockList = blockRepository.findAll();
+            List<com.eunbinlib.api.domain.block.Block> blockList = blockRepository.findAll();
 
             // then
             assertThat(blockList.size())

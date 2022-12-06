@@ -1,6 +1,6 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.blockbetweenmembers.Block;
+import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;

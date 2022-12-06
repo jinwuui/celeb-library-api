@@ -1,7 +1,7 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.blockbetweenmembers.Block;
-import com.eunbinlib.api.domain.repository.blockbetweenmembers.BlockRepository;
+import com.eunbinlib.api.domain.block.Block;
+import com.eunbinlib.api.domain.repository.block.BlockRepository;
 import com.eunbinlib.api.domain.user.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,6 @@
-package com.eunbinlib.api.domain.repository.blockbetweenmembers;
+package com.eunbinlib.api.domain.repository.block;
 
-import com.eunbinlib.api.domain.blockbetweenmembers.Block;
+import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.user.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 

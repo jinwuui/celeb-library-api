@@ -7,7 +7,7 @@ import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.repository.blockbetweenmembers.BlockRepository;
+import com.eunbinlib.api.domain.repository.block.BlockRepository;
 import com.eunbinlib.api.domain.repository.comment.CommentRepository;
 import com.eunbinlib.api.domain.repository.post.PostRepository;
 import com.eunbinlib.api.domain.repository.postimagefile.PostImageFileRepository;

@@ -1,6 +1,6 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.domain.blockbetweenmembers.Block;
+import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;

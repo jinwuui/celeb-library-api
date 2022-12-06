@@ -1,7 +1,7 @@
 package com.eunbinlib.api.domain.user;
 
 
-import com.eunbinlib.api.domain.blockbetweenmembers.Block;
+import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.ProfileImageFile;
 import com.eunbinlib.api.domain.post.Post;

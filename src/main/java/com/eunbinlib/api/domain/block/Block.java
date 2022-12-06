@@ -1,4 +1,4 @@
-package com.eunbinlib.api.domain.blockbetweenmembers;
+package com.eunbinlib.api.domain.block;
 
 import com.eunbinlib.api.domain.user.Member;
 import lombok.AccessLevel;
