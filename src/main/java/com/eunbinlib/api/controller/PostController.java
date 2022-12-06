@@ -39,8 +39,8 @@ public class PostController {
     }
 
     @GetMapping()
-    public PaginationResponse<PostResponse> readMany(@ModelAttribute PostReadRequest postReadRequest) {
-        return postService.readMany(postReadRequest);
+    public PaginationResponse<PostResponse> readMany(UserSession userSession, @ModelAttribute PostReadRequest postReadRequest) {
+        return postService.readMany(userSession.getId(), postReadRequest);
     }
 
     @PatchMapping("/{postId}")

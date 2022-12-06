@@ -1,5 +1,6 @@
 package com.eunbinlib.api.service;
 
+import com.eunbinlib.api.domain.blockbetweenmembers.Block;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.post.PostState;
@@ -155,7 +156,7 @@ class PostServiceTest extends ServiceTest {
                     .build();
 
             // when
-            PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
+            PaginationResponse<PostResponse> result = postService.readMany(member.getId(), postReadRequest);
 
             PaginationMeta meta = result.getMeta();
             List<PostResponse> data = result.getData();
@@ -190,7 +191,7 @@ class PostServiceTest extends ServiceTest {
                     .build();
 
             // when
-            PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
+            PaginationResponse<PostResponse> result = postService.readMany(member.getId(), postReadRequest);
 
             PaginationMeta meta = result.getMeta();
             List<PostResponse> data = result.getData();
@@ -232,7 +233,7 @@ class PostServiceTest extends ServiceTest {
                     .build();
 
             // when
-            PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
+            PaginationResponse<PostResponse> result = postService.readMany(member.getId(), postReadRequest);
 
             PaginationMeta meta = result.getMeta();
             List<PostResponse> data = result.getData();
@@ -268,7 +269,7 @@ class PostServiceTest extends ServiceTest {
                     .build();
 
             // when
-            PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
+            PaginationResponse<PostResponse> result = postService.readMany(member.getId(), postReadRequest);
 
             PaginationMeta meta = result.getMeta();
             List<PostResponse> data = result.getData();
@@ -303,7 +304,7 @@ class PostServiceTest extends ServiceTest {
                     .build();
 
             // when
-            PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
+            PaginationResponse<PostResponse> result = postService.readMany(member.getId(), postReadRequest);
 
             PaginationMeta meta = result.getMeta();
             List<PostResponse> data = result.getData();
@@ -337,17 +338,15 @@ class PostServiceTest extends ServiceTest {
                     })
                     .collect(Collectors.toList());
 
-            log.info("================ 1");
             PostReadRequest postReadRequest = PostReadRequest.builder()
                     .size(20)
                     .build();
 
             // when
-            PaginationResponse<PostResponse> result = postService.readMany(postReadRequest);
+            PaginationResponse<PostResponse> result = postService.readMany(member.getId(), postReadRequest);
 
             PaginationMeta meta = result.getMeta();
             List<PostResponse> data = result.getData();
-            log.info("================ 2 {} {}", meta.getSize(), data.size());
 
             // then
             assertThat(meta.getSize()).isEqualTo(5);
@@ -356,6 +355,48 @@ class PostServiceTest extends ServiceTest {
             assertThat(data.get(0).getContent()).isEqualTo("내용8");
             assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목0");
             assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용0");
+        }
+
+        @Test
+        @DisplayName("글 페이지네이션 조회 - 차단한 사용자의 게시글을 제외하고 조회하는 경우")
+        void readManyExcludePostsOfBlockedUser() {
+            // given
+            Member member1 = getMember();
+            Member member2 = getMember();
+
+            List<Post> requestPosts = IntStream.range(0, 20)
+                    .mapToObj(i ->
+                            Post.builder()
+                                    .title("제목" + i)
+                                    .content("내용" + i)
+                                    .member(i % 2 == 1 ? member1 : member2)
+                                    .build()
+                    )
+                    .collect(Collectors.toList());
+            postRepository.saveAll(requestPosts);
+
+            blockRepository.save(Block.builder()
+                    .blocker(member1)
+                    .blocked(member2)
+                    .build());
+
+            PostReadRequest postReadRequest = PostReadRequest.builder()
+                    .size(20)
+                    .build();
+
+            // when
+            PaginationResponse<PostResponse> result = postService.readMany(member1.getId(), postReadRequest);
+
+            PaginationMeta meta = result.getMeta();
+            List<PostResponse> data = result.getData();
+
+            // then
+            assertThat(meta.getSize()).isEqualTo(10);
+            assertThat(meta.getHasMore()).isEqualTo(false);
+            assertThat(data.get(0).getTitle()).isEqualTo("제목19");
+            assertThat(data.get(0).getContent()).isEqualTo("내용19");
+            assertThat(data.get(data.size() - 1).getTitle()).isEqualTo("제목1");
+            assertThat(data.get(data.size() - 1).getContent()).isEqualTo("내용1");
         }
     }
 
