@@ -1,6 +1,7 @@
 package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.domain.blockbetweenmembers.Block;
+import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.postlike.PostLike;
@@ -177,8 +178,8 @@ class PostControllerTest extends ControllerTest {
     class Read {
 
         @Test
-        @DisplayName("글 상세 조회")
-        void readDetail() throws Exception {
+        @DisplayName("글 상세 조회 - 댓글이 없는 경우")
+        void readDetailNoComments() throws Exception {
             // given
             loginMember();
             Post post = getPost(member);
@@ -188,11 +189,55 @@ class PostControllerTest extends ControllerTest {
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(post.getId()))
-                    .andExpect(jsonPath("$.title").value(post.getTitle()))
-                    .andExpect(jsonPath("$.content").value(post.getContent()))
-                    .andExpect(jsonPath("$.viewCount").value(1L))
-                    .andExpect(jsonPath("$.likeCount").value(0L))
+                    .andExpect(jsonPath("$..['post'].id").value(post.getId().intValue()))
+                    .andExpect(jsonPath("$..['post'].title").value(post.getTitle()))
+                    .andExpect(jsonPath("$..['comments'].size()").value(0))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("글 상세 조회 - 댓글이 있는 경우")
+        void readDetailWithComments() throws Exception {
+            // given
+            loginMember();
+            Post post = getPost(member);
+            Comment comment1 = getComment(member, post);
+            Comment comment2 = getComment(member, post);
+
+            // expected
+            mockMvc.perform(get("/api/posts/{postId}", post.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .contentType(APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$..['post'].id").value(post.getId().intValue()))
+                    .andExpect(jsonPath("$..['post'].title").value(post.getTitle()))
+                    .andExpect(jsonPath("$..['comments'].size()").value(2))
+                    .andExpect(jsonPath("$..['comments'][0]['writer'].id").value(member.getId().intValue()))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("글 상세 조회 - 댓글과 사진이 있는 경우")
+        void readDetailWithCommentsAndImages() throws Exception {
+            // given
+            loginMember();
+            Post post = getPost(member);
+            IntStream.range(0, 5)
+                    .forEach(i -> addPostImageFile(post));
+
+            Comment comment1 = getComment(member, post);
+            Comment comment2 = getComment(member, post);
+
+            // expected
+            mockMvc.perform(get("/api/posts/{postId}", post.getId())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .contentType(APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$..['post'].id").value(post.getId().intValue()))
+                    .andExpect(jsonPath("$..['post'].title").value(post.getTitle()))
+                    .andExpect(jsonPath("$..['post'].postImageUrls.size()").value(5))
+                    .andExpect(jsonPath("$..['comments'].size()").value(2))
+                    .andExpect(jsonPath("$..['comments'][0]['writer'].id").value(member.getId().intValue()))
                     .andDo(print());
         }
 

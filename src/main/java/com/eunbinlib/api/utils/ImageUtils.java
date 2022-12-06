@@ -13,9 +13,11 @@ import java.util.UUID;
 
 public class ImageUtils {
 
-    public static BaseImageFile storeImage(final String dirPath, final MultipartFile image) {
+    // TODO: change ImageUtils to ImageService/ImageRepository
+    private static final String TMP_DIR_PATH = "/Users/jinwoo/coding/spring/eunbinlib/src/main/resources/static/images/tmp/";
 
-        validateDirPath(dirPath);
+    public static BaseImageFile storeImage(final MultipartFile image) {
+        validateDirPath(TMP_DIR_PATH);
         validateImage(image);
         validateContentType(image.getContentType());
 
@@ -23,7 +25,7 @@ public class ImageUtils {
             String originalFilename = image.getOriginalFilename();
             String storeFilename = createStoreFilename(originalFilename);
 
-            image.transferTo(new File(getFullPath(dirPath, storeFilename)));
+            image.transferTo(new File(getFullPath(TMP_DIR_PATH, storeFilename)));
 
             return BaseImageFile.builder()
                     .storedFilename(storeFilename)
@@ -36,16 +38,15 @@ public class ImageUtils {
         }
     }
 
-    public static List<BaseImageFile> storeImages(final String dirPath, final List<MultipartFile> images) {
-
-        if (dirPath == null || images == null || images.isEmpty()) {
+    public static List<BaseImageFile> storeImages(final List<MultipartFile> images) {
+        if (images == null || images.isEmpty()) {
             return List.of();
         }
 
         List<BaseImageFile> result = new ArrayList<>();
 
         for (MultipartFile file : images) {
-            BaseImageFile storedFile = storeImage(dirPath, file);
+            BaseImageFile storedFile = storeImage(file);
 
             if (storedFile != null) {
                 result.add(storedFile);
