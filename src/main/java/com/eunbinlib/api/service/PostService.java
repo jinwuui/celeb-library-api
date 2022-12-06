@@ -68,18 +68,16 @@ public class PostService {
         return PostDetailResponse.from(post);
     }
 
-    public PaginationResponse<PostResponse> readMany(PostReadRequest postReadRequest) {
-        List<PostResponse> data = postRepository.getList(
-                        postReadRequest.getLimit(),
-                        postReadRequest.getAfter()
-                )
-                .stream()
+    public PaginationResponse<PostResponse> readMany(Long userId, PostReadRequest postReadRequest) {
+        List<Post> findPosts = findPost(userId, postReadRequest.getLimit(), postReadRequest.getAfter());
+
+        List<PostResponse> data = findPosts.stream()
                 .map(PostResponse::new)
                 .collect(Collectors.toList());
 
         PaginationMeta meta = PaginationMeta.builder()
                 .size(data.size())
-                .hasMore(isHasMore(data))
+                .hasMore(isHasMore(userId, data))
                 .build();
 
         return PaginationResponse.<PostResponse>builder()
@@ -128,8 +126,16 @@ public class PostService {
         }
     }
 
-    private boolean isHasMore(List<PostResponse> data) {
-        return !data.isEmpty() && postRepository.existsNext(data.get(data.size() - 1).getId());
+    private List<Post> findPost(Long userId, long limit, Long after) {
+        if (after == null) {
+            return postRepository.findPosts(limit, userId);
+        } else {
+            return postRepository.findPostsWithAfterCondition(limit, after, userId);
+        }
+    }
+
+    private boolean isHasMore(Long userId, List<PostResponse> data) {
+        return !data.isEmpty() && postRepository.existsNext(userId, data.get(data.size() - 1).getId());
     }
 
     private void validateWriter(Long userId, Long postWriterId) {

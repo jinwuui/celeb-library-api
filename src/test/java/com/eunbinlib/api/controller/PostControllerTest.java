@@ -1,5 +1,6 @@
 package com.eunbinlib.api.controller;
 
+import com.eunbinlib.api.domain.blockbetweenmembers.Block;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.postlike.PostLike;
@@ -231,6 +232,43 @@ class PostControllerTest extends ControllerTest {
         }
 
         @Test
+        @DisplayName("글 여러개 조회")
+        void readManyByGuest() throws Exception {
+            // given
+            loginMember();
+            List<Post> requestPosts = IntStream.range(0, 20)
+                    .mapToObj(i ->
+                            Post.builder()
+                                    .title("제목" + i)
+                                    .content("내용" + i)
+                                    .member(member)
+                                    .build()
+                    )
+                    .collect(Collectors.toList());
+            postRepository.saveAll(requestPosts);
+
+            loginGuest();
+
+            PostReadRequest postReadRequest = PostReadRequest.builder()
+                    .after(null)
+                    .size(5)
+                    .build();
+
+            MultiValueMap<String, String> params = convert(objectMapper, postReadRequest);
+
+            // expected
+            mockMvc.perform(get("/api/posts")
+                            .params(params)
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .contentType(APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$..['data'].length()", is(5)))
+                    .andExpect(jsonPath("$..['data'][0].title").value("제목19"))
+                    .andExpect(jsonPath("$..['data'][0].content").value("내용19"))
+                    .andDo(print());
+        }
+
+        @Test
         @DisplayName("글 여러개 조회 - page가 0이하, size가 10000")
         void readManyEdgeCase() throws Exception {
             // given
@@ -274,6 +312,39 @@ class PostControllerTest extends ControllerTest {
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isNotFound())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("차단한 사용자의 게시글을 제외하고 조회")
+        void readManyExcludePostsOfBlockedUser() throws Exception {
+            // given
+            // - 로그인 + 자신의 게시글 작성
+            loginMember();
+            Post post = getPost(member);
+
+            // - 차단될 사용자의 게시글 작성
+            Member blocked = getMember();
+            getPost(blocked);
+
+            // - 사용자 차단
+            blockRepository.save(Block.builder()
+                    .blocker(member)
+                    .blocked(blocked)
+                    .build());
+
+            PostReadRequest postReadRequest = PostReadRequest.builder().build();
+            MultiValueMap<String, String> params = convert(objectMapper, postReadRequest);
+
+            // expected
+            mockMvc.perform(get("/api/posts")
+                            .params(params)
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .contentType(APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$..['data'].length()", is(1)))
+                    .andExpect(jsonPath("$..['data'][0].title").value(post.getTitle()))
+                    .andExpect(jsonPath("$..['data'][0].content").value(post.getContent()))
                     .andDo(print());
         }
     }
