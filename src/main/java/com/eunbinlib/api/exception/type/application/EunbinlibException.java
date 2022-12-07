@@ -1,4 +1,4 @@
-package com.eunbinlib.api.exception.type;
+package com.eunbinlib.api.exception.type.application;
 
 import lombok.Getter;
 
@@ -19,5 +19,4 @@ public abstract class EunbinlibException extends RuntimeException {
     public void addValidation(final String fieldName, final String message) {
         validation.put(fieldName, message);
     }
-
 }

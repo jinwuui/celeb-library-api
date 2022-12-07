@@ -1,4 +1,4 @@
-package com.eunbinlib.api.exception.type.notfound;
+package com.eunbinlib.api.exception.type.application.notfound;
 
 import org.apache.commons.lang3.StringUtils;
 
