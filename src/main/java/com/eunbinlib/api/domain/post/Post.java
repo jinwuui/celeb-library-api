@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -94,7 +95,7 @@ public class Post extends BaseTimeEntity {
     }
 
     public void deleteImagesById(final List<Long> deleteIdList) {
-        if (deleteIdList == null || deleteIdList.isEmpty()) {
+        if (CollectionUtils.isEmpty(deleteIdList)) {
             return;
         }
 
