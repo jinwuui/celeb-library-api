@@ -33,7 +33,7 @@ public class PostImageFile extends BaseTimeEntity {
 
     public void setPost(final Post post) {
         this.post = post;
-        if (!post.getImages().contains(this)) {
+        if (post != null && !post.getImages().contains(this)) {
             post.getImages().add(this);
         }
     }

@@ -66,7 +66,7 @@ public class PostService {
         Post post = postRepository.findByIdAndState(postId, PostState.NORMAL)
                 .orElseThrow(PostNotFoundException::new);
 
-        postRepository.findWithImagesById(postId);
+        postRepository.findWithImagesByIdAndState(postId, PostState.NORMAL);
 
         post.increaseViewCount();
 
@@ -93,11 +93,15 @@ public class PostService {
 
     @Transactional
     public void update(Long userId, Long postId, PostUpdateRequest postUpdateRequest) {
-        Post post = findById(postId);
+        Post post = postRepository.findWithImagesByIdAndState(postId, PostState.NORMAL)
+                .orElseThrow(PostNotFoundException::new);
 
         validateWriter(userId, post.getMember().getId());
 
-        post.update(postUpdateRequest.getTitle(), postUpdateRequest.getContent());
+        post.updateTitleAndContent(postUpdateRequest.getTitle(), postUpdateRequest.getContent());
+
+        List<BaseImageFile> newImages = ImageUtils.storeImages(postUpdateRequest.getNewImages());
+        post.updateImages(postUpdateRequest.getDeleteIdList(), newImages);
     }
 
     @Transactional

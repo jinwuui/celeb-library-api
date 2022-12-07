@@ -44,7 +44,7 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}")
-    public void update(UserSession userSession, @PathVariable Long postId, @RequestBody @Valid PostUpdateRequest postUpdateRequest) {
+    public void update(UserSession userSession, @PathVariable Long postId, @ModelAttribute @Valid PostUpdateRequest postUpdateRequest) {
         authorizePassOnlyMember(userSession);
         postService.update(userSession.getId(), postId, postUpdateRequest);
     }

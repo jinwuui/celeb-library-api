@@ -44,13 +44,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "from post p\n" +
             "   left join (select blocked_id from block where blocker_id = :userId) b on p.member_id = b.blocked_id\n" +
             "where b.blocked_id is null\n" +
-            "   and p.state = 'NORMAL'\n" +
-            "   and p.id < :afterCond", nativeQuery = true)
+            "   and p.id < :afterCond\n" +
+            "   and p.state = 'NORMAL'", nativeQuery = true)
     boolean existsNext(@Param("userId") Long userId, @Param("afterCond") Long afterCond);
 
     @Query(value = "select distinct p " +
             "from Post p " +
-            "   join fetch p.images " +
-            "where p.id = :id")
-    Optional<Post> findWithImagesById(@Param("id") Long id);
+            "   left join fetch p.images " +
+            "where p.id = :id " +
+            "   and p.state = :state")
+    Optional<Post> findWithImagesByIdAndState(@Param("id") Long id, @Param("state") PostState state);
 }

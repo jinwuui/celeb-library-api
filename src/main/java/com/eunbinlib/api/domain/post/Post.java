@@ -1,7 +1,7 @@
 package com.eunbinlib.api.domain.post;
 
-import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.BaseTimeEntity;
+import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.user.Member;
@@ -64,13 +64,14 @@ public class Post extends BaseTimeEntity {
         this.state = PostState.NORMAL;
     }
 
-    public void update(final String title, final String content) {
+    public void updateTitleAndContent(final String title, final String content) {
         this.title = title == null ? this.title : title;
         this.content = content == null ? this.content : content;
     }
 
-    public void delete() {
-        this.state = PostState.DELETED;
+    public void updateImages(final List<Long> deleteIdList, final List<BaseImageFile> newImages) {
+        deleteImagesById(deleteIdList);
+        addImages(newImages);
     }
 
     public void addImage(final BaseImageFile baseImageFile) {
@@ -92,6 +93,19 @@ public class Post extends BaseTimeEntity {
         }
     }
 
+    public void deleteImagesById(final List<Long> deleteIdList) {
+        if (deleteIdList == null || deleteIdList.isEmpty()) {
+            return;
+        }
+
+        for (PostImageFile image : this.images) {
+            if (deleteIdList.contains(image.getId())) {
+                this.images.remove(image);
+                image.setPost(null);
+            }
+        }
+    }
+
     public void addComment(final Comment comment) {
         this.comments.add(comment);
         if (comment.getPost() != this) {
@@ -104,6 +118,10 @@ public class Post extends BaseTimeEntity {
         if (!member.getPosts().contains(this)) {
             member.getPosts().add(this);
         }
+    }
+
+    public void delete() {
+        this.state = PostState.DELETED;
     }
 
     public void increaseViewCount() {

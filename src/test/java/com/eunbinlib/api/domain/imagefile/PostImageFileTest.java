@@ -1,7 +1,6 @@
 package com.eunbinlib.api.domain.imagefile;
 
 import com.eunbinlib.api.domain.post.Post;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,18 +29,5 @@ public class PostImageFileTest {
                 .isEqualTo(post);
         assertThat(post.getImages().contains(postImageFile))
                 .isTrue();
-    }
-
-    @Test
-    @DisplayName("게시글 사진 파일에 null 게시글 설정")
-    void setNullPost() {
-        // given
-        PostImageFile postImageFile = PostImageFile.builder()
-                .baseImageFile(new BaseImageFile())
-                .build();
-
-        // expected
-        Assertions.assertThatThrownBy(() -> postImageFile.setPost(null))
-                .isInstanceOf(NullPointerException.class);
     }
 }

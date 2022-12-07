@@ -2,6 +2,7 @@ package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.comment.Comment;
+import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.postlike.PostLike;
@@ -9,6 +10,7 @@ import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 class PostControllerTest extends ControllerTest {
 
     @Nested
@@ -44,7 +47,7 @@ class PostControllerTest extends ControllerTest {
 
         @Test
         @DisplayName("글 등록 - 이미지 없음")
-        void writeNoImages() throws Exception {
+        void createNoImages() throws Exception {
             // given
             loginMember();
             PostCreateRequest request = new PostCreateRequest("제목", "내용", null);
@@ -75,7 +78,7 @@ class PostControllerTest extends ControllerTest {
 
         @Test
         @DisplayName("글 등록 - 이미지 첨부")
-        void writeWithImages() throws Exception {
+        void createWithImages() throws Exception {
             // given
             loginMember();
             List<MultipartFile> images = List.of(
@@ -113,7 +116,7 @@ class PostControllerTest extends ControllerTest {
 
         @Test
         @DisplayName("글 등록 실패 - 제목 필수 입력")
-        void writeTitleNotBlank() throws Exception {
+        void createTitleNotBlank() throws Exception {
             // given
             loginMember();
             PostCreateRequest request = new PostCreateRequest(null, "내용", null);
@@ -134,7 +137,7 @@ class PostControllerTest extends ControllerTest {
 
         @Test
         @DisplayName("글 등록 실패 - 내용 필수 입력")
-        void writeContentNotBlank() throws Exception {
+        void createContentNotBlank() throws Exception {
             // given
             loginMember();
             PostCreateRequest request = new PostCreateRequest("제목", null, null);
@@ -155,7 +158,7 @@ class PostControllerTest extends ControllerTest {
 
         @Test
         @DisplayName("글 등록 실패 - 게스트 유저인 경우")
-        void writeByGuest() throws Exception {
+        void createByGuest() throws Exception {
             // given
             loginGuest();
             PostCreateRequest request = new PostCreateRequest("제목", "내용", null);
@@ -405,16 +408,25 @@ class PostControllerTest extends ControllerTest {
             loginMember();
             Post post = getPost(member);
 
-            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", post.getContent(), null);
+            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", null, null, null);
 
             // expected
-            mockMvc.perform(patch("/api/posts/{postId}", post.getId())
+            mockMvc.perform(multipart(HttpMethod.PATCH, "/api/posts/{postId}", post.getId())
+                            .param("title", request.getTitle())
+                            .param("content", request.getContent())
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
-                            .contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
                     .andDo(print());
+
+            Post findPost = postRepository.findById(post.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+
+            assertThat(findPost.getTitle())
+                    .isEqualTo(request.getTitle());
+            assertThat(findPost.getContent())
+                    .isEqualTo(post.getContent());
         }
 
         @Test
@@ -424,16 +436,107 @@ class PostControllerTest extends ControllerTest {
             loginMember();
             Post post = getPost(member);
 
-            PostUpdateRequest request = new PostUpdateRequest(post.getTitle(), "수정된 내용", null);
+            PostUpdateRequest request = new PostUpdateRequest(null, "수정된 내용", null, null);
 
             // expected
-            mockMvc.perform(patch("/api/posts/{postId}", post.getId())
+            mockMvc.perform(multipart(HttpMethod.PATCH, "/api/posts/{postId}", post.getId())
+                            .param("title", request.getTitle())
+                            .param("content", request.getContent())
                             .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
-                            .contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
                     .andDo(print());
+
+            Post findPost = postRepository.findById(post.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+
+            assertThat(findPost.getTitle())
+                    .isEqualTo(post.getTitle());
+            assertThat(findPost.getContent())
+                    .isEqualTo(request.getContent());
+        }
+
+        @Test
+        @DisplayName("글 이미지 수정")
+        void updateImages() throws Exception {
+            // given
+            loginMember();
+            Post post = getPost(member);
+            List<MultipartFile> images = List.of(
+                    new MockMultipartFile("newImages", "test1.png", MediaType.IMAGE_PNG_VALUE, "<<png data>>".getBytes()),
+                    new MockMultipartFile("newImages", "test2.jpg", MediaType.IMAGE_JPEG_VALUE, "<<jpg data>>".getBytes())
+            );
+
+            PostUpdateRequest request = new PostUpdateRequest(null, null, null, images);
+
+            // when & expected
+            mockMvc.perform(multipart(HttpMethod.PATCH, "/api/posts/{postId}", post.getId())
+                            .file((MockMultipartFile) request.getNewImages().get(0))
+                            .file((MockMultipartFile) request.getNewImages().get(1))
+                            .param("title", request.getTitle())
+                            .param("content", request.getContent())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .contentType(MediaType.MULTIPART_FORM_DATA)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            // then
+            Post findPost = postRepository.findById(post.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+
+            List<PostImageFile> postImageFile = postImageFileRepository.findAllByPostId(findPost.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+
+            assertThat(postImageFile.size())
+                    .isEqualTo(2L);
+        }
+
+        @Test
+        @DisplayName("글 이미지 수정 - 기존 이미지는 삭제하고 새로운 이미지를 추가하는 경우")
+        void updateImagesDeleteOldImages() throws Exception {
+            // given
+            loginMember();
+            Post post = getPost(member);
+            PostImageFile savedImage1 = postImageFileRepository.save(PostImageFile.builder()
+                    .post(post)
+                    .baseImageFile(BaseImageFile.builder().build())
+                    .build());
+            PostImageFile savedImage2 = postImageFileRepository.save(PostImageFile.builder()
+                    .post(post)
+                    .baseImageFile(BaseImageFile.builder().build())
+                    .build());
+
+            List<MultipartFile> images = List.of(
+                    new MockMultipartFile("newImages", "test1.png", MediaType.IMAGE_PNG_VALUE, "<<png data>>".getBytes()),
+                    new MockMultipartFile("newImages", "test2.jpg", MediaType.IMAGE_JPEG_VALUE, "<<jpg data>>".getBytes())
+            );
+
+            PostUpdateRequest request = new PostUpdateRequest(null, null, List.of(savedImage1.getId()), images);
+
+            // when & expected
+            mockMvc.perform(multipart(HttpMethod.PATCH, "/api/posts/{postId}", post.getId())
+                            .file((MockMultipartFile) request.getNewImages().get(0))
+                            .file((MockMultipartFile) request.getNewImages().get(1))
+                            .param("title", request.getTitle())
+                            .param("content", request.getContent())
+                            .param("deleteIdList", request.getDeleteIdList().get(0).toString())
+                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .contentType(MediaType.MULTIPART_FORM_DATA)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            // then
+            Post findPost = postRepository.findById(post.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+
+            List<PostImageFile> findImages = postImageFileRepository.findAllByPostId(findPost.getId())
+                    .orElseThrow(IllegalArgumentException::new);
+
+            assertThat(findImages.size())
+                    .isEqualTo(3L);
         }
 
         @Test
@@ -441,7 +544,7 @@ class PostControllerTest extends ControllerTest {
         void updatePostNotFound() throws Exception {
             // given
             loginMember();
-            PostUpdateRequest request = new PostUpdateRequest("제목", "수정된 내용", null);
+            PostUpdateRequest request = new PostUpdateRequest(null, "수정된 내용", null, null);
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", 1L)
@@ -467,7 +570,7 @@ class PostControllerTest extends ControllerTest {
 
             userContextRepository.saveUserInfo(memberAccessToken2, memberRefreshToken2, member2);
 
-            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", "수정된 내용", null);
+            PostUpdateRequest request = new PostUpdateRequest("수정된 제목", "수정된 내용", null, null);
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", post.getId())

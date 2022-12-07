@@ -18,5 +18,7 @@ public class PostUpdateRequest {
 
     private String content;
 
-    private List<MultipartFile> images;
+    private List<Long> deleteIdList;
+
+    private List<MultipartFile> newImages;
 }
