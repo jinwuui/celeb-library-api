@@ -6,7 +6,7 @@ import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.LoginRequest;
 import com.eunbinlib.api.dto.response.LoginResponse;
-import com.eunbinlib.api.exception.type.UnsupportedMethodException;
+import com.eunbinlib.api.exception.type.auth.UnsupportedMethodException;
 import com.eunbinlib.api.exception.type.auth.InvalidLoginInfoException;
 import com.eunbinlib.api.utils.EncryptUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -18,7 +18,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.eunbinlib.api.auth.utils.AuthUtils.injectExceptionToRequest;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -71,8 +70,7 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
             return false;
         } catch (Exception e) {
             log.error("LoginAuthInterceptor: ", e);
-            injectExceptionToRequest(request, e);
-            return true;
+            throw e;
         }
     }
 

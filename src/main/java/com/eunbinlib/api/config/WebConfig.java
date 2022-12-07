@@ -4,10 +4,12 @@ import com.eunbinlib.api.auth.*;
 import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.exception.handler.AuthHandlerExceptionResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -36,20 +38,18 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new JwtAuthInterceptor(jwtUtils, userContextRepository))
                 .addPathPatterns("/**")
-                .excludePathPatterns(AUTH_WHITE_LIST)
-                .order(1);
+                .excludePathPatterns(AUTH_WHITE_LIST);
 
         registry.addInterceptor(new JwtRefreshInterceptor(jwtUtils, objectMapper, userContextRepository))
-                .addPathPatterns(TOKEN_REFRESH_URL)
-                .order(2);
+                .addPathPatterns(TOKEN_REFRESH_URL);
 
         registry.addInterceptor(new LoginAuthInterceptor(jwtUtils, userRepository, userContextRepository))
-                .addPathPatterns(LOGIN_URL)
-                .order(3);
+                .addPathPatterns(LOGIN_URL);
+    }
 
-        registry.addInterceptor(new InterceptorExceptionInterceptor(objectMapper))
-                .addPathPatterns("/**")
-                .order(4);
+    @Override
+    public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> resolvers) {
+        resolvers.add(new AuthHandlerExceptionResolver());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.eunbinlib.api.auth.data;
 
-public interface JwtProperties {
+public interface AuthProperties {
 
     String TOKEN_TYPE = "tokenType";
     String USER_TYPE = "userType";

@@ -9,7 +9,7 @@ import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.dto.response.UserMeResponse;
-import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
 import com.eunbinlib.api.utils.EncryptUtils;
 import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;

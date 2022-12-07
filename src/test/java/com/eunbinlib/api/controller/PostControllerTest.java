@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.AuthProperties.HEADER_AUTHORIZATION;
+import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.dto.request.PostReadRequest.MAX_SIZE;
 import static com.eunbinlib.api.testutils.MultiValueMapper.convert;
 import static org.assertj.core.api.Assertions.assertThat;

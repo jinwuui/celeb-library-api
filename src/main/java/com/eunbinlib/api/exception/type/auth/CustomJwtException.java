@@ -10,6 +10,10 @@ public class CustomJwtException extends EunbinlibAuthException {
         super(MESSAGE);
     }
 
+    public CustomJwtException(final Throwable cause) {
+        super(MESSAGE, cause);
+    }
+
     @Override
     public int getStatusCode() {
         return HttpStatus.UNAUTHORIZED.value();

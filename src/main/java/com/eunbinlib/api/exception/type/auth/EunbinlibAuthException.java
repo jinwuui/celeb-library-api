@@ -6,5 +6,9 @@ public abstract class EunbinlibAuthException extends RuntimeException {
         super(message);
     }
 
+    public EunbinlibAuthException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
     public abstract int getStatusCode();
 }

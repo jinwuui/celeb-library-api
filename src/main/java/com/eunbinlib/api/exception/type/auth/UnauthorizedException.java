@@ -10,6 +10,10 @@ public class UnauthorizedException extends EunbinlibAuthException {
         super(MESSAGE);
     }
 
+    public UnauthorizedException(final Throwable cause) {
+        super(MESSAGE, cause);
+    }
+
     @Override
     public int getStatusCode() {
         return HttpStatus.UNAUTHORIZED.value();

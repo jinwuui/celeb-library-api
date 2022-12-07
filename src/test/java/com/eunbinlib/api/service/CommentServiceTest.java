@@ -7,9 +7,10 @@ import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
 import com.eunbinlib.api.dto.request.CommentUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
-import com.eunbinlib.api.exception.type.notfound.CommentNotFoundException;
-import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
+import com.eunbinlib.api.exception.type.application.ForbiddenAccessException;
+import com.eunbinlib.api.exception.type.auth.ForbiddenAuthException;
+import com.eunbinlib.api.exception.type.application.notfound.CommentNotFoundException;
+import com.eunbinlib.api.exception.type.application.notfound.PostNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -140,7 +141,7 @@ class CommentServiceTest extends ServiceTest {
             // expected
             assertThatThrownBy(() ->
                     commentService.update(anotherMemberId, comment.getId(), request))
-                    .isInstanceOf(UnauthorizedException.class);
+                    .isInstanceOf(ForbiddenAccessException.class);
         }
 
         @Test
@@ -210,7 +211,7 @@ class CommentServiceTest extends ServiceTest {
             // expected
             assertThatThrownBy(() ->
                     commentService.delete(anotherMemberId, comment.getId()))
-                    .isInstanceOf(UnauthorizedException.class);
+                    .isInstanceOf(ForbiddenAccessException.class);
         }
 
         @Test

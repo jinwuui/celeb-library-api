@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.*;
+import static com.eunbinlib.api.auth.data.AuthProperties.*;
 
 
 @Slf4j

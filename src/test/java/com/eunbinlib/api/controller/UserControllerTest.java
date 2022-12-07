@@ -8,7 +8,7 @@ import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
-import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,8 +19,8 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import javax.transaction.Transactional;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.AuthProperties.HEADER_AUTHORIZATION;
+import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.controller.UserController.JOIN_GUEST_URL;
 import static com.eunbinlib.api.controller.UserController.JOIN_MEMBER_URL;
 import static org.assertj.core.api.Assertions.assertThat;

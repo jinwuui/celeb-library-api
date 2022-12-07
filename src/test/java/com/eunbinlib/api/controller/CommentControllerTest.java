@@ -14,8 +14,8 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Objects;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.AuthProperties.HEADER_AUTHORIZATION;
+import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

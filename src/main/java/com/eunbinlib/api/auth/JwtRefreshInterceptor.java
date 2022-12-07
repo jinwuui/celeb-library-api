@@ -3,10 +3,12 @@ package com.eunbinlib.api.auth;
 import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.dto.response.TokenRefreshResponse;
-import com.eunbinlib.api.exception.type.UnsupportedMethodException;
-import com.eunbinlib.api.exception.type.auth.UnauthenticatedException;
+import com.eunbinlib.api.exception.type.auth.UnsupportedMethodException;
+import com.eunbinlib.api.exception.type.auth.CustomJwtException;
+import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -15,8 +17,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.USER_TYPE;
-import static com.eunbinlib.api.auth.utils.AuthUtils.injectExceptionToRequest;
+import static com.eunbinlib.api.auth.data.AuthProperties.USER_TYPE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -44,7 +45,7 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
             }
 
             refreshToken = jwtUtils.extractToken(request)
-                    .orElseThrow(UnauthenticatedException::new);
+                    .orElseThrow(UnauthorizedException::new);
 
             Claims jwt = jwtUtils.verifyRefreshToken(refreshToken);
 
@@ -63,15 +64,17 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
                     tokenRefreshResponse.getAccessToken(),
                     refreshToken
             );
+
             return false;
-        } catch (Exception e) {
+        } catch (JwtException e) {
             log.error("JwtRefreshInterceptor: ", e);
             if (refreshToken != null) {
                 userContextRepository.expireUserInfoContext(refreshToken);
             }
-            injectExceptionToRequest(request, e);
-
-            return true;
+            throw new CustomJwtException(e);
+        } catch (Exception e) {
+            log.error("JwtRefreshInterceptor: ", e);
+            throw e;
         }
     }
 
