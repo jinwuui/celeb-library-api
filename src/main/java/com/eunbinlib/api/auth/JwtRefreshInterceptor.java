@@ -2,13 +2,10 @@ package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.dto.response.TokenRefreshResponse;
+import com.eunbinlib.api.dto.response.TokenResponse;
 import com.eunbinlib.api.exception.type.auth.UnsupportedMethodException;
-import com.eunbinlib.api.exception.type.auth.CustomJwtException;
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -16,6 +13,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import static com.eunbinlib.api.auth.data.AuthProperties.USER_TYPE;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -36,53 +35,57 @@ public class JwtRefreshInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        validateRequestMethod(request);
 
         String refreshToken = null;
+
         try {
-            // HTTP METHOD 검사
-            if (!HttpMethod.POST.matches(request.getMethod())) {
-                throw new UnsupportedMethodException();
-            }
+            refreshToken = jwtUtils.extractToken(request);
 
-            refreshToken = jwtUtils.extractToken(request)
-                    .orElseThrow(UnauthorizedException::new);
+            Claims claims = jwtUtils.verifyRefreshToken(refreshToken);
 
-            Claims jwt = jwtUtils.verifyRefreshToken(refreshToken);
+            String userType = claims.get(USER_TYPE, String.class);
+            String username = claims.getSubject();
 
-            String userType = jwt.get(USER_TYPE, String.class);
-            String username = jwt.getSubject();
-
-            TokenRefreshResponse tokenRefreshResponse = createTokenRefreshRes(userType, username);
-
-            // setting response
-            response.setStatus(SC_OK);
-            response.setContentType(APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding(UTF_8.name());
-            objectMapper.writeValue(response.getWriter(), tokenRefreshResponse);
+            TokenResponse tokenResponse = createTokenResponse(refreshToken, userType, username);
 
             userContextRepository.updateAccessToken(
-                    tokenRefreshResponse.getAccessToken(),
-                    refreshToken
+                    tokenResponse.getAccessToken(),
+                    tokenResponse.getRefreshToken()
             );
 
+            prepareResponse(response, tokenResponse);
+
             return false;
-        } catch (JwtException e) {
+        } catch (Exception e) {
             log.error("JwtRefreshInterceptor: ", e);
             if (refreshToken != null) {
                 userContextRepository.expireUserInfoContext(refreshToken);
             }
-            throw new CustomJwtException(e);
-        } catch (Exception e) {
-            log.error("JwtRefreshInterceptor: ", e);
             throw e;
         }
     }
 
-    private TokenRefreshResponse createTokenRefreshRes(String userType, String username) {
+    private void validateRequestMethod(HttpServletRequest request) {
+        if (!HttpMethod.POST.matches(request.getMethod())) {
+            throw new UnsupportedMethodException();
+        }
+    }
+
+    private TokenResponse createTokenResponse(String refreshToken, String userType, String username) {
         String accessToken = jwtUtils.createAccessToken(userType, username);
 
-        return  TokenRefreshResponse.builder()
+        return  TokenResponse.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
+    }
+
+    private void prepareResponse(HttpServletResponse response, TokenResponse tokenResponse) throws IOException {
+        response.setStatus(SC_OK);
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(UTF_8.name());
+
+        objectMapper.writeValue(response.getWriter(), tokenResponse);
     }
 }
