@@ -2,6 +2,7 @@ package com.eunbinlib.api.config;
 
 import com.eunbinlib.api.auth.*;
 import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
+import com.eunbinlib.api.auth.utils.AuthUtils;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.exception.handler.AuthHandlerExceptionResolver;
@@ -28,6 +29,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final JwtUtils jwtUtils;
 
+    private final AuthUtils authUtils;
+
     private final UserRepository userRepository;
 
     private final ObjectMapper objectMapper;
@@ -43,7 +46,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new JwtRefreshInterceptor(jwtUtils, objectMapper, userContextRepository))
                 .addPathPatterns(TOKEN_REFRESH_URL);
 
-        registry.addInterceptor(new LoginAuthInterceptor(jwtUtils, userRepository, userContextRepository))
+        registry.addInterceptor(new LoginAuthInterceptor(authUtils, objectMapper))
                 .addPathPatterns(LOGIN_URL);
     }
 
