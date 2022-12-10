@@ -1,7 +1,7 @@
 package com.eunbinlib.api.domain.post;
 
-import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.BaseTimeEntity;
+import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.imagefile.PostImageFile;
 import com.eunbinlib.api.domain.user.Member;
@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -55,22 +56,23 @@ public class Post extends BaseTimeEntity {
     private Member member;
 
     @Builder
-    public Post(final String title, final PostState state, final String content, final Long likeCount, final Long viewCount, final Member member) {
+    public Post(final String title, final String content, final Long likeCount, final Long viewCount, final Member member) {
         this.title = title;
-        this.state = state;
         this.content = content;
         this.likeCount = likeCount;
         this.viewCount = viewCount;
         this.member = member;
+        this.state = PostState.NORMAL;
     }
 
-    public void update(final String title, final String content) {
+    public void updateTitleAndContent(final String title, final String content) {
         this.title = title == null ? this.title : title;
         this.content = content == null ? this.content : content;
     }
 
-    public void delete() {
-        this.state = PostState.DELETED;
+    public void updateImages(final List<Long> deleteIdList, final List<BaseImageFile> newImages) {
+        deleteImagesById(deleteIdList);
+        addImages(newImages);
     }
 
     public void addImage(final BaseImageFile baseImageFile) {
@@ -92,6 +94,19 @@ public class Post extends BaseTimeEntity {
         }
     }
 
+    public void deleteImagesById(final List<Long> deleteIdList) {
+        if (CollectionUtils.isEmpty(deleteIdList)) {
+            return;
+        }
+
+        for (PostImageFile image : this.images) {
+            if (deleteIdList.contains(image.getId())) {
+                this.images.remove(image);
+                image.setPost(null);
+            }
+        }
+    }
+
     public void addComment(final Comment comment) {
         this.comments.add(comment);
         if (comment.getPost() != this) {
@@ -104,6 +119,10 @@ public class Post extends BaseTimeEntity {
         if (!member.getPosts().contains(this)) {
             member.getPosts().add(this);
         }
+    }
+
+    public void delete() {
+        this.state = PostState.DELETED;
     }
 
     public void increaseViewCount() {

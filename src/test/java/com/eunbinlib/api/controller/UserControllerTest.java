@@ -1,6 +1,6 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.ControllerTest;
+import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
@@ -8,7 +8,8 @@ import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
-import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,8 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import javax.transaction.Transactional;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.AuthProperties.AUTHORIZATION_HEADER;
+import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.controller.UserController.JOIN_GUEST_URL;
 import static com.eunbinlib.api.controller.UserController.JOIN_MEMBER_URL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 class UserControllerTest extends ControllerTest {
 
     public static final String MEMBER_TYPE = "member";
@@ -250,7 +252,7 @@ class UserControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(get("/api/users/me")
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userType").value(member.getUserType()))
@@ -267,7 +269,7 @@ class UserControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(get("/api/users/me")
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + guestAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isForbidden())
                     .andDo(print());
@@ -288,7 +290,7 @@ class UserControllerTest extends ControllerTest {
             // when
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
@@ -312,7 +314,7 @@ class UserControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
@@ -329,7 +331,7 @@ class UserControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
@@ -345,7 +347,7 @@ class UserControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
@@ -362,7 +364,7 @@ class UserControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
@@ -388,7 +390,7 @@ class UserControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .file((MockMultipartFile) request.getProfileImageFile())
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
@@ -421,7 +423,7 @@ class UserControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .file((MockMultipartFile) request.getProfileImageFile())
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
@@ -447,7 +449,7 @@ class UserControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .file((MockMultipartFile) request.getProfileImageFile())
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
@@ -481,13 +483,138 @@ class UserControllerTest extends ControllerTest {
             loginMember();
             MeUpdateRequest request = new MeUpdateRequest(null, null);
 
-            // when
+            // expected
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/me")
                             .param("nickname", request.getNickname())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("유저 간 차단/차단해제")
+    public class BlockAndUnblock {
+
+        @Test
+        @DisplayName("유저를 차단하는 경우")
+        void blockUser() throws Exception {
+            // given
+            loginMember();
+            Member target = getMember();
+
+            // when
+            mockMvc.perform(post("/api/users/{userId}/block", target.getId())
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            // then
+            assertThat(blockRepository.findAll().get(0).getBlocker().getId())
+                    .isEqualTo(member.getId());
+            assertThat(blockRepository.findAll().get(0).getBlocked().getId())
+                    .isEqualTo(target.getId());
+        }
+
+        @Test
+        @DisplayName("이미 차단된 유저를 차단하는 경우")
+        void blockUserAlreadyBlocked() throws Exception {
+            // given
+            loginMember();
+            Member target = getMember();
+            blockRepository.save(Block.builder()
+                    .blocker(member)
+                    .blocked(target)
+                    .build()
+            );
+
+            // when
+            mockMvc.perform(post("/api/users/{userId}/block", target.getId())
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            // then
+            assertThat(blockRepository.findAll().get(0).getBlocker().getId())
+                    .isEqualTo(member.getId());
+            assertThat(blockRepository.findAll().get(0).getBlocked().getId())
+                    .isEqualTo(target.getId());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 유저를 차단하는 경우")
+        void blockUserNotFoundBlocked() throws Exception {
+            // given
+            loginMember();
+            Member target = getMember();
+
+            // when
+            mockMvc.perform(post("/api/users/{userId}/block", target.getId() + 100L)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
+                    )
+                    .andExpect(status().isNotFound())
+                    .andDo(print());
+
+            // then
+            assertThat(blockRepository.findAll().isEmpty())
+                    .isTrue();
+        }
+
+        @Test
+        @DisplayName("유저를 차단 해제하는 경우")
+        void unblockUser() throws Exception {
+            // given
+            loginMember();
+            Member target = getMember();
+            blockRepository.save(Block.builder()
+                    .blocker(member)
+                    .blocked(target)
+                    .build()
+            );
+
+            // when
+            mockMvc.perform(post("/api/users/{userId}/unblock", target.getId())
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            // then
+            assertThat(blockRepository.findAll().isEmpty())
+                    .isTrue();
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 유저를 차단 해제하는 경우")
+        void unblockUserNotFoundBlocked() throws Exception {
+            // given
+            loginMember();
+            Member target = getMember();
+
+            // expected
+            mockMvc.perform(post("/api/users/{userId}/unblock", target.getId() + 100L)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
+                    )
+                    .andExpect(status().isNotFound())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("차단되지 않은 유저를 차단 해제하는 경우")
+        void unblockUserNotExist() throws Exception {
+            // given
+            loginMember();
+            Member target = getMember();
+
+            // expected
+            mockMvc.perform(post("/api/users/{userId}/unblock", target.getId())
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
+                    )
+                    .andExpect(status().isOk())
                     .andDo(print());
         }
     }

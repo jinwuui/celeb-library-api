@@ -1,6 +1,5 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.ServiceTest;
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.domain.user.Guest;
 import com.eunbinlib.api.domain.user.Member;
@@ -8,8 +7,8 @@ import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.dto.response.UserMeResponse;
-import com.eunbinlib.api.exception.type.EunbinlibIllegalArgumentException;
-import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.exception.type.application.EunbinlibIllegalArgumentException;
+import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

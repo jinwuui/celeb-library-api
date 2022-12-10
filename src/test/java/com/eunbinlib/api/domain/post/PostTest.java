@@ -28,7 +28,7 @@ public class PostTest {
 
         // when
         String newTitle = "새 제목";
-        post.update(newTitle, null);
+        post.updateTitleAndContent(newTitle, null);
 
         // then
         assertThat(post.getTitle())
@@ -48,7 +48,7 @@ public class PostTest {
 
         // when
         String newContent = "새 내용";
-        post.update(null, newContent);
+        post.updateTitleAndContent(null, newContent);
 
         // then
         assertThat(post.getContent())
@@ -67,7 +67,7 @@ public class PostTest {
                 .build();
 
         // when
-        post.update(null, null);
+        post.updateTitleAndContent(null, null);
 
         // then
         assertThat(post.getTitle())
@@ -77,13 +77,55 @@ public class PostTest {
     }
 
     @Test
+    @DisplayName("게시글의 이미지 수정하는 경우 - 기존 이미지가 존재하지 않을 때")
+    void updateImagesNotExistImages() {
+        // given
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .build();
+
+        List<BaseImageFile> newImages = IntStream.range(0, 5)
+                .mapToObj(i -> BaseImageFile.builder().build())
+                .collect(Collectors.toList());
+
+        // when
+        post.updateImages(null, newImages);
+
+        // then
+        assertThat(post.getImages().size())
+                .isEqualTo(newImages.size());
+    }
+
+    @Test
+    @DisplayName("게시글의 이미지 수정하는 경우 - 기존 이미지가 존재할 때")
+    void updateImagesExistImages() {
+        // given
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .build();
+        post.addImage(BaseImageFile.builder().build());
+
+        List<BaseImageFile> newImages = IntStream.range(0, 5)
+                .mapToObj(i -> BaseImageFile.builder().build())
+                .collect(Collectors.toList());
+
+        // when
+        post.updateImages(null, newImages);
+
+        // then
+        assertThat(post.getImages().size())
+                .isEqualTo(newImages.size() + 1);
+    }
+
+    @Test
     @DisplayName("게시글을 삭제 (게시글의 상태를 DELETED로 변경)")
     void delete() {
         // given
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         // when
@@ -101,7 +143,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .viewCount(0L)
                 .build();
 
@@ -120,7 +161,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .likeCount(0L)
                 .build();
 
@@ -139,7 +179,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .likeCount(100L)
                 .build();
 
@@ -158,7 +197,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .likeCount(0L)
                 .build();
 
@@ -177,7 +215,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         // when
@@ -195,7 +232,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         // when
@@ -213,7 +249,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         int size = 10;
@@ -236,7 +271,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         int size = 10;
@@ -259,7 +293,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         Comment comment = Comment.builder()
@@ -283,7 +316,6 @@ public class PostTest {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .state(PostState.NORMAL)
                 .build();
 
         Member member = Member.builder()

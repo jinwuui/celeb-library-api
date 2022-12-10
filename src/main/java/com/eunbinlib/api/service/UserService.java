@@ -9,12 +9,11 @@ import com.eunbinlib.api.dto.request.GuestCreateRequest;
 import com.eunbinlib.api.dto.request.MeUpdateRequest;
 import com.eunbinlib.api.dto.request.MemberCreateRequest;
 import com.eunbinlib.api.dto.response.UserMeResponse;
-import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
 import com.eunbinlib.api.utils.EncryptUtils;
 import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -25,10 +24,8 @@ import javax.transaction.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final MemberRepository memberRepository;
 
-    @Value("${images.profile.dir}")
-    private String profileImageDir;
+    private final MemberRepository memberRepository;
 
     public Member findMemberById(Long memberId) {
         return memberRepository.findById(memberId)
@@ -39,11 +36,10 @@ public class UserService {
         Member findMember = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
 
-        return UserMeResponse.from(findMember, profileImageDir);
+        return UserMeResponse.from(findMember);
     }
 
     public void createMember(MemberCreateRequest memberCreateRequest) {
-
         Member member = Member.builder()
                 .username(memberCreateRequest.getUsername())
                 .password(EncryptUtils.encrypt(memberCreateRequest.getPassword()))
@@ -54,7 +50,6 @@ public class UserService {
     }
 
     public void createGuest(GuestCreateRequest guestCreateRequest) {
-
         Guest guest = Guest.builder()
                 .username(guestCreateRequest.getUsername())
                 .password(EncryptUtils.encrypt(guestCreateRequest.getPassword()))
@@ -65,13 +60,11 @@ public class UserService {
 
     @Transactional
     public void updateMe(Long userId, MeUpdateRequest meUpdateRequest) {
-
         Member me = findMemberById(userId);
 
         BaseImageFile baseImageFile = null;
         if (meUpdateRequest.getProfileImageFile() != null) {
-            baseImageFile = ImageUtils.storeImage(
-                    profileImageDir, meUpdateRequest.getProfileImageFile());
+            baseImageFile = ImageUtils.storeImage(meUpdateRequest.getProfileImageFile());
         }
 
         me.update(meUpdateRequest.getNickname(), baseImageFile);

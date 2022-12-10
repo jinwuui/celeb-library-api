@@ -15,6 +15,5 @@ public class PaginationResponse<T> {
         this.meta = meta;
         this.data = data;
     }
-
 }
 

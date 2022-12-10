@@ -1,6 +1,6 @@
 package com.eunbinlib.api.domain.user;
 
-import com.eunbinlib.api.exception.type.EunbinlibIllegalArgumentException;
+import com.eunbinlib.api.exception.type.application.EunbinlibIllegalArgumentException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

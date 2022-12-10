@@ -1,6 +1,7 @@
 package com.eunbinlib.api.auth;
 
-import com.eunbinlib.api.auth.data.JwtProperties;
+import com.eunbinlib.api.auth.data.AuthProperties;
+import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
 import com.eunbinlib.api.domain.user.User;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.eunbinlib.api.auth.JwtRefreshInterceptor.TOKEN_REFRESH_URL;
@@ -54,6 +54,9 @@ public class AuthTest {
     private UserRepository userRepository;
 
     @Autowired
+    private UserContextRepository userContextRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeAll()
@@ -64,18 +67,16 @@ public class AuthTest {
         User member = userRepository.findByUsername(username)
                 .orElseThrow(IllegalArgumentException::new);
 
-        accessToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createAccessToken(member.getUserType(), username);
-        refreshToken = JwtProperties.TOKEN_PREFIX + jwtUtils.createRefreshToken(member.getUserType(), username);
+        accessToken = jwtUtils.createAccessToken(member.getUserType(), username);
+        refreshToken = jwtUtils.createRefreshToken(member.getUserType(), username);
+        userContextRepository.saveUserInfo(accessToken, refreshToken, member);
     }
 
     @Test
     @DisplayName("로그인이 정상으로 되는 경우")
     void loginSuccessTest() throws Exception {
         // given
-        LoginRequest loginRequest = LoginRequest.builder()
-                .username(username)
-                .password(password)
-                .build();
+        LoginRequest loginRequest = new LoginRequest(username, password);
         String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
@@ -93,10 +94,7 @@ public class AuthTest {
     @DisplayName("로그인이 실패하는 경우 - 틀린 비밀번호")
     void loginFailTestInvalidPassword() throws Exception {
         // given
-        LoginRequest loginRequest = LoginRequest.builder()
-                .username(username)
-                .password("invalid" + password)
-                .build();
+        LoginRequest loginRequest = new LoginRequest(username, "invalid" + password);
         String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
@@ -105,7 +103,6 @@ public class AuthTest {
                         .accept(APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(HttpStatus.UNAUTHORIZED.value()))
                 .andDo(print());
     }
 
@@ -114,10 +111,7 @@ public class AuthTest {
     void loginFailTestWrongHttpMethod() throws Exception {
 
         // given
-        LoginRequest loginRequest = LoginRequest.builder()
-                .username(username)
-                .password(password)
-                .build();
+        LoginRequest loginRequest = new LoginRequest(username, password);
         String json = objectMapper.writeValueAsString(loginRequest);
 
         // expected
@@ -134,7 +128,7 @@ public class AuthTest {
     void refreshAccessTokenTest() throws Exception {
         // expected
         mockMvc.perform(post(TOKEN_REFRESH_URL)
-                        .header(JwtProperties.HEADER_AUTHORIZATION, refreshToken)
+                        .header(AuthProperties.AUTHORIZATION_HEADER, AuthProperties.TOKEN_PREFIX + refreshToken)
                         .contentType(APPLICATION_JSON)
                         .accept(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -147,7 +141,7 @@ public class AuthTest {
     void refreshAccessTokenByInvalidRefreshTokenTest() throws Exception {
         // expected
         mockMvc.perform(post(TOKEN_REFRESH_URL)
-                        .header(JwtProperties.HEADER_AUTHORIZATION, refreshToken + "invalid")
+                        .header(AuthProperties.AUTHORIZATION_HEADER, AuthProperties.TOKEN_PREFIX + refreshToken + "invalid")
                         .contentType(APPLICATION_JSON)
                         .accept(APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())

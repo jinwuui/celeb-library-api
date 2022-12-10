@@ -1,7 +1,6 @@
 package com.eunbinlib.api.domain.comment;
 
 import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.post.PostState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +18,6 @@ public class CommentTest {
         Post post = Post.builder()
                 .title("제목")
                 .content("내용")
-                .state(PostState.NORMAL)
                 .build();
         Comment comment = Comment.builder()
                 .content(content)
@@ -81,5 +79,34 @@ public class CommentTest {
         // then
         assertThat(comment.getContent())
                 .isEqualTo(content);
+    }
+
+    @Test
+    @DisplayName("게시글을 생성하면, 게시글의 상태는 CommentState.NORMAL")
+    void checkCommentStateWhenCreated() {
+        // given
+        Comment comment = Comment.builder()
+                .content(content)
+                .build();
+
+        // expected
+        assertThat(comment.getState())
+                .isEqualTo(CommentState.NORMAL);
+    }
+
+    @Test
+    @DisplayName("게시글을 삭제하면, 게시글의 상태는 CommentState.DELETED")
+    void checkCommentStateWhenDeleted() {
+        // given
+        Comment comment = Comment.builder()
+                .content(content)
+                .build();
+
+        // when
+        comment.delete();
+
+        // then
+        assertThat(comment.getState())
+                .isEqualTo(CommentState.DELETED);
     }
 }

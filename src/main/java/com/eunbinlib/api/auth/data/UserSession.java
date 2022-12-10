@@ -1,21 +1,37 @@
 package com.eunbinlib.api.auth.data;
 
-import lombok.Builder;
+import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.domain.user.User;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SuperBuilder
 public class UserSession {
 
-    private final Long id;
+    private Long id;
 
-    private final String userType;
+    private String userType;
 
-    private final String username;
+    private String username;
 
-    @Builder
-    public UserSession(Long id, String userType, String username) {
-        this.id = id;
-        this.userType = userType;
-        this.username = username;
+    public static UserSession from(User user) {
+        if (user instanceof Member) {
+            return MemberSession.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .userType(user.getUserType())
+                    .nickname(((Member) user).getNickname().getValue())
+                    .build();
+        } else {
+            return UserSession.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .userType(user.getUserType())
+                    .build();
+        }
     }
 }

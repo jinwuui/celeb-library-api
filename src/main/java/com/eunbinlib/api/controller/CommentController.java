@@ -1,6 +1,6 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.auth.data.UserSession;
+import com.eunbinlib.api.auth.data.MemberSession;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
 import com.eunbinlib.api.dto.request.CommentUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
-import static com.eunbinlib.api.auth.utils.AuthUtils.authorizePassOnlyMember;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/comments")
@@ -25,20 +23,17 @@ public class CommentController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public OnlyIdResponse create(UserSession userSession, @RequestBody @Valid CommentCreateRequest commentCreateRequest) {
-        authorizePassOnlyMember(userSession);
-        return commentService.create(userSession.getId(), commentCreateRequest);
+    public OnlyIdResponse create(MemberSession memberSession, @RequestBody @Valid CommentCreateRequest commentCreateRequest) {
+        return commentService.create(memberSession.getId(), commentCreateRequest);
     }
 
     @PatchMapping("/{commentId}")
-    public void update(UserSession userSession, @PathVariable Long commentId, @RequestBody @NotBlank CommentUpdateRequest commentUpdateRequest) {
-        authorizePassOnlyMember(userSession);
-        commentService.update(userSession.getId(), commentId, commentUpdateRequest);
+    public void update(MemberSession memberSession, @PathVariable Long commentId, @RequestBody @NotBlank CommentUpdateRequest commentUpdateRequest) {
+        commentService.update(memberSession.getId(), commentId, commentUpdateRequest);
     }
 
     @DeleteMapping("/{commentId}")
-    public void delete(UserSession userSession, @PathVariable Long commentId) {
-        authorizePassOnlyMember(userSession);
-        commentService.delete(userSession.getId(), commentId);
+    public void delete(MemberSession memberSession, @PathVariable Long commentId) {
+        commentService.delete(memberSession.getId(), commentId);
     }
 }

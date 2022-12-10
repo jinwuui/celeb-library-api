@@ -4,7 +4,6 @@ import com.eunbinlib.api.domain.imagefile.ProfileImageFile;
 import com.eunbinlib.api.domain.user.Member;
 import lombok.Builder;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 @Getter
 public class UserMeResponse {
@@ -13,36 +12,37 @@ public class UserMeResponse {
 
     private final String nickname;
 
-    private final String profileImageFilePath;
+    private final String profileImageUrl;
 
     private final String userType;
 
     @Builder
-    public UserMeResponse(Long id, String nickname, String profileImageFilePath, String userType) {
+    public UserMeResponse(Long id, String nickname, String profileImageUrl, String userType) {
         this.id = id;
         this.nickname = nickname;
-        this.profileImageFilePath = profileImageFilePath;
+        this.profileImageUrl = profileImageUrl;
         this.userType = userType;
     }
 
-    public static UserMeResponse from(Member member, String profileImageDir) {
-        String profileImageFilePath = generateProfileImageFilePath(member.getProfileImageFile(), profileImageDir);
+    public static UserMeResponse from(Member member) {
+        String profileImageUrl = generateProfileImageUrl(member.getProfileImageFile());
 
         return UserMeResponse.builder()
                 .id(member.getId())
                 .nickname(member.getNickname().getValue())
-                .profileImageFilePath(profileImageFilePath)
+                .profileImageUrl(profileImageUrl)
                 .userType(member.getUserType())
                 .build();
     }
 
-    private static String generateProfileImageFilePath(ProfileImageFile profileImageFile, String profileImageDir) {
+    private static String generateProfileImageUrl(ProfileImageFile profileImageFile) {
         if (profileImageFile == null) {
             return "default_profile";
         }
 
-        return StringUtils.join(profileImageDir, profileImageFile
+        // TODO: change to AWS S3 URL
+        return profileImageFile
                 .getBaseImageFile()
-                .getStoredFilename());
+                .getStoredFilename();
     }
 }

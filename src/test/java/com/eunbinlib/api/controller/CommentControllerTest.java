@@ -1,6 +1,5 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.ControllerTest;
 import com.eunbinlib.api.domain.comment.Comment;
 import com.eunbinlib.api.domain.post.Post;
 import com.eunbinlib.api.domain.user.Member;
@@ -15,8 +14,8 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Objects;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.AuthProperties.AUTHORIZATION_HEADER;
+import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -44,7 +43,7 @@ class CommentControllerTest extends ControllerTest {
 
             // when & expected
             mockMvc.perform(post("/api/comments")
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON)
                             .content(json)
                     )
@@ -75,7 +74,7 @@ class CommentControllerTest extends ControllerTest {
 
             // when & expected
             mockMvc.perform(post("/api/comments")
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON)
                             .content(json)
                     )
@@ -107,7 +106,7 @@ class CommentControllerTest extends ControllerTest {
             loginGuest();
 
             mockMvc.perform(multipart(HttpMethod.POST, "/api/comments")
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + guestAccessToken)
                             .contentType(APPLICATION_JSON)
                             .content(json)
                     )
@@ -135,7 +134,7 @@ class CommentControllerTest extends ControllerTest {
 
             // when & expected
             mockMvc.perform(patch("/api/comments/{commentId}", comment.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON)
                             .content(json)
                     )
@@ -173,7 +172,7 @@ class CommentControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(patch("/api/comments/{commentId}", comment.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken2)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken2)
                             .contentType(APPLICATION_JSON)
                             .content(json)
                     )
@@ -197,7 +196,7 @@ class CommentControllerTest extends ControllerTest {
             loginGuest();
 
             mockMvc.perform(patch("/api/comments/{commentId}", comment.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + guestAccessToken)
                             .contentType(APPLICATION_JSON)
                             .content(json)
                     )
@@ -221,7 +220,7 @@ class CommentControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(delete("/api/comments/{commentId}", comment.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                     )
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -246,7 +245,7 @@ class CommentControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(delete("/api/comments/{commentId}", comment.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken2)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken2)
                             .contentType(APPLICATION_JSON)
                     )
                     .andExpect(status().isForbidden())
@@ -265,7 +264,7 @@ class CommentControllerTest extends ControllerTest {
             loginGuest();
 
             mockMvc.perform(delete("/api/comments/{commentId}", comment.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + guestAccessToken)
                             .contentType(APPLICATION_JSON)
                     )
                     .andExpect(status().isForbidden())

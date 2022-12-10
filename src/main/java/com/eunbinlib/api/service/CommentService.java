@@ -7,8 +7,8 @@ import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.dto.request.CommentCreateRequest;
 import com.eunbinlib.api.dto.request.CommentUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
-import com.eunbinlib.api.exception.type.notfound.CommentNotFoundException;
+import com.eunbinlib.api.exception.type.application.ForbiddenAccessException;
+import com.eunbinlib.api.exception.type.application.notfound.CommentNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,9 +33,9 @@ public class CommentService {
 
     @Transactional
     public OnlyIdResponse create(Long userId, CommentCreateRequest commentCreateRequest) {
-
         Member member = userService.findMemberById(userId);
         Post post = postService.findById(commentCreateRequest.getPostId());
+
         Comment parent = null;
         if (commentCreateRequest.getParentId() != null) {
             parent = findById(commentCreateRequest.getParentId());
@@ -65,12 +65,12 @@ public class CommentService {
 
         validateWriter(userId, comment.getMember().getId());
 
-        commentRepository.delete(comment);
+        comment.delete();
     }
 
     private void validateWriter(Long userId, Long commentWriterId) {
         if (!commentWriterId.equals(userId)) {
-            throw new UnauthorizedException();
+            throw new ForbiddenAccessException();
         }
     }
 }

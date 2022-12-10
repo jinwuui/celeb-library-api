@@ -23,5 +23,4 @@ public class PostResponse {
         this.title = post.getTitle();
         this.content = post.getContent();
     }
-
 }
