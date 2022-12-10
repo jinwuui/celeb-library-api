@@ -90,4 +90,15 @@ public class JwtUtils {
             throw new CustomJwtException(e);
         }
     }
+
+    public String extractUsername(String token) {
+        try {
+            return jwtParser
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get(USERNAME, String.class);
+        } catch (Exception e) {
+            throw new CustomJwtException(e);
+        }
+    }
 }

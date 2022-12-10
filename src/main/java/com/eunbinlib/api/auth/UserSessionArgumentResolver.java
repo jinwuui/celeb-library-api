@@ -1,7 +1,10 @@
 package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.data.UserSession;
-import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.auth.utils.AuthService;
+import com.eunbinlib.api.auth.utils.AuthorizationExtractor;
+import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -9,11 +12,13 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import static com.eunbinlib.api.auth.data.RedisCacheKey.USER_SESSION;
-import static org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST;
+import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
-public class JwtAuthResolver implements HandlerMethodArgumentResolver {
+@RequiredArgsConstructor
+public class UserSessionArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private final AuthService authService;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -22,13 +27,13 @@ public class JwtAuthResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+        HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
+        if (request == null) {
+            return new UnauthorizedException();
+        }
 
-        User user = (User) webRequest.getAttribute(USER_SESSION, SCOPE_REQUEST);
+        String accessToken = AuthorizationExtractor.extractToken(request);
 
-        return UserSession.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .userType(user.getUserType())
-                .build();
+        return authService.getSession(accessToken);
     }
 }

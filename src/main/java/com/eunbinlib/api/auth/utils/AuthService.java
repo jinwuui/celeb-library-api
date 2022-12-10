@@ -1,7 +1,9 @@
 package com.eunbinlib.api.auth.utils;
 
+import com.eunbinlib.api.auth.data.MemberSession;
 import com.eunbinlib.api.auth.data.UserSession;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.LoginRequest;
 import com.eunbinlib.api.dto.response.TokenResponse;
@@ -12,9 +14,8 @@ import com.eunbinlib.api.utils.EncryptUtils;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import static com.eunbinlib.api.auth.data.AuthProperties.USERNAME;
 import static com.eunbinlib.api.auth.data.AuthProperties.USER_TYPE;
@@ -22,19 +23,12 @@ import static com.eunbinlib.api.auth.data.RedisCacheKey.USER_SESSION;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+@Service
 public class AuthService {
 
     private final JwtUtils jwtUtils;
 
     private final UserRepository userRepository;
-
-    public static void authorizePassOnlyMember(UserSession userSession) {
-        String userType = userSession.getUserType();
-        if (StringUtils.equals(userType, "guest")) {
-            throw new ForbiddenAccessException();
-        }
-    }
 
     public TokenResponse authenticate(LoginRequest loginRequest) {
         String username = loginRequest.getUsername();
@@ -60,20 +54,8 @@ public class AuthService {
                 .build();
     }
 
-    @Cacheable(key = "#accessToken", value = USER_SESSION)
-    public UserSession validateAccessToken(String accessToken) {
-        Claims claims = jwtUtils.validateAccessToken(accessToken);
-
-        String username = claims.get(USERNAME, String.class);
-
-        User findUser = userRepository.findByUsername(username)
-                .orElseThrow(UnauthorizedException::new);
-
-        return UserSession.builder()
-                .id(findUser.getId())
-                .username(findUser.getUsername())
-                .userType(findUser.getUserType())
-                .build();
+    public void validateAccessToken(String accessToken) {
+        jwtUtils.validateAccessToken(accessToken);
     }
 
     public String renewAccessToken(String refreshToken) {
@@ -83,5 +65,38 @@ public class AuthService {
         String userType = claims.get(USER_TYPE, String.class);
 
         return jwtUtils.createAccessToken(userType, username);
+    }
+
+    @Cacheable(key = "#accessToken", value = USER_SESSION)
+    public UserSession getSession(String accessToken) {
+        User findUser = findUserByAccessToken(accessToken);
+
+        return UserSession.builder()
+                .id(findUser.getId())
+                .username(findUser.getUsername())
+                .userType(findUser.getUserType())
+                .build();
+    }
+
+    @Cacheable(key = "#accessToken", value = USER_SESSION)
+    public UserSession getMemberSession(String accessToken) {
+        User findUser = findUserByAccessToken(accessToken);
+
+        if (findUser instanceof Member) {
+            return MemberSession.builder()
+                    .id(findUser.getId())
+                    .username(findUser.getUsername())
+                    .userType(findUser.getUserType())
+                    .nickname(((Member) findUser).getNickname().getValue())
+                    .build();
+        }
+
+        throw new ForbiddenAccessException();
+    }
+
+    private User findUserByAccessToken(String accessToken) {
+        String username = jwtUtils.extractUsername(accessToken);
+        return userRepository.findByUsername(username)
+                .orElseThrow(UnauthorizedException::new);
     }
 }

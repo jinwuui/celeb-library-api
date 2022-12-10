@@ -8,11 +8,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SuperBuilder
-public class UserSession {
+public class MemberSession extends UserSession {
 
-    private Long id;
-
-    private String userType;
-
-    private String username;
+    private String nickname;
 }

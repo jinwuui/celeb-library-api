@@ -1,9 +1,6 @@
 package com.eunbinlib.api.config;
 
-import com.eunbinlib.api.auth.JwtAuthInterceptor;
-import com.eunbinlib.api.auth.JwtAuthResolver;
-import com.eunbinlib.api.auth.JwtRefreshInterceptor;
-import com.eunbinlib.api.auth.LoginAuthInterceptor;
+import com.eunbinlib.api.auth.*;
 import com.eunbinlib.api.auth.utils.AuthService;
 import com.eunbinlib.api.exception.handler.AuthHandlerExceptionResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,6 +48,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new JwtAuthResolver());
+        resolvers.add(new UserSessionArgumentResolver(authService));
+        resolvers.add(new MemberSessionArgumentResolver(authService));
     }
 }

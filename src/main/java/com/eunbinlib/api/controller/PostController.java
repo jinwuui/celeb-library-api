@@ -1,5 +1,6 @@
 package com.eunbinlib.api.controller;
 
+import com.eunbinlib.api.auth.data.MemberSession;
 import com.eunbinlib.api.auth.data.UserSession;
 import com.eunbinlib.api.dto.request.PostCreateRequest;
 import com.eunbinlib.api.dto.request.PostReadRequest;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.eunbinlib.api.auth.utils.AuthService.authorizePassOnlyMember;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/posts")
@@ -28,9 +27,8 @@ public class PostController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public OnlyIdResponse create(UserSession userSession, @ModelAttribute @Valid PostCreateRequest postCreateRequest) {
-        authorizePassOnlyMember(userSession);
-        return postService.create(userSession.getId(), postCreateRequest);
+    public OnlyIdResponse create(MemberSession memberSession, @ModelAttribute @Valid PostCreateRequest postCreateRequest) {
+        return postService.create(memberSession.getId(), postCreateRequest);
     }
 
     @GetMapping("/{postId}")
@@ -44,20 +42,17 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}")
-    public void update(UserSession userSession, @PathVariable Long postId, @ModelAttribute @Valid PostUpdateRequest postUpdateRequest) {
-        authorizePassOnlyMember(userSession);
-        postService.update(userSession.getId(), postId, postUpdateRequest);
+    public void update(MemberSession memberSession, @PathVariable Long postId, @ModelAttribute @Valid PostUpdateRequest postUpdateRequest) {
+        postService.update(memberSession.getId(), postId, postUpdateRequest);
     }
 
     @DeleteMapping("/{postId}")
-    public void delete(UserSession userSession, @PathVariable Long postId) {
-        authorizePassOnlyMember(userSession);
-        postService.delete(userSession.getId(), postId);
+    public void delete(MemberSession memberSession, @PathVariable Long postId) {
+        postService.delete(memberSession.getId(), postId);
     }
 
     @PostMapping("/{postId}/like")
-    public void likePost(UserSession userSession, @PathVariable Long postId, @RequestParam Boolean isLike) {
-        authorizePassOnlyMember(userSession);
-        postService.likePost(userSession.getId(), postId, isLike);
+    public void likePost(MemberSession memberSession, @PathVariable Long postId, @RequestParam Boolean isLike) {
+        postService.likePost(memberSession.getId(), postId, isLike);
     }
 }
