@@ -3,7 +3,6 @@ package com.eunbinlib.api.auth.utils;
 import com.eunbinlib.api.auth.data.MemberSession;
 import com.eunbinlib.api.auth.data.UserSession;
 import com.eunbinlib.api.domain.repository.user.UserRepository;
-import com.eunbinlib.api.domain.user.Member;
 import com.eunbinlib.api.domain.user.User;
 import com.eunbinlib.api.dto.request.LoginRequest;
 import com.eunbinlib.api.dto.response.TokenResponse;
@@ -71,24 +70,16 @@ public class AuthService {
     public UserSession getSession(String accessToken) {
         User findUser = findUserByAccessToken(accessToken);
 
-        return UserSession.builder()
-                .id(findUser.getId())
-                .username(findUser.getUsername())
-                .userType(findUser.getUserType())
-                .build();
+        return UserSession.from(findUser);
     }
 
     @Cacheable(key = "#accessToken", value = USER_SESSION)
     public UserSession getMemberSession(String accessToken) {
         User findUser = findUserByAccessToken(accessToken);
 
-        if (findUser instanceof Member) {
-            return MemberSession.builder()
-                    .id(findUser.getId())
-                    .username(findUser.getUsername())
-                    .userType(findUser.getUserType())
-                    .nickname(((Member) findUser).getNickname().getValue())
-                    .build();
+        UserSession userSession = UserSession.from(findUser);
+        if (userSession instanceof MemberSession) {
+            return userSession;
         }
 
         throw new ForbiddenAccessException();
