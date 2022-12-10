@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.AuthProperties.AUTHORIZATION_HEADER;
+import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.dto.request.PostReadRequest.MAX_SIZE;
 import static com.eunbinlib.api.testutils.MultiValueMapper.convert;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +56,7 @@ class PostControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isCreated())
@@ -94,7 +94,7 @@ class PostControllerTest extends ControllerTest {
                             .file((MockMultipartFile) images.get(1))
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isCreated())
@@ -125,7 +125,7 @@ class PostControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
@@ -146,7 +146,7 @@ class PostControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isBadRequest())
@@ -167,7 +167,7 @@ class PostControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.POST, "/api/posts")
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + guestAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isForbidden())
@@ -189,7 +189,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(get("/api/posts/{postId}", post.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['post'].id").value(post.getId().intValue()))
@@ -209,7 +209,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(get("/api/posts/{postId}", post.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['post'].id").value(post.getId().intValue()))
@@ -233,7 +233,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(get("/api/posts/{postId}", post.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['post'].id").value(post.getId().intValue()))
@@ -270,7 +270,7 @@ class PostControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(get("/api/posts")
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['data'].length()", is(5)))
@@ -307,7 +307,7 @@ class PostControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(get("/api/posts")
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + guestAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['data'].length()", is(5)))
@@ -342,7 +342,7 @@ class PostControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(get("/api/posts")
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['data'].length()", is(MAX_SIZE)))
@@ -357,7 +357,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(get("/api/posts/{postId}", 1L)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isNotFound())
                     .andDo(print());
@@ -387,7 +387,7 @@ class PostControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(get("/api/posts")
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['data'].length()", is(1)))
@@ -414,7 +414,7 @@ class PostControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/posts/{postId}", post.getId())
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
@@ -442,7 +442,7 @@ class PostControllerTest extends ControllerTest {
             mockMvc.perform(multipart(HttpMethod.PATCH, "/api/posts/{postId}", post.getId())
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
@@ -476,7 +476,7 @@ class PostControllerTest extends ControllerTest {
                             .file((MockMultipartFile) request.getNewImages().get(1))
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
@@ -522,7 +522,7 @@ class PostControllerTest extends ControllerTest {
                             .param("title", request.getTitle())
                             .param("content", request.getContent())
                             .param("deleteIdList", request.getDeleteIdList().get(0).toString())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                     )
                     .andExpect(status().isOk())
@@ -548,7 +548,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", 1L)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                     )
@@ -574,7 +574,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(patch("/api/posts/{postId}", post.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken2)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken2)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                     )
@@ -596,7 +596,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(delete("/api/posts/{postId}", post.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -608,7 +608,7 @@ class PostControllerTest extends ControllerTest {
             // expected
             loginMember();
             mockMvc.perform(delete("/api/posts/{postId}", 1L)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isNotFound())
                     .andDo(print());
@@ -630,7 +630,7 @@ class PostControllerTest extends ControllerTest {
 
             // expected
             mockMvc.perform(delete("/api/posts/{postId}", post.getId())
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken2)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken2)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isForbidden())
                     .andDo(print());
@@ -653,7 +653,7 @@ class PostControllerTest extends ControllerTest {
             // when
             mockMvc.perform(post("/api/posts/{postId}/like", post.getId())
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -682,7 +682,7 @@ class PostControllerTest extends ControllerTest {
             // when
             mockMvc.perform(post("/api/posts/{postId}/like", post.getId())
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -710,7 +710,7 @@ class PostControllerTest extends ControllerTest {
             // when
             mockMvc.perform(post("/api/posts/{postId}/like", post.getId())
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -733,7 +733,7 @@ class PostControllerTest extends ControllerTest {
             // when
             mockMvc.perform(post("/api/posts/{postId}/like", post.getId())
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print());
@@ -758,7 +758,7 @@ class PostControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(post("/api/posts/{postId}/like", post.getId())
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + guestAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + guestAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isForbidden())
                     .andDo(print());

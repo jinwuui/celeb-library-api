@@ -1,8 +1,9 @@
 package com.eunbinlib.api.utils;
 
 import com.eunbinlib.api.domain.imagefile.BaseImageFile;
-import com.eunbinlib.api.exception.type.EunbinlibIllegalArgumentException;
+import com.eunbinlib.api.exception.type.application.EunbinlibIllegalArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public class ImageUtils {
     }
 
     public static List<BaseImageFile> storeImages(final List<MultipartFile> images) {
-        if (images == null || images.isEmpty()) {
+        if (CollectionUtils.isEmpty(images)) {
             return List.of();
         }
 

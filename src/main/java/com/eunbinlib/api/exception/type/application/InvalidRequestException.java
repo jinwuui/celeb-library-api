@@ -1,4 +1,4 @@
-package com.eunbinlib.api.exception.type;
+package com.eunbinlib.api.exception.type.application;
 
 import org.springframework.http.HttpStatus;
 
@@ -23,5 +23,4 @@ public class InvalidRequestException extends EunbinlibException {
     public int getStatusCode() {
         return HttpStatus.BAD_REQUEST.value();
     }
-
 }

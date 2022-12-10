@@ -1,4 +1,4 @@
-package com.eunbinlib.api.exception.type;
+package com.eunbinlib.api.exception.type.application;
 
 import org.springframework.http.HttpStatus;
 

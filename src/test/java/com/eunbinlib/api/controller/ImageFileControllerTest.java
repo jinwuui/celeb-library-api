@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.HEADER_AUTHORIZATION;
-import static com.eunbinlib.api.auth.data.JwtProperties.TOKEN_PREFIX;
+import static com.eunbinlib.api.auth.data.AuthProperties.AUTHORIZATION_HEADER;
+import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
 import static com.eunbinlib.api.testutils.MultiValueMapper.convert;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -63,7 +63,7 @@ public class ImageFileControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(get("/api/images")
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['data'].length()", is(5)))
@@ -86,7 +86,7 @@ public class ImageFileControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(get("/api/images")
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['data'].length()", is(postImageFiles.size())))
@@ -111,7 +111,7 @@ public class ImageFileControllerTest extends ControllerTest {
             // expected
             mockMvc.perform(get("/api/images")
                             .params(params)
-                            .header(HEADER_AUTHORIZATION, TOKEN_PREFIX + memberAccessToken)
+                            .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + memberAccessToken)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$..['data'].length()", is(request.getSize())))

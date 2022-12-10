@@ -1,8 +1,8 @@
-package com.eunbinlib.api.exception.type;
+package com.eunbinlib.api.exception.type.auth;
 
 import org.springframework.http.HttpStatus;
 
-public class UnsupportedMethodException extends EunbinlibException {
+public class UnsupportedMethodException extends EunbinlibAuthException {
 
     private static final String MESSAGE = "접근 불가능한 HTTP METHOD 입니다.";
 

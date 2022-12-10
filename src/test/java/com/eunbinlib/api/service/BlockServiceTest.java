@@ -2,7 +2,7 @@ package com.eunbinlib.api.service;
 
 import com.eunbinlib.api.domain.block.Block;
 import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

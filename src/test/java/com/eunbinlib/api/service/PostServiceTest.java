@@ -16,8 +16,9 @@ import com.eunbinlib.api.dto.response.PaginationMeta;
 import com.eunbinlib.api.dto.response.PaginationResponse;
 import com.eunbinlib.api.dto.response.PostResponse;
 import com.eunbinlib.api.dto.response.postdetailresponse.PostDetailResponse;
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
-import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
+import com.eunbinlib.api.exception.type.application.ForbiddenAccessException;
+import com.eunbinlib.api.exception.type.application.notfound.PostNotFoundException;
+import com.eunbinlib.api.exception.type.auth.ForbiddenAuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -587,7 +588,7 @@ class PostServiceTest extends ServiceTest {
 
             // when
             assertThatThrownBy(() -> postService.update(member.getId() + 1L, post.getId(), request))
-                    .isInstanceOf(UnauthorizedException.class);
+                    .isInstanceOf(ForbiddenAccessException.class);
         }
     }
 
@@ -637,7 +638,7 @@ class PostServiceTest extends ServiceTest {
             // expected
             assertThatThrownBy(
                     () -> postService.delete(member.getId() + 1L, post.getId()))
-                    .isInstanceOf(UnauthorizedException.class);
+                    .isInstanceOf(ForbiddenAccessException.class);
         }
     }
 

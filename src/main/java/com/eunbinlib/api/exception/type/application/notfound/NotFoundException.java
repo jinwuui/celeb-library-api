@@ -1,6 +1,6 @@
-package com.eunbinlib.api.exception.type.notfound;
+package com.eunbinlib.api.exception.type.application.notfound;
 
-import com.eunbinlib.api.exception.type.EunbinlibException;
+import com.eunbinlib.api.exception.type.application.EunbinlibException;
 import org.springframework.http.HttpStatus;
 
 public abstract class NotFoundException extends EunbinlibException {

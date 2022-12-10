@@ -1,9 +1,7 @@
 package com.eunbinlib.api.auth;
 
-import com.eunbinlib.api.auth.usercontext.UserContextRepository;
-import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.exception.type.auth.UnauthenticatedException;
-import io.jsonwebtoken.Claims;
+import com.eunbinlib.api.auth.utils.AuthService;
+import com.eunbinlib.api.auth.utils.AuthorizationExtractor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -11,34 +9,17 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.eunbinlib.api.auth.data.JwtProperties.*;
-import static com.eunbinlib.api.auth.utils.AuthUtils.injectExceptionToRequest;
-
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthInterceptor implements HandlerInterceptor {
 
-    private final JwtUtils jwtUtils;
-
-    private final UserContextRepository userContextRepository;
+    private final AuthService authService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        String accessToken = AuthorizationExtractor.extractToken(request);
 
-        try {
-            String accessToken = jwtUtils.extractToken(request)
-                    .orElseThrow(UnauthenticatedException::new);
-
-            Claims jwt = jwtUtils.verifyAccessToken(accessToken);
-
-            request.setAttribute(
-                    USER_INFO,
-                    userContextRepository.findUserInfoByAccessToken(accessToken)
-            );
-        } catch (Exception e) {
-            log.error("JwtAuthInterceptor: ", e);
-            injectExceptionToRequest(request, e);
-        }
+        authService.validateAccessToken(accessToken);
 
         return true;
     }

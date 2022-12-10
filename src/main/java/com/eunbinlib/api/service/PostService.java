@@ -16,8 +16,8 @@ import com.eunbinlib.api.dto.response.PaginationMeta;
 import com.eunbinlib.api.dto.response.PaginationResponse;
 import com.eunbinlib.api.dto.response.PostResponse;
 import com.eunbinlib.api.dto.response.postdetailresponse.PostDetailResponse;
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
-import com.eunbinlib.api.exception.type.notfound.PostNotFoundException;
+import com.eunbinlib.api.exception.type.application.ForbiddenAccessException;
+import com.eunbinlib.api.exception.type.application.notfound.PostNotFoundException;
 import com.eunbinlib.api.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -149,7 +149,7 @@ public class PostService {
 
     private void validateWriter(Long userId, Long postWriterId) {
         if (!postWriterId.equals(userId)) {
-            throw new UnauthorizedException();
+            throw new ForbiddenAccessException();
         }
     }
 }

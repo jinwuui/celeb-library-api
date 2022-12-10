@@ -2,15 +2,15 @@ package com.eunbinlib.api.exception.type.auth;
 
 import org.springframework.http.HttpStatus;
 
-public class UnauthorizedException extends EunbinlibAuthException {
+public class LoginFailedException extends EunbinlibAuthException {
 
-    private static final String MESSAGE = "인증되지 않은 유저입니다.";
+    private static final String MESSAGE = "아이디/비밀번호가 올바르지 않습니다.";
 
-    public UnauthorizedException() {
+    public LoginFailedException() {
         super(MESSAGE);
     }
 
-    public UnauthorizedException(final Throwable cause) {
+    public LoginFailedException(Throwable cause) {
         super(MESSAGE, cause);
     }
 

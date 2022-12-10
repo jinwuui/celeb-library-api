@@ -25,7 +25,7 @@ public class SpringExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public ErrorResponse unexpectedException(final Exception e) {
-
+        log.error("[ERROR DETECTED] SpringExceptionHandler.unexpectedException", e);
         return ErrorResponse.builder()
                 .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                 .message("Unexpected Exception")
@@ -36,7 +36,7 @@ public class SpringExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public ErrorResponse unexpectedRuntimeException(final RuntimeException e) {
-
+        log.error("[ERROR DETECTED] SpringExceptionHandler.unexpectedRuntimeException", e);
         return ErrorResponse.builder()
                 .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                 .message("Unexpected Runtime Exception")
