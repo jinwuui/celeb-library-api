@@ -1,6 +1,6 @@
 package com.eunbinlib.api.auth;
 
-import com.eunbinlib.api.auth.utils.AuthUtils;
+import com.eunbinlib.api.auth.utils.AuthService;
 import com.eunbinlib.api.dto.request.LoginRequest;
 import com.eunbinlib.api.dto.response.TokenResponse;
 import com.eunbinlib.api.exception.type.auth.InvalidLoginInfoException;
@@ -26,7 +26,7 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
 
     public static final String LOGIN_URL = "/api/auth/login";
 
-    private final AuthUtils authUtils;
+    private final AuthService authService;
 
     private final ObjectMapper objectMapper;
 
@@ -37,7 +37,7 @@ public class LoginAuthInterceptor implements HandlerInterceptor {
         try {
             LoginRequest loginRequest = extractLoginRequest(request);
 
-            TokenResponse tokenResponse = authUtils.authenticate(loginRequest);
+            TokenResponse tokenResponse = authService.authenticate(loginRequest);
 
             prepareResponse(response, tokenResponse);
 

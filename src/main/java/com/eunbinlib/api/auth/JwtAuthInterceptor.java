@@ -1,8 +1,8 @@
 package com.eunbinlib.api.auth;
 
-import com.eunbinlib.api.auth.usercontext.UserContextRepository;
-import com.eunbinlib.api.auth.utils.JwtUtils;
-import io.jsonwebtoken.Claims;
+import com.eunbinlib.api.auth.data.UserSession;
+import com.eunbinlib.api.auth.utils.AuthService;
+import com.eunbinlib.api.auth.utils.AuthorizationExtractor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -10,27 +10,21 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.eunbinlib.api.auth.data.AuthProperties.USER_INFO;
+import static com.eunbinlib.api.auth.data.RedisCacheKey.USER_SESSION;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthInterceptor implements HandlerInterceptor {
 
-    private final JwtUtils jwtUtils;
-
-    private final UserContextRepository userContextRepository;
+    private final AuthService authService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String accessToken = jwtUtils.extractToken(request);
+        String accessToken = AuthorizationExtractor.extractToken(request);
 
-        Claims claims = jwtUtils.verifyAccessToken(accessToken);
+        UserSession userSession = authService.validateAccessToken(accessToken);
 
-        // TODO: change userContextRepository to redisRepository
-        request.setAttribute(
-                USER_INFO,
-                userContextRepository.findUserInfoByAccessToken(accessToken)
-        );
+        request.setAttribute(USER_SESSION, userSession);
 
         return true;
     }

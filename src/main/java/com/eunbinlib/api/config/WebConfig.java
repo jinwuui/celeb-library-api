@@ -1,10 +1,10 @@
 package com.eunbinlib.api.config;
 
-import com.eunbinlib.api.auth.*;
-import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
-import com.eunbinlib.api.auth.utils.AuthUtils;
-import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.repository.user.UserRepository;
+import com.eunbinlib.api.auth.JwtAuthInterceptor;
+import com.eunbinlib.api.auth.JwtAuthResolver;
+import com.eunbinlib.api.auth.JwtRefreshInterceptor;
+import com.eunbinlib.api.auth.LoginAuthInterceptor;
+import com.eunbinlib.api.auth.utils.AuthService;
 import com.eunbinlib.api.exception.handler.AuthHandlerExceptionResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -27,26 +27,20 @@ public class WebConfig implements WebMvcConfigurer {
 
     private static final String[] AUTH_WHITE_LIST = {LOGIN_URL, TOKEN_REFRESH_URL, JOIN_MEMBER_URL, JOIN_GUEST_URL, "/error"};
 
-    private final JwtUtils jwtUtils;
-
-    private final AuthUtils authUtils;
-
-    private final UserRepository userRepository;
+    private final AuthService authService;
 
     private final ObjectMapper objectMapper;
 
-    private final MapUserContextRepository userContextRepository;
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new JwtAuthInterceptor(jwtUtils, userContextRepository))
+        registry.addInterceptor(new JwtAuthInterceptor(authService))
                 .addPathPatterns("/**")
                 .excludePathPatterns(AUTH_WHITE_LIST);
 
-        registry.addInterceptor(new JwtRefreshInterceptor(jwtUtils, objectMapper, userContextRepository))
+        registry.addInterceptor(new JwtRefreshInterceptor(authService, objectMapper))
                 .addPathPatterns(TOKEN_REFRESH_URL);
 
-        registry.addInterceptor(new LoginAuthInterceptor(authUtils, objectMapper))
+        registry.addInterceptor(new LoginAuthInterceptor(authService, objectMapper))
                 .addPathPatterns(LOGIN_URL);
     }
 

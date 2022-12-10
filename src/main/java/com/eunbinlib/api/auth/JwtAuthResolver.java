@@ -9,7 +9,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import static com.eunbinlib.api.auth.data.AuthProperties.USER_INFO;
+import static com.eunbinlib.api.auth.data.RedisCacheKey.USER_SESSION;
 import static org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST;
 
 @Slf4j
@@ -23,7 +23,7 @@ public class JwtAuthResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-        User user = (User) webRequest.getAttribute(USER_INFO, SCOPE_REQUEST);
+        User user = (User) webRequest.getAttribute(USER_SESSION, SCOPE_REQUEST);
 
         return UserSession.builder()
                 .id(user.getId())

@@ -6,8 +6,8 @@ import com.eunbinlib.api.dto.request.PostReadRequest;
 import com.eunbinlib.api.dto.request.PostUpdateRequest;
 import com.eunbinlib.api.dto.response.OnlyIdResponse;
 import com.eunbinlib.api.dto.response.PaginationResponse;
-import com.eunbinlib.api.dto.response.postdetailresponse.PostDetailResponse;
 import com.eunbinlib.api.dto.response.PostResponse;
+import com.eunbinlib.api.dto.response.postdetailresponse.PostDetailResponse;
 import com.eunbinlib.api.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.eunbinlib.api.auth.utils.AuthUtils.authorizePassOnlyMember;
+import static com.eunbinlib.api.auth.utils.AuthService.authorizePassOnlyMember;
 
 @Slf4j
 @RestController

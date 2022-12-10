@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.eunbinlib.api.auth.utils.AuthUtils.authorizePassOnlyMember;
+import static com.eunbinlib.api.auth.utils.AuthService.authorizePassOnlyMember;
 
 @Slf4j
 @RestController

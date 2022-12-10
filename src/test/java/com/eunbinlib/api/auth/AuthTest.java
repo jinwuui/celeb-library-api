@@ -128,7 +128,7 @@ public class AuthTest {
     void refreshAccessTokenTest() throws Exception {
         // expected
         mockMvc.perform(post(TOKEN_REFRESH_URL)
-                        .header(AuthProperties.HEADER_AUTHORIZATION, AuthProperties.TOKEN_PREFIX + refreshToken)
+                        .header(AuthProperties.AUTHORIZATION_HEADER, AuthProperties.TOKEN_PREFIX + refreshToken)
                         .contentType(APPLICATION_JSON)
                         .accept(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -141,7 +141,7 @@ public class AuthTest {
     void refreshAccessTokenByInvalidRefreshTokenTest() throws Exception {
         // expected
         mockMvc.perform(post(TOKEN_REFRESH_URL)
-                        .header(AuthProperties.HEADER_AUTHORIZATION, AuthProperties.TOKEN_PREFIX + refreshToken + "invalid")
+                        .header(AuthProperties.AUTHORIZATION_HEADER, AuthProperties.TOKEN_PREFIX + refreshToken + "invalid")
                         .contentType(APPLICATION_JSON)
                         .accept(APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())

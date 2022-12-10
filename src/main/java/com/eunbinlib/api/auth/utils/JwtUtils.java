@@ -2,17 +2,14 @@ package com.eunbinlib.api.auth.utils;
 
 
 import com.eunbinlib.api.exception.type.auth.CustomJwtException;
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,6 +19,10 @@ import static com.eunbinlib.api.auth.data.AuthProperties.*;
 @Slf4j
 @Component
 public class JwtUtils {
+
+    private static final String ACCESS_TOKEN = "accessToken";
+
+    private static final String REFRESH_TOKEN = "refreshToken";
 
     private final String secretKey;
 
@@ -60,39 +61,30 @@ public class JwtUtils {
                     .setId(UUID.randomUUID().toString())
                     .signWith(SignatureAlgorithm.HS256, secretKey)
 
-                    .setSubject(username)
+                    .claim(USERNAME, username)
                     .claim(USER_TYPE, userType)
                     .claim(TOKEN_TYPE, tokenType)
+
                     .compact();
         } catch (Exception e) {
             throw new CustomJwtException(e);
         }
     }
 
-    public String extractToken(HttpServletRequest request) {
-        String header = request.getHeader(HEADER_AUTHORIZATION);
-
-        if (StringUtils.isEmpty(header) || !header.startsWith(TOKEN_PREFIX)) {
-            throw new UnauthorizedException();
-        }
-
-        return header.replace(TOKEN_PREFIX, "");
-    }
-
-    public Claims verifyAccessToken(String token) {
+    public Claims validateAccessToken(String accessToken) {
         try {
             return jwtParser.require(TOKEN_TYPE, ACCESS_TOKEN)
-                    .parseClaimsJws(token)
+                    .parseClaimsJws(accessToken)
                     .getBody();
         } catch (Exception e) {
             throw new CustomJwtException(e);
         }
     }
 
-    public Claims verifyRefreshToken(String token) {
+    public Claims validateRefreshToken(String refreshToken) {
         try {
             return jwtParser.require(TOKEN_TYPE, REFRESH_TOKEN)
-                    .parseClaimsJws(token)
+                    .parseClaimsJws(refreshToken)
                     .getBody();
         } catch (Exception e) {
             throw new CustomJwtException(e);
