@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import static com.eunbinlib.api.domain.imagefile.QPostImageFile.postImageFile;
+import static com.eunbinlib.api.application.domain.imagefile.QPostImageFile.postImageFile;
 
 
 @RequiredArgsConstructor

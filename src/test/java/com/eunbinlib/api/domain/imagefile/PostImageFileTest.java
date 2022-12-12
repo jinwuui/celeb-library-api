@@ -20,7 +20,7 @@ public class PostImageFileTest {
                 .build();
 
         PostImageFile postImageFile = PostImageFile.builder()
-                .baseImageFile(new BaseImageFile())
+                .baseImageFile(BaseImageFile.builder().build())
                 .build();
 
         // when
