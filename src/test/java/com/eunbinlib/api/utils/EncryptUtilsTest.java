@@ -1,5 +1,6 @@
 package com.eunbinlib.api.utils;
 
+import com.eunbinlib.api.application.utils.EncryptUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;

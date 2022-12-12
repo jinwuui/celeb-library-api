@@ -1,7 +1,7 @@
 package com.eunbinlib.api.auth.data;
 
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.application.domain.user.Member;
+import com.eunbinlib.api.application.domain.user.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

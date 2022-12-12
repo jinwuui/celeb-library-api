@@ -1,6 +1,6 @@
 package com.eunbinlib.api.auth.usercontext;
 
-import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.application.domain.user.User;
 
 public interface UserContextRepository {
 

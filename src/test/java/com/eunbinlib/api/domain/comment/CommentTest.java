@@ -1,6 +1,8 @@
 package com.eunbinlib.api.domain.comment;
 
-import com.eunbinlib.api.domain.post.Post;
+import com.eunbinlib.api.application.domain.comment.Comment;
+import com.eunbinlib.api.application.domain.comment.CommentState;
+import com.eunbinlib.api.application.domain.post.Post;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

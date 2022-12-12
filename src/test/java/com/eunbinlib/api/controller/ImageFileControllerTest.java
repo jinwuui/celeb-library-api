@@ -1,8 +1,8 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.domain.imagefile.BaseImageFile;
-import com.eunbinlib.api.domain.imagefile.PostImageFile;
-import com.eunbinlib.api.dto.request.ImageReadRequest;
+import com.eunbinlib.api.application.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.application.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.application.dto.request.ImageReadRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

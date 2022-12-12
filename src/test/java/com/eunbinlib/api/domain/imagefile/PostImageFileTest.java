@@ -1,6 +1,8 @@
 package com.eunbinlib.api.domain.imagefile;
 
-import com.eunbinlib.api.domain.post.Post;
+import com.eunbinlib.api.application.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.application.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.application.domain.post.Post;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +20,7 @@ public class PostImageFileTest {
                 .build();
 
         PostImageFile postImageFile = PostImageFile.builder()
-                .baseImageFile(new BaseImageFile())
+                .baseImageFile(BaseImageFile.builder().build())
                 .build();
 
         // when

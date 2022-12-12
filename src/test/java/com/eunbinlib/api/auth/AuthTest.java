@@ -3,11 +3,11 @@ package com.eunbinlib.api.auth;
 import com.eunbinlib.api.auth.data.AuthProperties;
 import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
-import com.eunbinlib.api.domain.repository.user.UserRepository;
-import com.eunbinlib.api.domain.user.User;
-import com.eunbinlib.api.dto.request.LoginRequest;
-import com.eunbinlib.api.dto.request.MemberCreateRequest;
-import com.eunbinlib.api.service.UserService;
+import com.eunbinlib.api.application.domain.repository.user.UserRepository;
+import com.eunbinlib.api.application.domain.user.User;
+import com.eunbinlib.api.application.dto.request.LoginRequest;
+import com.eunbinlib.api.application.dto.request.MemberCreateRequest;
+import com.eunbinlib.api.application.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,8 +19,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.eunbinlib.api.auth.JwtRefreshInterceptor.TOKEN_REFRESH_URL;
-import static com.eunbinlib.api.auth.LoginAuthInterceptor.LOGIN_URL;
+import static com.eunbinlib.api.auth.interceptor.JwtRefreshInterceptor.TOKEN_REFRESH_URL;
+import static com.eunbinlib.api.auth.interceptor.LoginAuthInterceptor.LOGIN_URL;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

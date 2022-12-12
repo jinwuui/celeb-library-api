@@ -1,14 +1,14 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.domain.block.Block;
-import com.eunbinlib.api.domain.imagefile.BaseImageFile;
-import com.eunbinlib.api.domain.user.Guest;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.domain.user.User;
-import com.eunbinlib.api.dto.request.GuestCreateRequest;
-import com.eunbinlib.api.dto.request.MeUpdateRequest;
-import com.eunbinlib.api.dto.request.MemberCreateRequest;
-import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
+import com.eunbinlib.api.application.domain.block.Block;
+import com.eunbinlib.api.application.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.application.domain.user.Guest;
+import com.eunbinlib.api.application.domain.user.Member;
+import com.eunbinlib.api.application.domain.user.User;
+import com.eunbinlib.api.application.dto.request.GuestCreateRequest;
+import com.eunbinlib.api.application.dto.request.MeUpdateRequest;
+import com.eunbinlib.api.application.dto.request.MemberCreateRequest;
+import com.eunbinlib.api.application.exception.type.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,8 +21,8 @@ import javax.transaction.Transactional;
 
 import static com.eunbinlib.api.auth.data.AuthProperties.AUTHORIZATION_HEADER;
 import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
-import static com.eunbinlib.api.controller.UserController.JOIN_GUEST_URL;
-import static com.eunbinlib.api.controller.UserController.JOIN_MEMBER_URL;
+import static com.eunbinlib.api.application.controller.UserController.JOIN_GUEST_URL;
+import static com.eunbinlib.api.application.controller.UserController.JOIN_MEMBER_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;

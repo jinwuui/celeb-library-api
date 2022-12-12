@@ -1,15 +1,15 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.domain.block.Block;
-import com.eunbinlib.api.domain.comment.Comment;
-import com.eunbinlib.api.domain.imagefile.BaseImageFile;
-import com.eunbinlib.api.domain.imagefile.PostImageFile;
-import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.postlike.PostLike;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.dto.request.PostCreateRequest;
-import com.eunbinlib.api.dto.request.PostReadRequest;
-import com.eunbinlib.api.dto.request.PostUpdateRequest;
+import com.eunbinlib.api.application.domain.block.Block;
+import com.eunbinlib.api.application.domain.comment.Comment;
+import com.eunbinlib.api.application.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.application.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.application.domain.post.Post;
+import com.eunbinlib.api.application.domain.postlike.PostLike;
+import com.eunbinlib.api.application.domain.user.Member;
+import com.eunbinlib.api.application.dto.request.PostCreateRequest;
+import com.eunbinlib.api.application.dto.request.PostReadRequest;
+import com.eunbinlib.api.application.dto.request.PostUpdateRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 
 import static com.eunbinlib.api.auth.data.AuthProperties.AUTHORIZATION_HEADER;
 import static com.eunbinlib.api.auth.data.AuthProperties.TOKEN_PREFIX;
-import static com.eunbinlib.api.dto.request.PostReadRequest.MAX_SIZE;
+import static com.eunbinlib.api.application.dto.request.PostReadRequest.MAX_SIZE;
 import static com.eunbinlib.api.testutils.MultiValueMapper.convert;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;

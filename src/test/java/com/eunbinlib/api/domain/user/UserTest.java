@@ -1,5 +1,7 @@
 package com.eunbinlib.api.domain.user;
 
+import com.eunbinlib.api.application.domain.user.Guest;
+import com.eunbinlib.api.application.domain.user.Member;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,11 +1,12 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.imagefile.BaseImageFile;
-import com.eunbinlib.api.domain.imagefile.PostImageFile;
-import com.eunbinlib.api.dto.request.ImageReadRequest;
-import com.eunbinlib.api.dto.response.ImageResponse;
-import com.eunbinlib.api.dto.response.PaginationMeta;
-import com.eunbinlib.api.dto.response.PaginationResponse;
+import com.eunbinlib.api.application.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.application.domain.imagefile.PostImageFile;
+import com.eunbinlib.api.application.dto.request.ImageReadRequest;
+import com.eunbinlib.api.application.dto.response.ImageResponse;
+import com.eunbinlib.api.application.dto.response.PaginationMeta;
+import com.eunbinlib.api.application.dto.response.PaginationResponse;
+import com.eunbinlib.api.application.service.ImageFileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
