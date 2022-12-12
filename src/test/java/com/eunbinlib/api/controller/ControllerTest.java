@@ -1,8 +1,6 @@
 package com.eunbinlib.api.controller;
 
 import com.eunbinlib.api.DatabaseCleaner;
-import com.eunbinlib.api.auth.usercontext.MapUserContextRepository;
-import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.application.domain.comment.Comment;
 import com.eunbinlib.api.application.domain.imagefile.BaseImageFile;
 import com.eunbinlib.api.application.domain.imagefile.PostImageFile;
@@ -16,6 +14,7 @@ import com.eunbinlib.api.application.domain.repository.user.MemberRepository;
 import com.eunbinlib.api.application.domain.repository.user.UserRepository;
 import com.eunbinlib.api.application.domain.user.Guest;
 import com.eunbinlib.api.application.domain.user.Member;
+import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,8 +67,6 @@ public abstract class ControllerTest {
     protected PostImageFileRepository postImageFileRepository;
     @Autowired
     protected CommentRepository commentRepository;
-    @Autowired
-    protected MapUserContextRepository userContextRepository;
 
     @BeforeEach
     void setUp() {
@@ -81,14 +78,12 @@ public abstract class ControllerTest {
         member = getMember();
         memberAccessToken = jwtUtils.createAccessToken(member.getUserType(), member.getUsername());
         memberRefreshToken = jwtUtils.createRefreshToken(member.getUserType(), member.getUsername());
-        userContextRepository.saveUserInfo(memberAccessToken, memberRefreshToken, member);
     }
 
     protected void loginGuest() {
         guest = getGuest();
         guestAccessToken = jwtUtils.createAccessToken(guest.getUserType(), guest.getUsername());
         guestRefreshToken = jwtUtils.createRefreshToken(guest.getUserType(), guest.getUsername());
-        userContextRepository.saveUserInfo(guestAccessToken, guestRefreshToken, guest);
     }
 
     protected Member getMember() {

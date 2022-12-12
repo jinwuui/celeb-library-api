@@ -164,8 +164,6 @@ class CommentControllerTest extends ControllerTest {
             String memberAccessToken2 = jwtUtils.createAccessToken(member2.getUserType(), member2.getUsername());
             String memberRefreshToken2 = jwtUtils.createRefreshToken(member2.getUserType(), member2.getUsername());
 
-            userContextRepository.saveUserInfo(memberAccessToken2, memberRefreshToken2, member2);
-
             CommentUpdateRequest request = new CommentUpdateRequest("수정된 댓글 내용");
 
             String json = objectMapper.writeValueAsString(request);
@@ -239,9 +237,6 @@ class CommentControllerTest extends ControllerTest {
 
             String memberAccessToken2 = jwtUtils.createAccessToken(member2.getUserType(), member2.getUsername());
             String memberRefreshToken2 = jwtUtils.createRefreshToken(member2.getUserType(), member2.getUsername());
-
-            userContextRepository.saveUserInfo(memberAccessToken2, memberRefreshToken2, member2);
-
 
             // expected
             mockMvc.perform(delete("/api/comments/{commentId}", comment.getId())

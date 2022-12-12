@@ -568,8 +568,6 @@ class PostControllerTest extends ControllerTest {
             String memberAccessToken2 = jwtUtils.createAccessToken(member2.getUserType(), member2.getUsername());
             String memberRefreshToken2 = jwtUtils.createRefreshToken(member2.getUserType(), member2.getUsername());
 
-            userContextRepository.saveUserInfo(memberAccessToken2, memberRefreshToken2, member2);
-
             PostUpdateRequest request = new PostUpdateRequest("수정된 제목", "수정된 내용", null, null);
 
             // expected
@@ -625,8 +623,6 @@ class PostControllerTest extends ControllerTest {
 
             String memberAccessToken2 = jwtUtils.createAccessToken(member2.getUserType(), member2.getUsername());
             String memberRefreshToken2 = jwtUtils.createRefreshToken(member2.getUserType(), member2.getUsername());
-
-            userContextRepository.saveUserInfo(memberAccessToken2, memberRefreshToken2, member2);
 
             // expected
             mockMvc.perform(delete("/api/posts/{postId}", post.getId())

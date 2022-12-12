@@ -1,7 +1,6 @@
 package com.eunbinlib.api.auth;
 
 import com.eunbinlib.api.auth.data.AuthProperties;
-import com.eunbinlib.api.auth.usercontext.UserContextRepository;
 import com.eunbinlib.api.auth.utils.JwtUtils;
 import com.eunbinlib.api.application.domain.repository.user.UserRepository;
 import com.eunbinlib.api.application.domain.user.User;
@@ -53,8 +52,6 @@ public class AuthTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserContextRepository userContextRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -69,7 +66,6 @@ public class AuthTest {
 
         accessToken = jwtUtils.createAccessToken(member.getUserType(), username);
         refreshToken = jwtUtils.createRefreshToken(member.getUserType(), username);
-        userContextRepository.saveUserInfo(accessToken, refreshToken, member);
     }
 
     @Test
