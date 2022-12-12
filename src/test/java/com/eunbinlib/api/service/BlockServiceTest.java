@@ -1,8 +1,9 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.block.Block;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.exception.type.application.notfound.UserNotFoundException;
+import com.eunbinlib.api.application.domain.block.Block;
+import com.eunbinlib.api.application.domain.user.Member;
+import com.eunbinlib.api.application.exception.type.notfound.UserNotFoundException;
+import com.eunbinlib.api.application.service.BlockService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,7 +36,7 @@ class BlockServiceTest extends ServiceTest {
             blockService.blockUser(member1.getId(), member2.getId());
 
             // then
-            com.eunbinlib.api.domain.block.Block block = blockRepository
+            Block block = blockRepository
                     .findByBlockerAndBlocked(member1, member2)
                     .orElseThrow(IllegalArgumentException::new);
 
@@ -59,7 +60,7 @@ class BlockServiceTest extends ServiceTest {
 
             // when
             blockService.blockUser(member1.getId(), member2.getId());
-            List<com.eunbinlib.api.domain.block.Block> blockList = blockRepository.findAll();
+            List<Block> blockList = blockRepository.findAll();
 
             // then
             assertThat(blockList.size())

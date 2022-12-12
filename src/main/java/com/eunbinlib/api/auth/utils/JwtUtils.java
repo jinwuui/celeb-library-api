@@ -1,7 +1,7 @@
 package com.eunbinlib.api.auth.utils;
 
 
-import com.eunbinlib.api.exception.type.auth.CustomJwtException;
+import com.eunbinlib.api.auth.exception.type.CustomJwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;

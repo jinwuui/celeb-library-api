@@ -1,8 +1,10 @@
 package com.eunbinlib.api.domain.post;
 
-import com.eunbinlib.api.domain.comment.Comment;
-import com.eunbinlib.api.domain.imagefile.BaseImageFile;
-import com.eunbinlib.api.domain.user.Member;
+import com.eunbinlib.api.application.domain.comment.Comment;
+import com.eunbinlib.api.application.domain.imagefile.BaseImageFile;
+import com.eunbinlib.api.application.domain.post.Post;
+import com.eunbinlib.api.application.domain.post.PostState;
+import com.eunbinlib.api.application.domain.user.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

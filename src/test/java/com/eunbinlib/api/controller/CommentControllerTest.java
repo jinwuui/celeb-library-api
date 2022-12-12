@@ -1,10 +1,10 @@
 package com.eunbinlib.api.controller;
 
-import com.eunbinlib.api.domain.comment.Comment;
-import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.dto.request.CommentCreateRequest;
-import com.eunbinlib.api.dto.request.CommentUpdateRequest;
+import com.eunbinlib.api.application.domain.comment.Comment;
+import com.eunbinlib.api.application.domain.post.Post;
+import com.eunbinlib.api.application.domain.user.Member;
+import com.eunbinlib.api.application.dto.request.CommentCreateRequest;
+import com.eunbinlib.api.application.dto.request.CommentUpdateRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

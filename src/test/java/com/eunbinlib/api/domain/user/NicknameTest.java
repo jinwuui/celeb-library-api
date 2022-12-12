@@ -1,6 +1,7 @@
 package com.eunbinlib.api.domain.user;
 
-import com.eunbinlib.api.exception.type.application.EunbinlibIllegalArgumentException;
+import com.eunbinlib.api.application.domain.user.Nickname;
+import com.eunbinlib.api.application.exception.type.EunbinlibIllegalArgumentException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

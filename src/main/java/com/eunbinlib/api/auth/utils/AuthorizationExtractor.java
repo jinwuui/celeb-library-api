@@ -1,6 +1,6 @@
 package com.eunbinlib.api.auth.utils;
 
-import com.eunbinlib.api.exception.type.auth.UnauthorizedException;
+import com.eunbinlib.api.auth.exception.type.UnauthorizedException;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;

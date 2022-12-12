@@ -1,6 +1,6 @@
 package com.eunbinlib.api.auth.usercontext;
 
-import com.eunbinlib.api.domain.user.User;
+import com.eunbinlib.api.application.domain.user.User;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

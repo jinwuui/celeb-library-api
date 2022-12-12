@@ -1,16 +1,16 @@
 package com.eunbinlib.api.service;
 
-import com.eunbinlib.api.domain.comment.Comment;
-import com.eunbinlib.api.domain.comment.CommentState;
-import com.eunbinlib.api.domain.post.Post;
-import com.eunbinlib.api.domain.user.Member;
-import com.eunbinlib.api.dto.request.CommentCreateRequest;
-import com.eunbinlib.api.dto.request.CommentUpdateRequest;
-import com.eunbinlib.api.dto.response.OnlyIdResponse;
-import com.eunbinlib.api.exception.type.application.ForbiddenAccessException;
-import com.eunbinlib.api.exception.type.auth.ForbiddenAuthException;
-import com.eunbinlib.api.exception.type.application.notfound.CommentNotFoundException;
-import com.eunbinlib.api.exception.type.application.notfound.PostNotFoundException;
+import com.eunbinlib.api.application.domain.comment.Comment;
+import com.eunbinlib.api.application.domain.comment.CommentState;
+import com.eunbinlib.api.application.domain.post.Post;
+import com.eunbinlib.api.application.domain.user.Member;
+import com.eunbinlib.api.application.dto.request.CommentCreateRequest;
+import com.eunbinlib.api.application.dto.request.CommentUpdateRequest;
+import com.eunbinlib.api.application.dto.response.OnlyIdResponse;
+import com.eunbinlib.api.application.exception.type.ForbiddenAccessException;
+import com.eunbinlib.api.application.exception.type.notfound.CommentNotFoundException;
+import com.eunbinlib.api.application.exception.type.notfound.PostNotFoundException;
+import com.eunbinlib.api.application.service.CommentService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
